@@ -7,7 +7,7 @@
   <meta name="description" content="Hidup — idle life simulation dalam Bahasa Indonesia." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon-192.png" />
-  <title>Hidup — Vertical Slice Build J</title>
+  <title>Hidup — Simulation Engine Build K</title>
   <style>
 :root{color-scheme:light dark;--bg:#f7f7f5;--card:#fff;--text:#171717;--muted:#6f6f6a;--border:#deded8;--soft:#efefeb;--accent:#171717;--accentText:#fff}
 @media(prefers-color-scheme:dark){:root{--bg:#0f0f0f;--card:#181818;--text:#f4f4f2;--muted:#9a9a94;--border:#343430;--soft:#242422;--accent:#f4f4f2;--accentText:#141414}}
@@ -47,7 +47,7 @@ function addHours(state,hours){
 }
 
 // ---- src/core/state.js ----
-const SAVE_VERSION = 6;
+const SAVE_VERSION = 7;
 
 function createInitialState(){
   return {
@@ -62,7 +62,8 @@ function createInitialState(){
       statuses:['tinggal_bersama_keluarga']
     },
     time:{totalHours:0},
-    economy:{lastLivingCostAt:0,livingCost:600000},
+    economy:{lastLivingCostAt:0,livingCost:600000,baseLivingCost:600000},
+    world:{lastSimulatedAt:0,week:0,economy:52,costIndex:100,jobMarket:50,sectors:{mechanics:54,retail:50,technology:56},phase:'stabil',news:[],lastOpportunityWeek:{}},
     housing:{id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null},
     life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null},
     pacing:{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8},
@@ -71,11 +72,11 @@ function createInitialState(){
     discoveredSkills:['mechanics','learning','social'],
     relationships:{family:60,rian:35,pak_arman:0,dika:0,maya:0,nadia:0},
     npc:{
-      rian:{known:true,life:'serabutan'},
-      pak_arman:{known:false,life:'pemilik_bengkel'},
-      dika:{known:false,rivalry:10,life:'sinar_jaya'},
-      maya:{known:false,life:'supervisor'},
-      nadia:{known:false,life:'teknisi_senior'}
+      rian:{known:true,life:'serabutan',progress:0},
+      pak_arman:{known:false,life:'pemilik_bengkel',progress:0},
+      dika:{known:false,rivalry:10,life:'sinar_jaya',progress:0},
+      maya:{known:false,life:'supervisor',progress:0},
+      nadia:{known:false,life:'teknisi_senior',progress:0}
     },
     assets:{laptop:false},
     career:{
@@ -238,7 +239,6 @@ const JOBS={
 function jobLabel(jobId){ return JOBS[jobId]?.name||'Belum bekerja'; }
 
 // ---- src/core/effects.js ----
-
 function addRecent(state,text){
   state.recent.unshift(text);
   state.recent=state.recent.slice(0,4);
@@ -303,15 +303,217 @@ function resolveEffects(state,effects=[]){
   }
 }
 
-// ---- src/core/economy.js ----
+// ---- src/core/world.js ----
+const WORLD_STEP_HOURS=7*24;
 
+function clamp(value,min=0,max=100){ return Math.max(min,Math.min(max,value)); }
+function fract(value){ return value-Math.floor(value); }
+function noise(step,salt){ return fract(Math.sin((step+1)*12.9898+salt*78.233)*43758.5453); }
+function move(current,target,maxStep){
+  const delta=Math.max(-maxStep,Math.min(maxStep,target-current));
+  return clamp(current+delta);
+}
+
+function ensureWorldState(state){
+  state.world=state.world||{};
+  state.world.lastSimulatedAt=Number.isFinite(state.world.lastSimulatedAt)?state.world.lastSimulatedAt:0;
+  state.world.week=Number.isFinite(state.world.week)?state.world.week:0;
+  state.world.economy=Number.isFinite(state.world.economy)?state.world.economy:52;
+  state.world.costIndex=Number.isFinite(state.world.costIndex)?state.world.costIndex:100;
+  state.world.jobMarket=Number.isFinite(state.world.jobMarket)?state.world.jobMarket:50;
+  state.world.sectors={mechanics:54,retail:50,technology:56,...(state.world.sectors||{})};
+  state.world.phase=state.world.phase||phaseFromEconomy(state.world.economy).id;
+  state.world.news=Array.isArray(state.world.news)?state.world.news:[];
+  state.world.lastOpportunityWeek=state.world.lastOpportunityWeek||{};
+
+  for(const [id,base] of Object.entries({rian:0,dika:0,maya:0,nadia:0})){
+    if(state.npc?.[id] && !Number.isFinite(state.npc[id].progress)) state.npc[id].progress=base;
+  }
+  return state.world;
+}
+
+function phaseFromEconomy(value){
+  if(value<34) return {id:'lesu',label:'Lesu'};
+  if(value<46) return {id:'melambat',label:'Melambat'};
+  if(value<64) return {id:'stabil',label:'Stabil'};
+  if(value<76) return {id:'ramai',label:'Ramai'};
+  return {id:'panas',label:'Sangat ramai'};
+}
+
+function demandLabel(value){
+  if(value<35) return 'Lemah';
+  if(value<48) return 'Agak sepi';
+  if(value<64) return 'Normal';
+  if(value<78) return 'Tinggi';
+  return 'Sangat tinggi';
+}
+
+function costTrendLabel(index){
+  if(index<96) return 'Lebih murah';
+  if(index<104) return 'Stabil';
+  if(index<112) return 'Mulai mahal';
+  return 'Mahal';
+}
+
+function sectorDemand(state,sector){
+  ensureWorldState(state);
+  return state.world.sectors?.[sector]??50;
+}
+
+function sectorMultiplier(state,sector){
+  const demand=sectorDemand(state,sector);
+  return Math.max(.86,Math.min(1.22,.8+demand*.004));
+}
+
+function pushWorldNews(state,text){
+  state.world.news.unshift(text);
+  state.world.news=state.world.news.slice(0,4);
+}
+
+function maybeWorldOpportunity(state,sector,demand){
+  if(demand<66) return;
+  if(state.world.lastOpportunityWeek[sector]===state.world.week) return;
+  const skillMap={mechanics:'mechanics',retail:'social',technology:'technology'};
+  const skill=skillMap[sector];
+  if((state.skills?.[skill]||0)<100) return;
+
+  if(sector==='mechanics' && !state.opportunities.some(x=>x.id==='market_repair')){
+    addOpportunity(state,{id:'market_repair',name:'Lonjakan Servis Lokal',summary:'4j · bayaran mengikuti permintaan bengkel · peluang dunia',expireAt:state.time.totalHours+72});
+    pushWorldNews(state,'Permintaan servis kendaraan sedang naik di sekitar kota.');
+    state.world.lastOpportunityWeek[sector]=state.world.week;
+  }
+  if(sector==='retail' && !state.opportunities.some(x=>x.id==='market_promo')){
+    addOpportunity(state,{id:'market_promo',name:'Shift Event Ramai',summary:'4j · kerja sosial · bayaran mengikuti kondisi retail',expireAt:state.time.totalHours+72});
+    pushWorldNews(state,'Toko dan event lokal sedang mencari pekerja tambahan.');
+    state.world.lastOpportunityWeek[sector]=state.world.week;
+  }
+  if(sector==='technology' && !state.opportunities.some(x=>x.id==='market_tech')){
+    addOpportunity(state,{id:'market_tech',name:'Permintaan Setup Digital',summary:'4j · kerja Teknologi · bayaran mengikuti pasar',expireAt:state.time.totalHours+72});
+    pushWorldNews(state,'Usaha kecil di sekitar kota sedang ramai melakukan setup digital.');
+    state.world.lastOpportunityWeek[sector]=state.world.week;
+  }
+}
+
+function progressNpc(state,id,amount){
+  if(!state.npc?.[id]) return 0;
+  state.npc[id].progress=(state.npc[id].progress||0)+amount;
+  return state.npc[id].progress;
+}
+
+function simulateNpcLives(state){
+  const w=state.world;
+
+  const rian=progressNpc(state,'rian',1.2+w.jobMarket/42);
+  if(state.npc.rian.life==='serabutan' && rian>=5.5){
+    state.npc.rian.life='kurir';
+    addRecent(state,'Rian mendapat pekerjaan tetap sebagai kurir tanpa menunggumu.');
+    pushWorldNews(state,'Pasar kerja membaik cukup untuk membuka lebih banyak pekerjaan operasional.');
+  }else if(state.npc.rian.life==='kurir' && rian>=14 && w.jobMarket>=56){
+    state.npc.rian.life='koordinator_logistik';
+    addRecent(state,'Rian dipercaya membantu mengatur rute dan pekerja kurir lain.');
+  }
+
+  if(state.npc.dika?.known){
+    const dika=progressNpc(state,'dika',1+w.sectors.mechanics/38);
+    if(state.npc.dika.life==='sinar_jaya' && dika>=8.5 && w.sectors.mechanics>=58){
+      state.npc.dika.life='bengkel_lain';
+      state.flags.dikaMoveSeen=true;
+      state.flags.dikaLeftWorkshop=true;
+      addRecent(state,'Dika menerima tawaran dari bengkel lain saat permintaan mekanik sedang tinggi.');
+    }else if(state.npc.dika.life==='bengkel_lain' && dika>=18){
+      state.npc.dika.life='kepala_mekanik';
+      addRecent(state,'Dika sekarang memimpin pekerjaan mekanik di bengkel barunya.');
+    }
+  }
+
+  if(state.npc.maya?.known){
+    const maya=progressNpc(state,'maya',1+w.sectors.retail/40);
+    if(state.npc.maya.life==='supervisor' && maya>=9.5 && w.sectors.retail>=54){
+      state.npc.maya.life='manajer_cabang';
+      state.flags.mayaProgressSeen=true;
+      addRecent(state,'Maya dipindahkan untuk membantu mengelola cabang yang lebih sibuk.');
+    }
+  }
+
+  if(state.npc.nadia?.known){
+    const nadia=progressNpc(state,'nadia',1+w.sectors.technology/36);
+    if(state.npc.nadia.life==='teknisi_senior' && nadia>=9.5 && w.sectors.technology>=60){
+      state.npc.nadia.life='lead_teknisi';
+      addRecent(state,'Nadia dipercaya memimpin beberapa teknisi junior di Nusa Komputer.');
+    }
+  }
+}
+
+function simulateWeek(state){
+  const w=ensureWorldState(state);
+  w.week+=1;
+  const n=w.week;
+  const oldPhase=w.phase;
+
+  const cycle=52+17*Math.sin(n/2.8)+(noise(n,1)-.5)*14;
+  w.economy=Math.round(move(w.economy,clamp(cycle,24,82),8));
+
+  const mechTarget=54+(50-w.economy)*.18+(noise(n,2)-.5)*18;
+  const retailTarget=46+(w.economy-45)*.65+(noise(n,3)-.5)*15;
+  const techTarget=55+Math.min(18,n*.7)+(w.economy-50)*.24+(noise(n,4)-.5)*14;
+  w.sectors.mechanics=Math.round(move(w.sectors.mechanics,clamp(mechTarget,30,82),9));
+  w.sectors.retail=Math.round(move(w.sectors.retail,clamp(retailTarget,25,86),10));
+  w.sectors.technology=Math.round(move(w.sectors.technology,clamp(techTarget,35,90),9));
+
+  const jobTarget=(w.economy+w.sectors.retail+w.sectors.technology)/3+(noise(n,5)-.5)*8;
+  w.jobMarket=Math.round(move(w.jobMarket,clamp(jobTarget,28,82),8));
+
+  const costTarget=100+Math.max(-4,(w.economy-48)*.13)+Math.min(11,n*.35)+(noise(n,6)-.5)*3;
+  w.costIndex=Math.round(Math.max(94,Math.min(118,move(w.costIndex,costTarget,2.5)))*10)/10;
+  w.phase=phaseFromEconomy(w.economy).id;
+
+  if(oldPhase!==w.phase){
+    pushWorldNews(state,`Kondisi ekonomi berubah menjadi ${phaseFromEconomy(w.economy).label.toLowerCase()}.`);
+  }
+
+  maybeWorldOpportunity(state,'mechanics',w.sectors.mechanics);
+  maybeWorldOpportunity(state,'retail',w.sectors.retail);
+  maybeWorldOpportunity(state,'technology',w.sectors.technology);
+  simulateNpcLives(state);
+}
+
+function simulateWorld(state){
+  const w=ensureWorldState(state);
+  let steps=0;
+  while(state.time.totalHours-w.lastSimulatedAt>=WORLD_STEP_HOURS && steps<52){
+    w.lastSimulatedAt+=WORLD_STEP_HOURS;
+    simulateWeek(state);
+    steps++;
+  }
+  return steps;
+}
+
+function worldSnapshot(state){
+  const w=ensureWorldState(state);
+  return {
+    phase:phaseFromEconomy(w.economy).label,
+    economy:w.economy,
+    costIndex:w.costIndex,
+    costTrend:costTrendLabel(w.costIndex),
+    jobMarket:demandLabel(w.jobMarket),
+    mechanics:demandLabel(w.sectors.mechanics),
+    retail:demandLabel(w.sectors.retail),
+    technology:demandLabel(w.sectors.technology),
+    news:[...w.news]
+  };
+}
+
+// ---- src/core/economy.js ----
 const LIVING_COST_INTERVAL=30*24;
 
 function syncLivingCost(state){
-  const cost=state.housing?.id==='rented_room'?1100000:600000;
-  state.economy.livingCost=cost;
-  if(state.housing){ state.housing.monthlyCost=cost; }
-  return cost;
+  const world=ensureWorldState(state);
+  const base=state.housing?.id==='rented_room'?1100000:600000;
+  const indexed=Math.round((base*(world.costIndex||100)/100)/10000)*10000;
+  state.economy.baseLivingCost=base;
+  state.economy.livingCost=indexed;
+  if(state.housing){ state.housing.monthlyCost=indexed; }
+  return indexed;
 }
 
 function processLivingCosts(state){
@@ -319,6 +521,7 @@ function processLivingCosts(state){
   let charged=0;
   while(state.time.totalHours-state.economy.lastLivingCostAt>=LIVING_COST_INTERVAL){
     state.economy.lastLivingCostAt+=LIVING_COST_INTERVAL;
+    syncLivingCost(state);
     state.player.money-=state.economy.livingCost;
     charged+=state.economy.livingCost;
   }
@@ -327,7 +530,6 @@ function processLivingCosts(state){
 }
 
 // ---- src/core/save.js ----
-
 // Pertahankan key lama supaya save Build F–I tetap ikut naik ke Build J.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
@@ -351,6 +553,10 @@ function mergeState(base,saved){
   out.player={...base.player,...(saved.player||{})};
   out.time={...base.time,...(saved.time||{})};
   out.economy={...base.economy,...(saved.economy||{})};
+  out.world={...base.world,...(saved.world||{})};
+  out.world.sectors={...base.world.sectors,...(saved.world?.sectors||{})};
+  out.world.lastOpportunityWeek={...base.world.lastOpportunityWeek,...(saved.world?.lastOpportunityWeek||{})};
+  if(!Array.isArray(out.world.news)) out.world.news=[];
   out.housing={...base.housing,...(saved.housing||{})};
   out.life={...base.life,...(saved.life||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
@@ -408,7 +614,6 @@ function saveState(state){
 function clearState(){ localStorage.removeItem(SAVE_KEY); }
 
 // ---- src/core/outcome.js ----
-
 function basicCount(state){
   return ['mechanics','social','technology','learning'].filter(id=>getSkillTier(state.skills[id]||0).id!=='novice').length;
 }
@@ -497,7 +702,6 @@ function isVerticalSliceReady(state){
 }
 
 // ---- src/data/activities.js ----
-
 function xpMod(state){
   const id=getCondition(state.player.fatigue).id;
   if(id==='exhausted') return .7;
@@ -593,11 +797,11 @@ function executeActivity(state,id){
 }
 
 // ---- src/data/opportunities.js ----
-
-function sideMultiplier(state,fromRian=false){
+function sideMultiplier(state,fromRian=false,sector=null){
   let mult=1;
   if(state.life?.trajectory==='independent') mult+=0.15;
   if(fromRian && state.flags.rianTrusted) mult+=0.10;
+  if(sector) mult*=sectorMultiplier(state,sector);
   return mult;
 }
 
@@ -654,7 +858,7 @@ function runOpportunity(state,id){
   if(id==='tech_side_job'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    const payout=Math.round(250000*sideMultiplier(state,true));
+    const payout=Math.round(250000*sideMultiplier(state,true,'technology'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+10);
     state.skills.technology+=18;
@@ -678,7 +882,7 @@ function runOpportunity(state,id){
   if(id==='private_repair'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    const payout=Math.round(350000*sideMultiplier(state,true));
+    const payout=Math.round(350000*sideMultiplier(state,true,'mechanics'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+14);
     state.skills.mechanics+=18;
@@ -693,7 +897,7 @@ function runOpportunity(state,id){
   if(id==='private_repeat'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    const payout=Math.round(300000*sideMultiplier(state,state.flags.rianTrusted));
+    const payout=Math.round(300000*sideMultiplier(state,state.flags.rianTrusted,'mechanics'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+12);
     state.skills.mechanics+=16;
@@ -768,7 +972,7 @@ function runOpportunity(state,id){
   if(id==='tech_freelance'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    const payout=Math.round(220000*sideMultiplier(state,false));
+    const payout=Math.round(220000*sideMultiplier(state,false,'technology'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+9);
     state.skills.technology+=16;
@@ -781,7 +985,7 @@ function runOpportunity(state,id){
   if(id==='promo_side_job'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    const payout=Math.round(180000*sideMultiplier(state,false));
+    const payout=Math.round(180000*sideMultiplier(state,false,'retail'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+8);
     state.skills.social+=14;
@@ -828,11 +1032,47 @@ function runOpportunity(state,id){
     return 'Utang kepada Rian lunas. Hubungan kalian kembali lebih ringan.';
   }
 
+
+  if(id==='market_repair'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(300000*sideMultiplier(state,false,'mechanics'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+12);
+    state.skills.mechanics+=16;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Lonjakan permintaan servis lokal memberimu pekerjaan tambahan.');
+    return `Servis dari kondisi pasar selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+  if(id==='market_promo'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(190000*sideMultiplier(state,false,'retail'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+8);
+    state.skills.social+=14;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Kondisi retail yang ramai membuka shift tambahan untukmu.');
+    return `Shift event selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+  if(id==='market_tech'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(240000*sideMultiplier(state,false,'technology'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+9);
+    state.skills.technology+=17;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Permintaan digital lokal menghasilkan pekerjaan teknologi tambahan.');
+    return `Setup digital selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
   return 'Peluang belum memiliki aksi.';
 }
 
 // ---- src/data/events.js ----
-
 function event(id,type,title,text,choices){ return {id,type,title,text,choices}; }
 function workCount(state,job){ return state.career.jobWorkCounts?.[job]||0; }
 
@@ -978,25 +1218,7 @@ function getNextEvent(state){
     ]);
   }
 
-  if(state.time.totalHours>=240 && !state.flags.rianJobUpdateSeen){
-    return event('rian_job_update','DUNIA BERGERAK','Rian Akhirnya Dapat Kerja Tetap','Tanpa menunggu keputusanmu, Rian berhasil mendapat pekerjaan sebagai kurir. Waktunya sekarang lebih terbatas, tapi penghasilannya jauh lebih stabil.',[
-      {label:'Ikut senang untuk dia',effects:[{type:'flag',key:'rianJobUpdateSeen',value:true},{type:'npc_state',npc:'rian',key:'life',value:'kurir'},{type:'relationship',target:'rian',value:3},{type:'recent',text:'Rian mulai bekerja sebagai kurir.'}],result:'Rian punya hidupnya sendiri. Hubungan kalian tetap ada, tetapi ritmenya mulai berubah.'}
-    ]);
-  }
-
-  if(state.time.totalHours>=360 && state.npc.dika.known && !state.flags.dikaMoveSeen){
-    const close=state.relationships.dika>=20;
-    return event('dika_move','DUNIA BERGERAK','Dika Mendapat Tawaran dari Bengkel Lain','Dika mendapat tawaran dengan gaji sedikit lebih tinggi. Ini bukan keputusanmu, tapi hubungan kalian memengaruhi seberapa terbuka dia membicarakannya.',[
-      {label:'Dukung dia ambil kesempatan',effects:[{type:'flag',key:'dikaMoveSeen',value:true},{type:'flag',key:'dikaLeftWorkshop',value:true},{type:'npc_state',npc:'dika',key:'life',value:'bengkel_lain'},{type:'relationship',target:'dika',value:5},{type:'recent',text:'Dika pindah ke bengkel lain untuk mengejar peluang baru.'}],result:'Dika pindah. Kalian bukan lagi rekan satu bengkel, tapi hubungan baik tetap bisa bertahan.'},
-      {label:close?'Bilang Sinar Jaya masih butuh dia':'Dengarkan saja',effects:[{type:'flag',key:'dikaMoveSeen',value:true},{type:'npc_state',npc:'dika',key:'life',value:close?'sinar_jaya':'bengkel_lain'},{type:'flag',key:'dikaLeftWorkshop',value:!close},{type:'relationship',target:'dika',value:close?3:1}],result:close?'Karena hubungan kalian cukup baik, Dika memutuskan bertahan dulu dan melihat apakah ada ruang tumbuh di Sinar Jaya.':'Dika akhirnya mengambil tawaran itu. Hidupnya terus bergerak meski kamu tidak ikut menentukan.'}
-    ]);
-  }
-
-  if(state.time.totalHours>=480 && state.npc.maya.known && !state.flags.mayaProgressSeen){
-    return event('maya_progress','DUNIA BERGERAK','Maya Dipindahkan ke Cabang Baru','Perusahaan mempercayakan Maya membantu membuka cabang baru. Posisi dan waktunya berubah tanpa menunggu perkembangan kariermu.',[
-      {label:'Ucapkan selamat',effects:[{type:'flag',key:'mayaProgressSeen',value:true},{type:'npc_state',npc:'maya',key:'life',value:'manajer_cabang'},{type:'relationship',target:'maya',value:3},{type:'recent',text:'Maya sekarang membantu mengelola cabang baru.'}],result:'Dunia kerja terus berubah. Maya sekarang punya tanggung jawab yang lebih besar.'}
-    ]);
-  }
+  // Perkembangan hidup NPC sekarang ditangani Simulation Engine mingguan.
 
   if(state.career.changeSearchCount>state.career.changeHandledCount){
     const choices=[];
@@ -1198,7 +1420,6 @@ function expireOpportunities(state){
 }
 
 // ---- src/ui/render.js ----
-
 const SKILL_NAMES={mechanics:'Mekanik',learning:'Belajar',social:'Sosial',technology:'Teknologi'};
 const STATUS_NAMES={tinggal_bersama_keluarga:'Tinggal bersama keluarga',tinggal_sendiri:'Tinggal sendiri',utang_keluarga:'Berutang pada keluarga',utang_rian:'Berutang pada Rian',punya_laptop:'Punya laptop sendiri',fokus_karier:'Memprioritaskan karier utama',jalur_mandiri:'Membangun jalur mandiri'};
 
@@ -1289,15 +1510,26 @@ function renderLife(state,ui){
 
 function renderWorld(state){
   const people=[];
-  people.push({name:'Rian',relation:relationshipLabel(state.relationships.rian),desc:state.npc.rian?.life==='kurir'?'Teman masa kecil · sekarang bekerja sebagai kurir':'Teman masa kecil · ramah, impulsif'});
+  const world=worldSnapshot(state);
+  const rianLife={serabutan:'Teman masa kecil · masih mengambil kerja serabutan',kurir:'Teman masa kecil · bekerja sebagai kurir',koordinator_logistik:'Teman masa kecil · koordinator logistik'}[state.npc.rian?.life]||'Teman masa kecil · ramah, impulsif';
+  people.push({name:'Rian',relation:relationshipLabel(state.relationships.rian),desc:rianLife});
   if(state.npc.pak_arman.known) people.push({name:'Pak Arman',relation:relationshipLabel(state.relationships.pak_arman),desc:'Pemilik bengkel · tegas, adil'});
-  if(state.npc.dika.known) people.push({name:'Dika',relation:relationshipLabel(state.relationships.dika),desc:state.npc.dika.life==='bengkel_lain'?'Mantan rekan bengkel · sekarang bekerja di tempat lain':'Rekan bengkel · ambisius, kompetitif'});
+  if(state.npc.dika.known){
+    const desc=state.npc.dika.life==='kepala_mekanik'?'Mantan rekan · sekarang kepala mekanik di bengkel lain':state.npc.dika.life==='bengkel_lain'?'Mantan rekan bengkel · sekarang bekerja di tempat lain':'Rekan bengkel · ambisius, kompetitif';
+    people.push({name:'Dika',relation:relationshipLabel(state.relationships.dika),desc});
+  }
   if(state.npc.maya.known) people.push({name:'Maya',relation:relationshipLabel(state.relationships.maya),desc:state.npc.maya.life==='manajer_cabang'?'Manajer cabang · tenang, praktis':'Supervisor toko · tenang, praktis'});
-  if(state.npc.nadia.known) people.push({name:'Nadia',relation:relationshipLabel(state.relationships.nadia),desc:'Teknisi senior · cepat, pragmatis'});
+  if(state.npc.nadia.known) people.push({name:'Nadia',relation:relationshipLabel(state.relationships.nadia),desc:state.npc.nadia.life==='lead_teknisi'?'Lead teknisi · cepat, pragmatis':'Teknisi senior · cepat, pragmatis'});
   return `<section id="world">
-    <div class="card"><div class="section-title">Peluang Aktif</div><div class="list">${state.opportunities.length?state.opportunities.map(o=>`<div class="item"><b>${esc(o.name)}</b><div class="muted small" style="margin-top:4px">${esc(o.summary)}</div></div>`).join(''):'<div class="empty">Belum ada peluang penting.</div>'}</div>
-    <div class="section-title" style="margin-top:22px">Orang</div><div class="people">${people.map(p=>`<div class="person"><div class="row"><b>${esc(p.name)}</b><span class="small">${esc(p.relation)}</span></div><div class="muted small">${esc(p.desc)}</div></div>`).join('')}</div>
-    <div class="section-title" style="margin-top:22px">Perubahan Terbaru</div><div class="list">${state.recent.length?state.recent.map(x=>`<div class="item small">${esc(x)}</div>`).join(''):'<div class="empty">Belum ada hal penting.</div>'}</div></div>
+    <div class="card">
+      <div class="row"><div><div class="section-title">Kondisi Dunia</div><div class="muted small">Simulasi bergerak setiap 7 hari game.</div></div><span class="pill">${esc(world.phase)}</span></div>
+      <div class="stats" style="margin-top:12px"><div class="stat"><div class="label">Pasar kerja</div><div class="value">${esc(world.jobMarket)}</div></div><div class="stat"><div class="label">Biaya hidup</div><div class="value">${esc(world.costTrend)}</div></div><div class="stat"><div class="label">Minggu dunia</div><div class="value">${state.world?.week||0}</div></div></div>
+      <div class="list" style="margin-top:12px"><div class="item"><div class="row"><span>Bengkel</span><b>${esc(world.mechanics)}</b></div></div><div class="item"><div class="row"><span>Retail</span><b>${esc(world.retail)}</b></div></div><div class="item"><div class="row"><span>Teknologi</span><b>${esc(world.technology)}</b></div></div></div>
+      ${world.news.length?`<div class="section-title" style="margin-top:18px">Sinyal Dunia</div><div class="list">${world.news.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>`:''}
+      <div class="section-title" style="margin-top:22px">Peluang Aktif</div><div class="list">${state.opportunities.length?state.opportunities.map(o=>`<div class="item"><b>${esc(o.name)}</b><div class="muted small" style="margin-top:4px">${esc(o.summary)}</div></div>`).join(''):'<div class="empty">Belum ada peluang penting.</div>'}</div>
+      <div class="section-title" style="margin-top:22px">Orang</div><div class="people">${people.map(p=>`<div class="person"><div class="row"><b>${esc(p.name)}</b><span class="small">${esc(p.relation)}</span></div><div class="muted small">${esc(p.desc)}</div></div>`).join('')}</div>
+      <div class="section-title" style="margin-top:22px">Perubahan Terbaru</div><div class="list">${state.recent.length?state.recent.map(x=>`<div class="item small">${esc(x)}</div>`).join(''):'<div class="empty">Belum ada hal penting.</div>'}</div>
+    </div>
   </section>`;
 }
 
@@ -1323,7 +1555,6 @@ function render(root,state,ui){
 }
 
 // ---- src/app.js ----
-
 const root=document.getElementById('app');
 let state=loadState();
 let deferredPrompt=null;
@@ -1333,6 +1564,7 @@ function persist(){ saveState(state); }
 
 function postStep(){
   expireOpportunities(state);
+  simulateWorld(state);
   processLivingCosts(state);
   if(state.career.workCount>=3) state.flags.routineUnlocked=true;
   refreshEvent(state);
@@ -1465,6 +1697,7 @@ function processOffline(realMs){
     state.playtest.actions=(state.playtest.actions||0)+1;
     consumed+=state.time.totalHours-before;
     expireOpportunities(state);
+    simulateWorld(state);
     processLivingCosts(state);
     if(state.career.workCount>=3) state.flags.routineUnlocked=true;
     refreshEvent(state);
@@ -1489,11 +1722,13 @@ if(state.routine.enabled && elapsed>45*60*1000){
   const report=processOffline(elapsed);
   if(report.gameHours>0) ui.offlineSummary=`<b>${report.gameHours} jam waktu game berlalu.</b><br>Perubahan uang: ${formatSignedMoney(report.moneyDelta)}${report.stopped?'<br>Ada keputusan penting yang menghentikan rutinitas.':''}`;
 }
+simulateWorld(state);
 processLivingCosts(state);
 refreshEvent(state);
 checkVerticalSliceOutcome();
 persist();
 draw();
+
   </script>
 </body>
 </html>

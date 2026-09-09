@@ -1,6 +1,10 @@
-BUILD J — MOBILE UPLOAD
+HIDUP — BUILD K / PHASE 3 SIMULATION ENGINE
 
-Upload semua file di folder ini langsung ke root repo GitHub Pages.
-Tidak ada folder src/ atau styles/.
-File wajib untuk game/PWA: index.html, manifest.webmanifest, sw.js, icon-192.png, icon-512.png.
-README.txt opsional.
+Upload file berikut ke root GitHub Pages:
+- index.html
+- manifest.webmanifest
+- sw.js
+- icon-192.png
+- icon-512.png
+
+Build K menambah simulasi dunia mingguan, ekonomi dinamis, demand sektor, peluang berbasis kondisi dunia, progression NPC, dan migrasi save Build J -> K.
