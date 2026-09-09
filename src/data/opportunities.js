@@ -1,6 +1,17 @@
 import {JOBS} from './jobs.js';
 import {removeOpportunity,addHistory,addRecent,discoverSkill} from '../core/effects.js';
 
+function sideMultiplier(state,fromRian=false){
+  let mult=1;
+  if(state.life?.trajectory==='independent') mult+=0.15;
+  if(fromRian && state.flags.rianTrusted) mult+=0.10;
+  return mult;
+}
+
+function sideCooldown(state,normal){
+  return state.life?.trajectory==='independent'?Math.max(36,Math.round(normal*0.7)):normal;
+}
+
 function takeJob(state,jobId,npc){
   const job=JOBS[jobId];
   const previous=state.player.job;
@@ -50,15 +61,16 @@ export function runOpportunity(state,id){
   if(id==='tech_side_job'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    state.player.money+=250000;
+    const payout=Math.round(250000*sideMultiplier(state,true));
+    state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+10);
     state.skills.technology+=18;
     state.relationships.rian+=4;
     state.scheduled.push({at:state.time.totalHours+36,kind:'tech_referral'});
-    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+250000;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
     addHistory(state,'Umur 18 · Mendapat pekerjaan teknologi pertama lewat Rian.');
     addRecent(state,'Rian mengenalkanmu ke pekerjaan setup komputer kecil.');
-    return 'Kamu menyelesaikan setup komputer pertamamu · +Rp250.000.';
+    return `Kamu menyelesaikan setup komputer pertamamu · +Rp${payout.toLocaleString('id-ID')}.`;
   }
 
   if(id==='it_job'){
@@ -73,27 +85,29 @@ export function runOpportunity(state,id){
   if(id==='private_repair'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    state.player.money+=350000;
+    const payout=Math.round(350000*sideMultiplier(state,true));
+    state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+14);
     state.skills.mechanics+=18;
     state.relationships.rian+=5;
     state.scheduled.push({at:state.time.totalHours+36,kind:'private_referral'});
-    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+350000;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
     addHistory(state,'Umur 18 · Mengambil servis privat pertama lewat Rian.');
     addRecent(state,'Kamu mulai dikenal di luar Bengkel Sinar Jaya.');
-    return 'Servis privat selesai · +Rp350.000.';
+    return `Servis privat selesai · +Rp${payout.toLocaleString('id-ID')}.`;
   }
 
   if(id==='private_repeat'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    state.player.money+=300000;
+    const payout=Math.round(300000*sideMultiplier(state,state.flags.rianTrusted));
+    state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+12);
     state.skills.mechanics+=16;
     addRecent(state,'Pelanggan baru datang lewat rekomendasi.');
-    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+300000;
-    state.scheduled.push({at:state.time.totalHours+96,kind:'private_repeat_offer'});
-    return 'Servis rekomendasi selesai · +Rp300.000.';
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    state.scheduled.push({at:state.time.totalHours+sideCooldown(state,96),kind:'private_repeat_offer'});
+    return `Servis rekomendasi selesai · +Rp${payout.toLocaleString('id-ID')}.`;
   }
 
   if(id==='promotion'){
@@ -161,25 +175,44 @@ export function runOpportunity(state,id){
   if(id==='tech_freelance'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    state.player.money+=220000;
+    const payout=Math.round(220000*sideMultiplier(state,false));
+    state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+9);
     state.skills.technology+=16;
-    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+220000;
-    state.scheduled.push({at:state.time.totalHours+72,kind:'tech_freelance_offer'});
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    state.scheduled.push({at:state.time.totalHours+sideCooldown(state,72),kind:'tech_freelance_offer'});
     addRecent(state,'Kamu menyelesaikan pekerjaan teknologi dari laptopmu sendiri.');
-    return 'Freelance teknologi selesai · +Rp220.000.';
+    return `Freelance teknologi selesai · +Rp${payout.toLocaleString('id-ID')}.`;
   }
 
   if(id==='promo_side_job'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    state.player.money+=180000;
+    const payout=Math.round(180000*sideMultiplier(state,false));
+    state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+8);
     state.skills.social+=14;
-    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+180000;
-    state.scheduled.push({at:state.time.totalHours+96,kind:'promo_side_offer'});
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    state.scheduled.push({at:state.time.totalHours+sideCooldown(state,96),kind:'promo_side_offer'});
     addRecent(state,'Kamu mengambil shift promosi singkat di luar pekerjaan utama.');
-    return 'Shift promosi selesai · +Rp180.000 · Sosial meningkat.';
+    return `Shift promosi selesai · +Rp${payout.toLocaleString('id-ID')} · Sosial meningkat.`;
+  }
+
+  if(id==='rent_room'){
+    const deposit=state.flags.familySupport?1000000:1200000;
+    if(state.player.money<deposit) return `Kamu membutuhkan Rp${deposit.toLocaleString('id-ID')} untuk deposit dan biaya awal.`;
+    removeOpportunity(state,id);
+    state.player.money-=deposit;
+    state.housing={id:'rented_room',label:'Kamar sewa sendiri',monthlyCost:1100000,movedAt:state.time.totalHours};
+    state.economy.livingCost=1100000;
+    state.player.statuses=state.player.statuses.filter(x=>x!=='tinggal_bersama_keluarga');
+    if(!state.player.statuses.includes('tinggal_sendiri')) state.player.statuses.push('tinggal_sendiri');
+    state.flags.movedOut=true;
+    state.relationships.family-=2;
+    state.scheduled.push({at:state.time.totalHours+12,kind:'move_out_reflection'});
+    addHistory(state,'Umur 18 · Pindah dari rumah keluarga ke kamar sewa sendiri.');
+    addRecent(state,'Kamu mulai tinggal sendiri. Biaya hidup naik, tetapi ruang dan ritmemu sekarang milikmu sendiri.');
+    return 'Kamu pindah ke kamar sewa. Biaya hidup bulanan naik menjadi Rp1.100.000, tetapi belajar dan istirahat di rumah menjadi lebih efektif.';
   }
 
   if(id==='repay_family'){

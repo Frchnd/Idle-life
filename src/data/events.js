@@ -4,6 +4,17 @@ import {resolveEffects,addRecent} from '../core/effects.js';
 function event(id,type,title,text,choices){ return {id,type,title,text,choices}; }
 function workCount(state,job){ return state.career.jobWorkCounts?.[job]||0; }
 
+function housingDecisionEvent(state,revisit=false){
+  const deposit=state.flags.familySupport?1000000:1200000;
+  return event(revisit?'housing_revisit':'housing_choice','ARAH HIDUP',revisit?'Soal Tinggal Sendiri Muncul Lagi':'Tetap di Rumah atau Mulai Mandiri?',
+    revisit
+      ? 'Beberapa waktu berlalu. Ide untuk punya ruang sendiri masih terasa masuk akal, tapi biaya hidupnya juga belum berubah.'
+      : 'Penghasilanmu mulai lebih stabil. Kamar sewa dekat area kerja tersedia, tapi pindah berarti deposit besar dan biaya bulanan hampir dua kali lipat.',[
+      {label:'Pertimbangkan pindah',hint:`Deposit Rp${deposit.toLocaleString('id-ID')} · biaya hidup Rp1,1jt/bulan`,effects:[{type:'flag',key:'housingOfferSeen',value:true},{type:'opportunity',opportunity:{id:'rent_room',name:'Sewa Kamar Sendiri',summary:`Deposit Rp${deposit.toLocaleString('id-ID')} · belajar & istirahat lebih efektif`}}],result:'Pilihan pindah sekarang tersedia. Kamu tidak harus mengambilnya langsung.'},
+      {label:'Tetap bersama keluarga dulu',hint:'Lebih murah · hubungan keluarga lebih dekat',effects:[{type:'flag',key:'housingOfferSeen',value:true},{type:'relationship',target:'family',value:2},{type:'schedule',after:360,kind:'housing_revisit'}],result:'Kamu memilih mempertahankan biaya hidup rendah. Pilihan mandiri bisa muncul lagi nanti.'}
+    ]);
+}
+
 function dueScheduledEvent(state){
   const idx=state.scheduled.findIndex(item=>item.at<=state.time.totalHours);
   if(idx<0) return null;
@@ -66,6 +77,18 @@ function dueScheduledEvent(state){
     ]);
   }
 
+  if(item.kind==='move_out_reflection' && state.housing?.id==='rented_room'){
+    return event('move_out_reflection','KEHIDUPAN','Malam Pertama di Tempat Sendiri','Tidak ada suara keluarga di ruangan sebelah. Rasanya lebih bebas, tapi juga lebih sepi daripada yang kamu bayangkan.',[
+      {label:'Telepon keluarga',effects:[{type:'relationship',target:'family',value:4},{type:'flag',key:'moveReflectionSeen',value:true},{type:'recent',text:'Kamu tetap menjaga hubungan keluarga setelah pindah.'}],result:'Tinggal terpisah tidak berarti hubungan harus menjauh.'},
+      {label:'Nikmati ruang sendiri',effects:[{type:'skill',skill:'learning',value:5},{type:'flag',key:'moveReflectionSeen',value:true}],result:'Kamu mulai menikmati bahwa waktu dan ruangmu sekarang benar-benar milikmu.'}
+    ]);
+  }
+
+  if(item.kind==='housing_revisit' && state.housing?.id!=='rented_room'){
+    state.flags.housingRevisitSeen=true;
+    return housingDecisionEvent(state,true);
+  }
+
   return null;
 }
 
@@ -74,6 +97,39 @@ export function getNextEvent(state){
 
   const scheduled=dueScheduledEvent(state);
   if(scheduled) return scheduled;
+
+
+  if(state.housing?.id==='rented_room' && state.player.money<350000 && !state.flags.rentPressureSeen){
+    return event('rent_pressure','KEUANGAN','Biaya Hidup Mulai Terasa','Tinggal sendiri memberi ruang lebih besar, tapi saldo mulai menipis. Sewa bulan berikutnya sekarang terasa seperti keputusan nyata.',[
+      {label:'Bertahan sendiri',hint:'Pertahankan biaya Rp1,1jt/bulan',effects:[{type:'flag',key:'rentPressureSeen',value:true},{type:'recent',text:'Kamu memilih mempertahankan tempat tinggal sendiri meski cashflow ketat.'}],result:'Kamu mempertahankan kemandirian dan menerima tekanan keuangannya.'},
+      {label:'Pulang ke keluarga sementara',hint:'Biaya hidup kembali Rp600rb/bulan',effects:[{type:'flag',key:'rentPressureSeen',value:true},{type:'flag',key:'movedOut',value:false},{type:'housing',value:{id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null}},{type:'status_remove',status:'tinggal_sendiri'},{type:'status_add',status:'tinggal_bersama_keluarga'},{type:'relationship',target:'family',value:3},{type:'schedule',after:360,kind:'housing_revisit'},{type:'history',text:'Umur 18 · Kembali tinggal bersama keluarga untuk menstabilkan keuangan.'}],result:'Kamu pulang. Ini bukan reset—hanya perubahan strategi hidup karena kondisi keuangan.'}
+    ]);
+  }
+
+  if(state.career.workCount>=6 && state.relationships.family>=55 && !state.flags.familyMilestoneSeen){
+    return event('family_milestone','HUBUNGAN','Keluarga Membutuhkan Satu Hari yang Benar-benar Hadir','Ada urusan keluarga penting yang harus diselesaikan di jam kerja. Mereka tidak sekadar butuh uang—mereka butuh waktumu.',[
+      {label:'Luangkan waktu untuk keluarga',hint:'6j · mengorbankan waktu produktif',effects:[{type:'hours',value:6},{type:'fatigue',value:5},{type:'relationship',target:'family',value:12},{type:'flag',key:'familyMilestoneSeen',value:true},{type:'flag',key:'familySupport',value:true},{type:'history',text:'Umur 18 · Memilih hadir untuk keluarga saat mereka benar-benar membutuhkan waktu.'}],result:'Hubungan ini sekarang lebih dari sekadar angka. Keluargamu tahu kamu bisa diandalkan ketika hal penting terjadi.'},
+      {label:'Prioritaskan pekerjaan',hint:'+Rp80rb · hubungan sedikit menjauh',effects:[{type:'hours',value:4},{type:'money',value:80000},{type:'relationship',target:'family',value:-4},{type:'flag',key:'familyMilestoneSeen',value:true}],result:'Kamu memilih pekerjaan. Keputusan itu masuk akal, tapi keluarga mengingat bahwa kali ini kamu tidak bisa hadir.'}
+    ]);
+  }
+
+  if(state.relationships.rian>=50 && !state.flags.rianMilestoneSeen){
+    return event('rian_milestone','HUBUNGAN','Rian Minta Bantuan yang Tidak Bisa Dibayar','Rian mendapat shift yang tidak bisa ditinggalkan dan perlu seseorang menangani urusan penting untuk keluarganya. Kali ini dia tidak menawarkan uang atau pekerjaan sebagai gantinya.',[
+      {label:'Bantu Rian',hint:'4j · tidak ada bayaran',effects:[{type:'hours',value:4},{type:'fatigue',value:5},{type:'relationship',target:'rian',value:12},{type:'flag',key:'rianMilestoneSeen',value:true},{type:'flag',key:'rianTrusted',value:true},{type:'history',text:'Umur 18 · Membantu Rian ketika tidak ada keuntungan langsung.'}],result:'Rian sekarang melihatmu sebagai orang yang bisa dipercaya, bukan cuma teman nongkrong atau koneksi kerja.'},
+      {label:'Tidak bisa kali ini',effects:[{type:'relationship',target:'rian',value:-1},{type:'flag',key:'rianMilestoneSeen',value:true}],result:'Rian memahami. Hubungan kalian tetap baik, tapi tidak berubah menjadi kepercayaan yang lebih dalam.'}
+    ]);
+  }
+
+  if(state.player.job && state.career.workCount>=10 && state.housing?.id!=='rented_room' && !state.flags.housingOfferSeen){
+    return housingDecisionEvent(state,false);
+  }
+
+  if(state.player.job && state.career.workCount>=8 && (state.career.sideIncomeTotal||0)>=500000 && state.life?.trajectory==='open' && !state.flags.trajectoryChoiceSeen){
+    return event('trajectory_choice','KEPUTUSAN BESAR','Dua Arah yang Sama-sama Masuk Akal','Pekerjaan utama mulai stabil, tapi pemasukan sampingan juga sudah terbukti nyata. Kamu tidak bisa memberi energi maksimal ke keduanya tanpa trade-off.',[
+      {label:'Perkuat karier utama',hint:'Progres promosi lebih cepat saat bekerja',effects:[{type:'trajectory',value:'career'},{type:'flag',key:'trajectoryChoiceSeen',value:true},{type:'status_add',status:'fokus_karier'},{type:'history',text:'Umur 18 · Memilih memperkuat karier utama sebagai arah hidup.'}],result:'Kamu memilih stabilitas dan kedalaman di pekerjaan utama. Progres karier akan lebih cepat saat bekerja.'},
+      {label:'Bangun jalur mandiri juga',hint:'Kerja sampingan +15% dan lebih sering · kerja utama sedikit lebih melelahkan',effects:[{type:'trajectory',value:'independent'},{type:'flag',key:'trajectoryChoiceSeen',value:true},{type:'status_add',status:'jalur_mandiri'},{type:'history',text:'Umur 18 · Memilih membangun jalur mandiri di samping pekerjaan utama.'}],result:'Kamu menerima hidup yang lebih padat demi membangun sumber penghasilan dan identitas di luar pekerjaan utama.'}
+    ]);
+  }
 
 
   if(state.player.statuses.includes('utang_keluarga') && state.player.money>=500000 && !state.flags.familyDebtRepaySeen){

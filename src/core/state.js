@@ -1,4 +1,4 @@
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 export function createInitialState(){
   return {
@@ -14,6 +14,8 @@ export function createInitialState(){
     },
     time:{totalHours:0},
     economy:{lastLivingCostAt:0,livingCost:600000},
+    housing:{id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null},
+    life:{trajectory:'open',majorDecisionAt:null},
     skills:{mechanics:0,learning:25,social:40,technology:0},
     discoveredSkills:['mechanics','learning','social'],
     relationships:{family:60,rian:35,pak_arman:0,dika:0,maya:0,nadia:0},
@@ -70,7 +72,17 @@ export function createInitialState(){
       dikaLeftWorkshop:false,
       mayaProgressSeen:false,
       familyDebtRepaySeen:false,
-      rianDebtRepaySeen:false
+      rianDebtRepaySeen:false,
+      housingOfferSeen:false,
+      housingRevisitSeen:false,
+      movedOut:false,
+      moveReflectionSeen:false,
+      familyMilestoneSeen:false,
+      familySupport:false,
+      rianMilestoneSeen:false,
+      rianTrusted:false,
+      trajectoryChoiceSeen:false,
+      rentPressureSeen:false
     },
     opportunities:[],
     scheduled:[],
@@ -119,7 +131,19 @@ export function financialState(state){
   return {id:'stable',label:'Stabil'};
 }
 
+export function housingLabel(state){
+  return state.housing?.id==='rented_room'?'Kamar sewa sendiri':'Bersama keluarga';
+}
+
+export function trajectoryLabel(state){
+  if(state.life?.trajectory==='career') return 'Fokus karier utama';
+  if(state.life?.trajectory==='independent') return 'Karier + jalur mandiri';
+  return 'Masih terbuka';
+}
+
 export function lifeDirection(state){
+  if(state.life?.trajectory==='independent') return 'Membangun jalur mandiri';
+  if(state.life?.trajectory==='career') return 'Memperkuat karier utama';
   if(state.player.job==='mechanic_senior') return 'Karier bengkel mulai mapan';
   if(state.player.job==='store_supervisor') return 'Karier pelayanan mulai mapan';
   if(state.player.job==='it_assistant') return 'Karier teknologi mulai terbentuk';

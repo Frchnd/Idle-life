@@ -1,6 +1,6 @@
 import {createInitialState,SAVE_VERSION,clone} from './state.js';
 
-// Pertahankan key Build F supaya progres user bisa dimigrasikan tanpa reset.
+// Pertahankan key lama supaya save Build F–H tetap ikut naik ke Build I.
 export const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 export function loadState(){
@@ -23,6 +23,8 @@ function mergeState(base,saved){
   out.player={...base.player,...(saved.player||{})};
   out.time={...base.time,...(saved.time||{})};
   out.economy={...base.economy,...(saved.economy||{})};
+  out.housing={...base.housing,...(saved.housing||{})};
+  out.life={...base.life,...(saved.life||{})};
   out.skills={...base.skills,...(saved.skills||{})};
   out.relationships={...base.relationships,...(saved.relationships||{})};
   out.assets={...base.assets,...(saved.assets||{})};
@@ -38,15 +40,22 @@ function mergeState(base,saved){
   if(!Array.isArray(out.recent)) out.recent=[];
   if(!Array.isArray(out.history)) out.history=[...base.history];
 
-  // Build F belum punya hitungan kerja per-job. Pertahankan progres dengan inferensi aman.
   if(saved.version===2){
-    // Build F belum punya biaya hidup. Jangan menagih biaya masa lalu saat migrasi.
     out.economy.lastLivingCostAt=out.time.totalHours;
     if(saved.player?.job && (saved.career?.workCount||0)>0){
       const current=out.career.jobWorkCounts[saved.player.job]||0;
       out.career.jobWorkCounts[saved.player.job]=Math.max(current,saved.career.workCount);
     }
   }
+
+  // Build H dan versi sebelumnya belum punya sistem tempat tinggal eksplisit.
+  if(!saved.housing){
+    const livingAlone=out.player.statuses.includes('tinggal_sendiri');
+    out.housing=livingAlone
+      ? {id:'rented_room',label:'Kamar sewa sendiri',monthlyCost:1100000,movedAt:out.time.totalHours}
+      : {id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null};
+  }
+  out.economy.livingCost=out.housing.id==='rented_room'?1100000:600000;
   return out;
 }
 

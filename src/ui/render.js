@@ -1,10 +1,10 @@
 import {getCalendar} from '../core/time.js';
-import {getCondition,getSkillTier,relationshipLabel,skillTiers,financialState,lifeDirection} from '../core/state.js';
+import {getCondition,getSkillTier,relationshipLabel,skillTiers,financialState,lifeDirection,housingLabel,trajectoryLabel} from '../core/state.js';
 import {jobLabel} from '../data/jobs.js';
 import {availableActivities} from '../data/activities.js';
 
 const SKILL_NAMES={mechanics:'Mekanik',learning:'Belajar',social:'Sosial',technology:'Teknologi'};
-const STATUS_NAMES={tinggal_bersama_keluarga:'Tinggal bersama keluarga',utang_keluarga:'Berutang pada keluarga',utang_rian:'Berutang pada Rian',punya_laptop:'Punya laptop sendiri'};
+const STATUS_NAMES={tinggal_bersama_keluarga:'Tinggal bersama keluarga',tinggal_sendiri:'Tinggal sendiri',utang_keluarga:'Berutang pada keluarga',utang_rian:'Berutang pada Rian',punya_laptop:'Punya laptop sendiri',fokus_karier:'Memprioritaskan karier utama',jalur_mandiri:'Membangun jalur mandiri'};
 
 function money(value){
   const sign=value<0?'-':'';
@@ -103,7 +103,7 @@ function renderYou(state){
   const finance=financialState(state);
   const statuses=state.player.statuses.map(id=>STATUS_NAMES[id]||id);
   return `<section id="you"><div class="card"><div class="section-title">Kamu</div><div class="list">${skills.map(s=>`<div class="item"><div class="row"><span>${esc(s.name)}</span><b>${esc(s.tier)}</b></div></div>`).join('')}</div>
-  <div class="divider"></div><div class="section-title">Keadaan Hidup</div><div class="list"><div class="item"><div class="row"><span>Arah</span><b>${esc(lifeDirection(state))}</b></div></div><div class="item"><div class="row"><span>Keuangan</span><b>${esc(finance.label)}</b></div></div>${statuses.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>
+  <div class="divider"></div><div class="section-title">Keadaan Hidup</div><div class="list"><div class="item"><div class="row"><span>Arah</span><b>${esc(lifeDirection(state))}</b></div></div><div class="item"><div class="row"><span>Strategi</span><b>${esc(trajectoryLabel(state))}</b></div></div><div class="item"><div class="row"><span>Tempat tinggal</span><b>${esc(housingLabel(state))}</b></div><div class="muted small" style="margin-top:4px">Biaya hidup: ${money(state.economy.livingCost)}/bulan</div></div><div class="item"><div class="row"><span>Keuangan</span><b>${esc(finance.label)}</b></div></div>${statuses.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>
   <div class="divider"></div><div class="section-title">Karier & Sampingan</div><div class="small" style="margin-top:6px">${esc(jobText(state))}</div><div class="muted small" style="margin-top:5px">Total pendapatan sampingan: ${money(state.career.sideIncomeTotal||0)}</div>
   <div class="divider"></div><div class="section-title">Riwayat Hidup</div><div class="list">${state.history.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>
   <button class="btn center" style="width:100%;margin-top:16px" data-ui="reset">Mulai ulang save</button></div></section>`;

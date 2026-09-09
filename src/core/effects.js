@@ -55,6 +55,11 @@ export function resolveEffects(state,effects=[]){
       case 'schedule': state.scheduled.push({at:state.time.totalHours+effect.after,kind:effect.kind}); break;
       case 'status_add': if(!state.player.statuses.includes(effect.status)) state.player.statuses.push(effect.status); break;
       case 'status_remove': state.player.statuses=state.player.statuses.filter(x=>x!==effect.status); break;
+      case 'trajectory': state.life.trajectory=effect.value; state.life.majorDecisionAt=state.time.totalHours; break;
+      case 'housing':
+        state.housing={...state.housing,...effect.value};
+        state.economy.livingCost=state.housing.monthlyCost||state.economy.livingCost;
+        break;
     }
   }
 }

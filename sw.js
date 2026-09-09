@@ -1,4 +1,4 @@
-const CACHE='hidup-vs-h-v1';
+const CACHE='hidup-vs-i-v1';
 const ASSETS=[
   './','./index.html','./styles/app.css','./manifest.webmanifest','./icon-192.png','./icon-512.png',
   './src/app.js','./src/core/state.js','./src/core/save.js','./src/core/time.js','./src/core/effects.js','./src/core/economy.js',
