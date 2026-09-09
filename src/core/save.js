@@ -1,5 +1,6 @@
 import {createInitialState,SAVE_VERSION,clone} from './state.js';
 
+// Pertahankan key Build F supaya progres user bisa dimigrasikan tanpa reset.
 export const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 export function loadState(){
@@ -9,7 +10,6 @@ export function loadState(){
     if(!raw) return fresh;
     const saved=JSON.parse(raw);
     if(!saved || typeof saved!=='object') return fresh;
-    if(saved.version!==SAVE_VERSION) return migrate(saved,fresh);
     return mergeState(fresh,saved);
   }catch{
     return fresh;
@@ -19,15 +19,16 @@ export function loadState(){
 function mergeState(base,saved){
   const out=clone(base);
   Object.assign(out,saved);
+  out.version=SAVE_VERSION;
   out.player={...base.player,...(saved.player||{})};
   out.time={...base.time,...(saved.time||{})};
+  out.economy={...base.economy,...(saved.economy||{})};
   out.skills={...base.skills,...(saved.skills||{})};
   out.relationships={...base.relationships,...(saved.relationships||{})};
   out.npc={...base.npc,...(saved.npc||{})};
-  out.npc.pak_arman={...base.npc.pak_arman,...(saved.npc?.pak_arman||{})};
-  out.npc.dika={...base.npc.dika,...(saved.npc?.dika||{})};
-  out.npc.maya={...base.npc.maya,...(saved.npc?.maya||{})};
+  for(const key of Object.keys(base.npc)) out.npc[key]={...base.npc[key],...(saved.npc?.[key]||{})};
   out.career={...base.career,...(saved.career||{})};
+  out.career.jobWorkCounts={...base.career.jobWorkCounts,...(saved.career?.jobWorkCounts||{})};
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];
@@ -35,17 +36,21 @@ function mergeState(base,saved){
   if(!Array.isArray(out.scheduled)) out.scheduled=[];
   if(!Array.isArray(out.recent)) out.recent=[];
   if(!Array.isArray(out.history)) out.history=[...base.history];
+
+  // Build F belum punya hitungan kerja per-job. Pertahankan progres dengan inferensi aman.
+  if(saved.version===2){
+    // Build F belum punya biaya hidup. Jangan menagih biaya masa lalu saat migrasi.
+    out.economy.lastLivingCostAt=out.time.totalHours;
+    if(saved.player?.job && (saved.career?.workCount||0)>0){
+      const current=out.career.jobWorkCounts[saved.player.job]||0;
+      out.career.jobWorkCounts[saved.player.job]=Math.max(current,saved.career.workCount);
+    }
+  }
   return out;
 }
 
-function migrate(oldState,fresh){
-  // Save Build E lama sengaja tidak dimigrasikan penuh karena struktur karier berubah.
-  // Yang aman dipertahankan: preferensi rutinitas dan timestamp; gameplay dimulai dari slice baru.
-  if(oldState?.routine===true || oldState?.routine?.enabled) fresh.routine.enabled=true;
-  return fresh;
-}
-
 export function saveState(state){
+  state.version=SAVE_VERSION;
   state.lastSeen=Date.now();
   localStorage.setItem(SAVE_KEY,JSON.stringify(state));
 }

@@ -1,5 +1,6 @@
 import {createInitialState,getSkillTier,getCondition} from './core/state.js';
 import {loadState,saveState,clearState} from './core/save.js';
+import {processLivingCosts} from './core/economy.js';
 import {availableActivities,executeActivity} from './data/activities.js';
 import {runOpportunity} from './data/opportunities.js';
 import {refreshEvent,applyEventChoice,expireOpportunities} from './data/events.js';
@@ -15,6 +16,7 @@ function persist(){ saveState(state); }
 
 function postStep(){
   expireOpportunities(state);
+  processLivingCosts(state);
   if(state.career.workCount>=3) state.flags.routineUnlocked=true;
   refreshEvent(state);
   checkMilestone();
@@ -24,10 +26,12 @@ function postStep(){
 
 function checkMilestone(){
   if(state.flags.milestoneShown) return;
-  const careerDepth=state.flags.promoted;
-  const techDepth=getSkillTier(state.skills.technology).id!=='novice' && state.history.some(x=>x.includes('teknologi pertama'));
-  const branchProof=state.player.job==='store_clerk' && getSkillTier(state.skills.social).id!=='novice';
-  if(careerDepth||techDepth||branchProof){
+  const mechanicDepth=state.flags.promoted;
+  const storeDepth=state.flags.storePromoted;
+  const techDepth=state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=3;
+  const mixedDepth=(getSkillTier(state.skills.technology).id!=='novice' && getSkillTier(state.skills.social).id!=='novice') ||
+    (getSkillTier(state.skills.mechanics).id!=='novice' && getSkillTier(state.skills.social).id!=='novice');
+  if(mechanicDepth||storeDepth||techDepth||mixedDepth){
     state.flags.milestoneShown=true;
     ui.milestone=true;
   }
@@ -121,9 +125,11 @@ function processOffline(realMs){
     }
     consumed+=state.time.totalHours-before;
     expireOpportunities(state);
+    processLivingCosts(state);
     if(state.career.workCount>=3) state.flags.routineUnlocked=true;
     refreshEvent(state);
   }
+  checkMilestone();
   persist();
   return {gameHours:state.time.totalHours-startHours,moneyDelta:state.player.money-startMoney,stopped:!!state.pendingEvent};
 }
@@ -142,6 +148,7 @@ if(state.routine.enabled && elapsed>45*60*1000){
   const report=processOffline(elapsed);
   if(report.gameHours>0) ui.offlineSummary=`<b>${report.gameHours} jam waktu game berlalu.</b><br>Perubahan uang: ${formatSignedMoney(report.moneyDelta)}${report.stopped?'<br>Ada keputusan penting yang menghentikan rutinitas.':''}`;
 }
+processLivingCosts(state);
 refreshEvent(state);
 persist();
 draw();

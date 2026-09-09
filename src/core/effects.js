@@ -37,6 +37,8 @@ export function resolveEffects(state,effects=[]){
         break;
       case 'flag': state.flags[effect.key]=effect.value; break;
       case 'promotion': state.career.promotionProgress+=effect.value; break;
+      case 'store_progress': state.career.storeProgress+=effect.value; break;
+      case 'tech_progress': state.career.techProgress+=effect.value; break;
       case 'job':
         state.player.job=effect.job;
         state.player.workplace=effect.workplace;
@@ -47,6 +49,8 @@ export function resolveEffects(state,effects=[]){
       case 'history': addHistory(state,effect.text); break;
       case 'opportunity': addOpportunity(state,effect.opportunity); break;
       case 'schedule': state.scheduled.push({at:state.time.totalHours+effect.after,kind:effect.kind}); break;
+      case 'status_add': if(!state.player.statuses.includes(effect.status)) state.player.statuses.push(effect.status); break;
+      case 'status_remove': state.player.statuses=state.player.statuses.filter(x=>x!==effect.status); break;
     }
   }
 }

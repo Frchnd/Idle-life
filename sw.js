@@ -1,7 +1,7 @@
-const CACHE='hidup-vs-f-v1';
+const CACHE='hidup-vs-g-v1';
 const ASSETS=[
   './','./index.html','./styles/app.css','./manifest.webmanifest','./icon-192.png','./icon-512.png',
-  './src/app.js','./src/core/state.js','./src/core/save.js','./src/core/time.js','./src/core/effects.js',
+  './src/app.js','./src/core/state.js','./src/core/save.js','./src/core/time.js','./src/core/effects.js','./src/core/economy.js',
   './src/data/jobs.js','./src/data/activities.js','./src/data/events.js','./src/data/opportunities.js','./src/ui/render.js'
 ];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));

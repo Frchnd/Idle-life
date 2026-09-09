@@ -10,6 +10,14 @@ export const JOBS={
   mechanic_senior:{
     id:'mechanic_senior',name:'Mekanik Senior',workplace:'Bengkel Sinar Jaya',salary:170000,duration:8,
     skill:'mechanics',skillXp:14,fatigue:18
+  },
+  store_supervisor:{
+    id:'store_supervisor',name:'Supervisor Toko',workplace:'Toko Serba Ada',salary:145000,duration:8,
+    skill:'social',skillXp:14,fatigue:15
+  },
+  it_assistant:{
+    id:'it_assistant',name:'Asisten Teknisi IT',workplace:'Nusa Komputer',salary:140000,duration:8,
+    skill:'technology',skillXp:15,fatigue:15
   }
 };
 
