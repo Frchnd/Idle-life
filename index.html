@@ -7,11 +7,1493 @@
   <meta name="description" content="Hidup — idle life simulation dalam Bahasa Indonesia." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon-192.png" />
-  <link rel="stylesheet" href="./styles/app.css" />
-  <title>Hidup — Vertical Slice Build I</title>
+  <title>Hidup — Vertical Slice Build J</title>
+  <style>
+:root{color-scheme:light dark;--bg:#f7f7f5;--card:#fff;--text:#171717;--muted:#6f6f6a;--border:#deded8;--soft:#efefeb;--accent:#171717;--accentText:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#0f0f0f;--card:#181818;--text:#f4f4f2;--muted:#9a9a94;--border:#343430;--soft:#242422;--accent:#f4f4f2;--accentText:#141414}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{width:min(760px,100%);margin:0 auto;padding:22px 16px 110px}.top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:16px}.muted{color:var(--muted)}.small{font-size:.86rem}.label{font-size:.74rem;color:var(--muted);letter-spacing:.04em}.name{font-size:1.35rem;font-weight:750;margin-top:4px}.money{text-align:right;font-weight:750}.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px}.section-title{font-weight:750}.row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.bar{height:8px;background:var(--soft);border-radius:999px;overflow:hidden;margin-top:8px}.bar>div{height:100%;background:var(--accent);transition:width .25s ease}.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.btn{min-height:54px;border:1px solid var(--border);background:transparent;color:var(--text);border-radius:14px;padding:12px 14px;text-align:left;font:inherit}.btn:active{transform:translateY(1px)}.btn.primary{background:var(--accent);color:var(--accentText);border-color:var(--accent);text-align:center;font-weight:750}.btn.center{text-align:center}.btn:disabled{opacity:.45}.hint{display:block;color:var(--muted);font-size:.83rem;margin-top:3px}.result{margin-top:14px;background:var(--soft);border-radius:14px;padding:12px 14px;min-height:46px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.stat{border:1px solid var(--border);border-radius:14px;padding:12px}.value{font-weight:750;margin-top:4px;word-break:break-word}.tabs{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(760px,100%);padding:10px 16px max(10px,env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.tab{min-height:46px;border:0;border-radius:13px;background:transparent;color:var(--muted);font-weight:750}.tab.active{background:var(--soft);color:var(--text)}.hidden{display:none!important}.people,.list{display:grid;gap:10px;margin-top:12px}.person,.item{background:var(--soft);border-radius:14px;padding:14px}.event{margin-bottom:12px}.choices{display:grid;gap:8px;margin-top:14px}.choice{min-height:48px;border:1px solid var(--border);border-radius:13px;background:transparent;color:var(--text);font:inherit;text-align:left;padding:12px 14px}.opp{margin-top:14px;display:grid;gap:10px}.opp-card{border:1px solid var(--border);border-radius:14px;padding:14px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.toolbar .btn{min-height:44px;padding:10px 12px}.note{font-size:.82rem;color:var(--muted);line-height:1.45}.pill{display:inline-flex;align-items:center;min-height:28px;padding:4px 9px;border-radius:999px;background:var(--soft);font-size:.78rem}.divider{border-top:1px solid var(--border);margin:18px 0}.warning{border:1px solid var(--border);background:var(--soft);border-radius:14px;padding:12px 14px}.empty{color:var(--muted);font-size:.9rem}.activity-progress{margin-top:14px}.activity-progress .bar>div{width:0}.install{margin-top:12px}
+@media(max-width:520px){.actions{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:1/-1}}
+
+  </style>
 </head>
 <body>
   <div id="app" class="app" aria-live="polite"></div>
-  <script type="module" src="./src/app.js"></script>
+  <script type="module">
+// ---- src/core/time.js ----
+const HOURS_PER_DAY=24;
+const DAYS_PER_YEAR=360;
+const START_AGE=18;
+const START_HOUR=8;
+
+function getCalendar(totalHours){
+  const absolute=START_HOUR+Math.max(0,Math.floor(totalHours));
+  const totalDays=Math.floor(absolute/HOURS_PER_DAY);
+  const dayOfLife=1+totalDays;
+  const yearOffset=Math.floor(totalDays/DAYS_PER_YEAR);
+  const dayInYear=totalDays%DAYS_PER_YEAR;
+  const month=1+Math.floor(dayInYear/30);
+  const day=1+(dayInYear%30);
+  return {
+    age:START_AGE+yearOffset,
+    month,
+    day,
+    dayOfLife,
+    hour:absolute%24
+  };
+}
+
+function addHours(state,hours){
+  state.time.totalHours=Math.max(0,state.time.totalHours+Math.max(0,hours));
+}
+
+// ---- src/core/state.js ----
+const SAVE_VERSION = 6;
+
+function createInitialState(){
+  return {
+    version:SAVE_VERSION,
+    player:{
+      name:'Fernando',
+      money:500000,
+      fatigue:10,
+      job:null,
+      workplace:null,
+      salary:0,
+      statuses:['tinggal_bersama_keluarga']
+    },
+    time:{totalHours:0},
+    economy:{lastLivingCostAt:0,livingCost:600000},
+    housing:{id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null},
+    life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null},
+    pacing:{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8},
+    playtest:{actions:0,opportunitiesTaken:0,careerChanges:0,offlineBatches:0},
+    skills:{mechanics:0,learning:25,social:40,technology:0},
+    discoveredSkills:['mechanics','learning','social'],
+    relationships:{family:60,rian:35,pak_arman:0,dika:0,maya:0,nadia:0},
+    npc:{
+      rian:{known:true,life:'serabutan'},
+      pak_arman:{known:false,life:'pemilik_bengkel'},
+      dika:{known:false,rivalry:10,life:'sinar_jaya'},
+      maya:{known:false,life:'supervisor'},
+      nadia:{known:false,life:'teknisi_senior'}
+    },
+    assets:{laptop:false},
+    career:{
+      workCount:0,
+      jobSearchCount:0,
+      promotionProgress:0,
+      storeProgress:0,
+      techProgress:0,
+      changeSearchCount:0,
+      changeHandledCount:0,
+      sideIncomeTotal:0,
+      jobWorkCounts:{mechanic_junior:0,mechanic_senior:0,store_clerk:0,store_supervisor:0,it_assistant:0}
+    },
+    flags:{
+      workshopOfferSeen:false,
+      storeOfferSeen:false,
+      firstWorkshopDay:false,
+      firstStoreDay:false,
+      firstTechDay:false,
+      dikaHelpSeen:false,
+      helpedDika:false,
+      difficultRepairSeen:false,
+      storeCustomerSeen:false,
+      storeRushSeen:false,
+      storePromotionTalkSeen:false,
+      storePromoted:false,
+      techCourseSeen:false,
+      techSideJobSeen:false,
+      techJobSeen:false,
+      techDeadlineSeen:false,
+      privateIntroSeen:false,
+      promotionTalkSeen:false,
+      promoted:false,
+      crossStoreTechSeen:false,
+      crossMechanicSocialSeen:false,
+      moneyPressureSeen:false,
+      routineUnlocked:false,
+      milestoneShown:false,
+      exhaustedWarningSeen:false,
+      laptopOfferSeen:false,
+      firstTechFreelanceSeen:false,
+      firstPromoSideSeen:false,
+      rianJobUpdateSeen:false,
+      dikaMoveSeen:false,
+      dikaLeftWorkshop:false,
+      mayaProgressSeen:false,
+      familyDebtRepaySeen:false,
+      rianDebtRepaySeen:false,
+      housingOfferSeen:false,
+      housingRevisitSeen:false,
+      movedOut:false,
+      moveReflectionSeen:false,
+      familyMilestoneSeen:false,
+      familySupport:false,
+      rianMilestoneSeen:false,
+      rianTrusted:false,
+      trajectoryChoiceSeen:false,
+      rentPressureSeen:false,
+      verticalSliceComplete:false
+    },
+    opportunities:[],
+    scheduled:[],
+    pendingEvent:null,
+    recent:[],
+    history:['Umur 18 · Memulai hidup tanpa pekerjaan tetap.'],
+    routine:{enabled:false,freeTime:'study'},
+    lastSeen:Date.now()
+  };
+}
+
+const skillTiers=[
+  {id:'novice',label:'Pemula',min:0},
+  {id:'basic',label:'Dasar',min:100},
+  {id:'skilled',label:'Terampil',min:300},
+  {id:'experienced',label:'Berpengalaman',min:700},
+  {id:'expert',label:'Ahli',min:1500}
+];
+
+function getSkillTier(xp){
+  let out=skillTiers[0];
+  for(const tier of skillTiers){ if(xp>=tier.min) out=tier; }
+  return out;
+}
+
+function getCondition(fatigue){
+  if(fatigue>=70) return {id:'exhausted',label:'Kelelahan'};
+  if(fatigue>=30) return {id:'tired',label:'Lelah'};
+  return {id:'good',label:'Baik'};
+}
+
+function relationshipLabel(value){
+  if(value>=80) return 'Sangat percaya';
+  if(value>=50) return 'Dekat';
+  if(value>=20) return 'Bersahabat';
+  if(value>=-19) return 'Netral';
+  if(value>=-59) return 'Dingin';
+  return 'Bermusuhan';
+}
+
+function financialState(state){
+  const money=state.player.money;
+  if(money<0) return {id:'debt',label:'Berutang'};
+  if(money<250000) return {id:'tight',label:'Seret'};
+  if(money>=3000000) return {id:'comfortable',label:'Nyaman'};
+  return {id:'stable',label:'Stabil'};
+}
+
+function housingLabel(state){
+  return state.housing?.id==='rented_room'?'Kamar sewa sendiri':'Bersama keluarga';
+}
+
+function trajectoryLabel(state){
+  if(state.life?.trajectory==='career') return 'Fokus karier utama';
+  if(state.life?.trajectory==='independent') return 'Karier + jalur mandiri';
+  return 'Masih terbuka';
+}
+
+function lifeDirection(state){
+  if(state.life?.trajectory==='independent') return 'Membangun jalur mandiri';
+  if(state.life?.trajectory==='career') return 'Memperkuat karier utama';
+  if(state.player.job==='mechanic_senior') return 'Karier bengkel mulai mapan';
+  if(state.player.job==='store_supervisor') return 'Karier pelayanan mulai mapan';
+  if(state.player.job==='it_assistant') return 'Karier teknologi mulai terbentuk';
+  const ranked=[
+    ['mechanics',state.skills.mechanics||0,'Teknis & mekanik'],
+    ['social',state.skills.social||0,'Orang & pelayanan'],
+    ['technology',state.skills.technology||0,'Teknologi'],
+    ['learning',state.skills.learning||0,'Belajar & eksplorasi']
+  ].sort((a,b)=>b[1]-a[1]);
+  if(ranked[0][1]<100) return state.player.job?'Sedang mencari arah':'Masih terbuka';
+  return ranked[0][2];
+}
+
+function clone(value){ return JSON.parse(JSON.stringify(value)); }
+
+// ---- src/data/jobs.js ----
+const JOBS={
+  mechanic_junior:{
+    id:'mechanic_junior',name:'Mekanik Junior',workplace:'Bengkel Sinar Jaya',salary:120000,duration:8,
+    skill:'mechanics',skillXp:15,fatigue:18
+  },
+  store_clerk:{
+    id:'store_clerk',name:'Pramuniaga',workplace:'Toko Serba Ada',salary:100000,duration:8,
+    skill:'social',skillXp:13,fatigue:14
+  },
+  mechanic_senior:{
+    id:'mechanic_senior',name:'Mekanik Senior',workplace:'Bengkel Sinar Jaya',salary:170000,duration:8,
+    skill:'mechanics',skillXp:14,fatigue:18
+  },
+  store_supervisor:{
+    id:'store_supervisor',name:'Supervisor Toko',workplace:'Toko Serba Ada',salary:145000,duration:8,
+    skill:'social',skillXp:14,fatigue:15
+  },
+  it_assistant:{
+    id:'it_assistant',name:'Asisten Teknisi IT',workplace:'Nusa Komputer',salary:140000,duration:8,
+    skill:'technology',skillXp:15,fatigue:15
+  }
+};
+
+function jobLabel(jobId){ return JOBS[jobId]?.name||'Belum bekerja'; }
+
+// ---- src/core/effects.js ----
+
+function addRecent(state,text){
+  state.recent.unshift(text);
+  state.recent=state.recent.slice(0,4);
+}
+
+function addHistory(state,text){
+  if(!state.history.includes(text)) state.history.unshift(text);
+  state.history=state.history.slice(0,8);
+}
+
+function discoverSkill(state,id){
+  if(!state.discoveredSkills.includes(id)) state.discoveredSkills.push(id);
+}
+
+function addOpportunity(state,opportunity){
+  if(!state.opportunities.some(item=>item.id===opportunity.id)) state.opportunities.push({...opportunity});
+}
+
+function removeOpportunity(state,id){
+  state.opportunities=state.opportunities.filter(item=>item.id!==id);
+}
+
+function resolveEffects(state,effects=[]){
+  for(const effect of effects){
+    switch(effect.type){
+      case 'money': state.player.money+=effect.value; break;
+      case 'fatigue': state.player.fatigue=Math.max(0,Math.min(100,state.player.fatigue+effect.value)); break;
+      case 'hours': addHours(state,effect.value); break;
+      case 'skill':
+        discoverSkill(state,effect.skill);
+        state.skills[effect.skill]=(state.skills[effect.skill]||0)+effect.value;
+        break;
+      case 'relationship':
+        state.relationships[effect.target]=(state.relationships[effect.target]||0)+effect.value;
+        break;
+      case 'flag': state.flags[effect.key]=effect.value; break;
+      case 'promotion': state.career.promotionProgress+=effect.value; break;
+      case 'store_progress': state.career.storeProgress+=effect.value; break;
+      case 'tech_progress': state.career.techProgress+=effect.value; break;
+      case 'career_search_handled': state.career.changeHandledCount=state.career.changeSearchCount; break;
+      case 'side_income': state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+effect.value; break;
+      case 'asset': state.assets[effect.asset]=effect.value; break;
+      case 'npc_state': if(state.npc[effect.npc]) state.npc[effect.npc][effect.key]=effect.value; break;
+      case 'job':
+        state.player.job=effect.job;
+        state.player.workplace=effect.workplace;
+        state.player.salary=effect.salary;
+        break;
+      case 'npc_known': if(state.npc[effect.npc]) state.npc[effect.npc].known=true; break;
+      case 'recent': addRecent(state,effect.text); break;
+      case 'history': addHistory(state,effect.text); break;
+      case 'opportunity': addOpportunity(state,effect.opportunity); break;
+      case 'schedule': state.scheduled.push({at:state.time.totalHours+effect.after,kind:effect.kind}); break;
+      case 'status_add': if(!state.player.statuses.includes(effect.status)) state.player.statuses.push(effect.status); break;
+      case 'status_remove': state.player.statuses=state.player.statuses.filter(x=>x!==effect.status); break;
+      case 'trajectory': state.life.trajectory=effect.value; state.life.majorDecisionAt=state.time.totalHours; break;
+      case 'housing':
+        state.housing={...state.housing,...effect.value};
+        state.economy.livingCost=state.housing.monthlyCost||state.economy.livingCost;
+        break;
+    }
+  }
+}
+
+// ---- src/core/economy.js ----
+
+const LIVING_COST_INTERVAL=30*24;
+
+function syncLivingCost(state){
+  const cost=state.housing?.id==='rented_room'?1100000:600000;
+  state.economy.livingCost=cost;
+  if(state.housing){ state.housing.monthlyCost=cost; }
+  return cost;
+}
+
+function processLivingCosts(state){
+  syncLivingCost(state);
+  let charged=0;
+  while(state.time.totalHours-state.economy.lastLivingCostAt>=LIVING_COST_INTERVAL){
+    state.economy.lastLivingCostAt+=LIVING_COST_INTERVAL;
+    state.player.money-=state.economy.livingCost;
+    charged+=state.economy.livingCost;
+  }
+  if(charged>0) addRecent(state,`Biaya hidup dibayar · -Rp${charged.toLocaleString('id-ID')}.`);
+  return charged;
+}
+
+// ---- src/core/save.js ----
+
+// Pertahankan key lama supaya save Build F–I tetap ikut naik ke Build J.
+const SAVE_KEY='hidup-vertical-slice-f-v2';
+
+function loadState(){
+  const fresh=createInitialState();
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return fresh;
+    const saved=JSON.parse(raw);
+    if(!saved || typeof saved!=='object') return fresh;
+    return mergeState(fresh,saved);
+  }catch{
+    return fresh;
+  }
+}
+
+function mergeState(base,saved){
+  const out=clone(base);
+  Object.assign(out,saved);
+  out.version=SAVE_VERSION;
+  out.player={...base.player,...(saved.player||{})};
+  out.time={...base.time,...(saved.time||{})};
+  out.economy={...base.economy,...(saved.economy||{})};
+  out.housing={...base.housing,...(saved.housing||{})};
+  out.life={...base.life,...(saved.life||{})};
+  out.pacing={...base.pacing,...(saved.pacing||{})};
+  out.playtest={...base.playtest,...(saved.playtest||{})};
+  out.skills={...base.skills,...(saved.skills||{})};
+  out.relationships={...base.relationships,...(saved.relationships||{})};
+  out.assets={...base.assets,...(saved.assets||{})};
+  out.npc={...base.npc,...(saved.npc||{})};
+  for(const key of Object.keys(base.npc)) out.npc[key]={...base.npc[key],...(saved.npc?.[key]||{})};
+  out.career={...base.career,...(saved.career||{})};
+  out.career.jobWorkCounts={...base.career.jobWorkCounts,...(saved.career?.jobWorkCounts||{})};
+  out.flags={...base.flags,...(saved.flags||{})};
+  out.routine={...base.routine,...(saved.routine||{})};
+  if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];
+  if(!Array.isArray(out.opportunities)) out.opportunities=[];
+  if(!Array.isArray(out.scheduled)) out.scheduled=[];
+  if(!Array.isArray(out.recent)) out.recent=[];
+  if(!Array.isArray(out.history)) out.history=[...base.history];
+
+  if(saved.version===2){
+    out.economy.lastLivingCostAt=out.time.totalHours;
+    if(saved.player?.job && (saved.career?.workCount||0)>0){
+      const current=out.career.jobWorkCounts[saved.player.job]||0;
+      out.career.jobWorkCounts[saved.player.job]=Math.max(current,saved.career.workCount);
+    }
+  }
+
+  if(!saved.housing){
+    const livingAlone=out.player.statuses.includes('tinggal_sendiri');
+    out.housing=livingAlone
+      ? {id:'rented_room',label:'Kamar sewa sendiri',monthlyCost:1100000,movedAt:out.time.totalHours}
+      : {id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null};
+  }
+  out.economy.livingCost=out.housing.id==='rented_room'?1100000:600000;
+
+  // Build I dan versi sebelumnya belum punya pencatat pacing/playtest.
+  if(!saved.pacing){
+    out.pacing.lastResolvedEventAt=Math.max(-999,out.time.totalHours-12);
+    out.pacing.lastSurfacedEventAt=Math.max(-999,out.time.totalHours-12);
+    out.pacing.eventCount=Math.min(6,(out.history?.length||0));
+  }
+  if(!saved.playtest){
+    out.playtest.actions=Math.max(0,out.career.workCount||0);
+    out.playtest.opportunitiesTaken=Math.max(0,Math.floor((out.career.sideIncomeTotal||0)/200000));
+  }
+  return out;
+}
+
+function saveState(state){
+  state.version=SAVE_VERSION;
+  state.lastSeen=Date.now();
+  localStorage.setItem(SAVE_KEY,JSON.stringify(state));
+}
+
+function clearState(){ localStorage.removeItem(SAVE_KEY); }
+
+// ---- src/core/outcome.js ----
+
+function basicCount(state){
+  return ['mechanics','social','technology','learning'].filter(id=>getSkillTier(state.skills[id]||0).id!=='novice').length;
+}
+
+function workedPathCount(state){
+  const counts=state.career?.jobWorkCounts||{};
+  const paths=[
+    (counts.mechanic_junior||0)+(counts.mechanic_senior||0),
+    (counts.store_clerk||0)+(counts.store_supervisor||0),
+    counts.it_assistant||0
+  ];
+  return paths.filter(x=>x>0).length;
+}
+
+function hasDebt(state){
+  return state.player.money<0 || state.player.statuses.some(x=>x==='utang_keluarga'||x==='utang_rian');
+}
+
+function getOutcomeProfile(state){
+  const advancedJob=['mechanic_senior','store_supervisor'].includes(state.player.job) || (state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=5);
+  const basics=basicCount(state);
+  const paths=workedPathCount(state);
+  const finance=financialState(state).id;
+  const side=state.career.sideIncomeTotal||0;
+  const relAvg=(state.relationships.family+state.relationships.rian+Math.max(0,state.relationships.pak_arman)+Math.max(0,state.relationships.maya)+Math.max(0,state.relationships.nadia))/5;
+
+  if(hasDebt(state) && state.player.money<150000){
+    return {
+      id:'rebuild',title:'Sedang Menata Ulang',
+      summary:'Kamu belum kalah. Hidupmu sekarang lebih banyak soal menstabilkan pilihan yang sudah dibuat daripada mengejar ekspansi baru.',
+      traits:['Tekanan keuangan nyata','Masih punya ruang untuk pulih','Keputusan berikutnya lebih penting dari statistik masa lalu']
+    };
+  }
+
+  if(state.life?.trajectory==='independent' && side>=650000){
+    return {
+      id:'independent',title:'Perintis Mandiri',
+      summary:'Pekerjaan utama masih penting, tapi identitasmu mulai terbentuk dari peluang yang kamu ciptakan sendiri.',
+      traits:[`Pendapatan sampingan Rp${Math.round(side).toLocaleString('id-ID')}`,state.assets.laptop?'Punya alat kerja sendiri':'Jaringan pelanggan mulai terbentuk','Waktu menjadi resource paling ketat']
+    };
+  }
+
+  if(paths>=2 && basics>=3){
+    return {
+      id:'adaptive',title:'Generalis Adaptif',
+      summary:'Kamu tidak tumbuh lewat satu jalur lurus. Kekuatanmu justru muncul ketika kemampuan dari dunia berbeda saling membantu.',
+      traits:[`${basics} bidang sudah melewati tahap Pemula`,`${paths} jalur kerja pernah dijalani`,'Skill silang mulai membuka solusi yang tidak dimiliki spesialis awal']
+    };
+  }
+
+  if(advancedJob || state.life?.trajectory==='career'){
+    return {
+      id:'professional',title:'Profesional Andal',
+      summary:'Kamu mulai menukar kebebasan eksplorasi dengan kedalaman, reputasi kerja, dan stabilitas yang lebih kuat.',
+      traits:[advancedJob?'Posisi kerja sudah naik tingkat':'Fokus karier sudah dipilih',finance==='comfortable'?'Keuangan nyaman':'Pendapatan utama makin penting','Hubungan profesional mulai punya bobot']
+    };
+  }
+
+  if((state.relationships.family>=72 && state.relationships.rian>=55) || relAvg>=45){
+    return {
+      id:'connected',title:'Orang yang Bisa Diandalkan',
+      summary:'Kemajuanmu bukan cuma datang dari skill dan uang. Orang-orang mulai mengingat apakah kamu hadir ketika mereka benar-benar membutuhkanmu.',
+      traits:[state.flags.familySupport?'Keluarga tahu kamu bisa diandalkan':'Hubungan keluarga tetap kuat',state.flags.rianTrusted?'Rian benar-benar percaya padamu':'Pertemanan Rian tetap dekat','Relasi membuka konsekuensi, bukan sekadar bonus angka']
+    };
+  }
+
+  return {
+    id:'forming',title:'Masih Membentuk Arah',
+    summary:'Belum ada satu identitas yang mendominasi. Itu bukan masalah—pilihanmu masih cukup terbuka untuk berubah drastis.',
+    traits:['Belum terkunci pada satu jalur','Masih mudah mengubah prioritas','Eksperimen berikutnya akan sangat menentukan']
+  };
+}
+
+function isVerticalSliceReady(state){
+  const enoughTime=state.time.totalHours>=360;
+  const enoughChoices=(state.pacing?.eventCount||0)>=7;
+  const enoughWork=(state.career?.workCount||0)>=8;
+  const meaningfulState=state.player.job && (
+    state.flags.promoted || state.flags.storePromoted ||
+    (state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=3) ||
+    (state.career.sideIncomeTotal||0)>=500000 ||
+    state.life?.trajectory!=='open' ||
+    basicCount(state)>=3
+  );
+  return enoughTime && enoughChoices && enoughWork && !!meaningfulState;
+}
+
+// ---- src/data/activities.js ----
+
+function xpMod(state){
+  const id=getCondition(state.player.fatigue).id;
+  if(id==='exhausted') return .7;
+  if(id==='tired') return .9;
+  return 1;
+}
+
+function isLivingAlone(state){ return state.housing?.id==='rented_room'; }
+function careerFocus(state){ return state.life?.trajectory==='career'; }
+function independentFocus(state){ return state.life?.trajectory==='independent'; }
+
+function availableActivities(state){
+  const list=[];
+  if(!state.player.job){
+    list.push({id:'job_search',name:'Cari Kerja',hint:'6j · cari peluang kerja',duration:6});
+    list.push({id:'study',name:'Belajar',hint:isLivingAlone(state)?'4j · Rp20rb · lebih fokus':'4j · Rp20rb',duration:4});
+    list.push({id:'family',name:'Bantu Keluarga',hint:'4j · jaga hubungan',duration:4});
+    list.push({id:'rian',name:'Main dengan Rian',hint:'3j · sosial',duration:3});
+    return list;
+  }
+  const job=JOBS[state.player.job];
+  list.push({id:'work',name:'Kerja',hint:`${job.duration}j · +Rp${Math.round(job.salary/1000)}rb`,duration:job.duration});
+  list.push({id:'study',name:'Belajar',hint:isLivingAlone(state)?'4j · Rp20rb · lebih fokus':'4j · Rp20rb',duration:4});
+  list.push({id:'rest',name:'Istirahat',hint:isLivingAlone(state)?'8j · pulih lebih tenang':'8j · pulihkan kondisi',duration:8});
+  list.push({id:'rian',name:'Main dengan Rian',hint:'3j · sosial',duration:3});
+  if(state.career.workCount>=4) list.push({id:'career_search',name:'Cari Peluang Lain',hint:'4j · lihat arah karier lain',duration:4});
+  return list;
+}
+
+function executeActivity(state,id){
+  if(id==='job_search'){
+    state.time.totalHours+=6;
+    state.player.fatigue=Math.min(100,state.player.fatigue+8);
+    state.career.jobSearchCount++;
+    return 'Kamu menghabiskan waktu mencari lowongan dan bertanya ke beberapa tempat.';
+  }
+  if(id==='study'){
+    if(state.player.money<20000) return {error:'Uangmu belum cukup untuk biaya belajar.'};
+    state.player.money-=20000;
+    state.time.totalHours+=4;
+    state.player.fatigue=Math.min(100,state.player.fatigue+(isLivingAlone(state)?7:10));
+    state.skills.learning+=isLivingAlone(state)?13:10;
+    state.skills.technology+=Math.round((isLivingAlone(state)?13:10)*xpMod(state));
+    if(!state.discoveredSkills.includes('technology')) state.discoveredSkills.push('technology');
+    return isLivingAlone(state)
+      ? 'Ruang sendiri membuat sesi belajarmu lebih fokus. Belajar dan Teknologi meningkat.'
+      : 'Kamu belajar beberapa jam. Kemampuan Belajar dan Teknologi meningkat.';
+  }
+  if(id==='family'){
+    state.time.totalHours+=4;
+    state.player.fatigue=Math.min(100,state.player.fatigue+7);
+    state.relationships.family+=4;
+    state.skills.social+=3;
+    return 'Kamu membantu keluarga dan menghabiskan waktu bersama mereka.';
+  }
+  if(id==='rian'){
+    state.time.totalHours+=3;
+    state.player.fatigue=Math.min(100,state.player.fatigue+5);
+    state.relationships.rian=Math.min(80,state.relationships.rian+3);
+    state.skills.social+=6;
+    return 'Kamu menghabiskan waktu bersama Rian. Hubungan kalian tetap hangat.';
+  }
+  if(id==='career_search'){
+    state.time.totalHours+=4;
+    state.player.fatigue=Math.min(100,state.player.fatigue+5);
+    state.career.changeSearchCount++;
+    return 'Kamu meluangkan waktu melihat lowongan, bertanya ke kenalan, dan membandingkan arah hidup lain.';
+  }
+  if(id==='rest'){
+    state.time.totalHours+=8;
+    state.player.fatigue=Math.max(0,state.player.fatigue-(isLivingAlone(state)?52:45));
+    return isLivingAlone(state)?'Kamu beristirahat di ruang sendiri dan pulih lebih baik.':'Kamu beristirahat dan memulihkan kondisi.';
+  }
+  if(id==='work'){
+    const job=JOBS[state.player.job];
+    if(!job) return {error:'Pekerjaan aktif tidak ditemukan.'};
+    state.time.totalHours+=job.duration;
+    state.player.money+=job.salary;
+    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0));
+    state.skills[job.skill]=(state.skills[job.skill]||0)+Math.round(job.skillXp*xpMod(state));
+    if(!state.discoveredSkills.includes(job.skill)) state.discoveredSkills.push(job.skill);
+    state.career.workCount++;
+    state.career.jobWorkCounts[state.player.job]=(state.career.jobWorkCounts[state.player.job]||0)+1;
+    const focusBonus=careerFocus(state)?1:0;
+    if(state.player.job==='mechanic_junior') state.career.promotionProgress+=1+focusBonus;
+    if(state.player.job==='store_clerk') state.career.storeProgress+=1+focusBonus;
+    if(state.player.job==='it_assistant') state.career.techProgress+=1+focusBonus;
+    const skillName={mechanics:'Mekanik',social:'Sosial',technology:'Teknologi'}[job.skill]||'kemampuan utama';
+    const extra=careerFocus(state)?' Fokus karier membuat progres pekerjaanmu lebih cepat.':independentFocus(state)?' Menjaga jalur mandiri membuat harimu sedikit lebih berat.':'';
+    return `Kerja selesai · +Rp${job.salary.toLocaleString('id-ID')} · kemampuan ${skillName} meningkat.${extra}`;
+  }
+  return {error:'Aktivitas tidak dikenal.'};
+}
+
+// ---- src/data/opportunities.js ----
+
+function sideMultiplier(state,fromRian=false){
+  let mult=1;
+  if(state.life?.trajectory==='independent') mult+=0.15;
+  if(fromRian && state.flags.rianTrusted) mult+=0.10;
+  return mult;
+}
+
+function sideCooldown(state,normal){
+  return state.life?.trajectory==='independent'?Math.max(36,Math.round(normal*0.7)):normal;
+}
+
+function takeJob(state,jobId,npc){
+  const job=JOBS[jobId];
+  const previous=state.player.job;
+  state.player.job=job.id;
+  state.player.workplace=job.workplace;
+  state.player.salary=job.salary;
+  if(npc && state.npc[npc]) state.npc[npc].known=true;
+  return {job,previous};
+}
+
+function runOpportunity(state,id){
+  const opp=state.opportunities.find(item=>item.id===id);
+  if(!opp) return 'Peluang itu sudah tidak tersedia.';
+
+  if(id==='workshop_job'){
+    removeOpportunity(state,id);
+    const {job,previous}=takeJob(state,'mechanic_junior','pak_arman');
+    state.npc.dika.known=true;
+    state.relationships.pak_arman=Math.max(5,state.relationships.pak_arman);
+    addHistory(state,previous?'Umur 18 · Beralih menjadi Mekanik Junior di Bengkel Sinar Jaya.':'Umur 18 · Mulai bekerja sebagai Mekanik Junior di Bengkel Sinar Jaya.');
+    addRecent(state,'Kamu diterima bekerja di Bengkel Sinar Jaya.');
+    return `Pak Arman menerimamu sebagai ${job.name}.`;
+  }
+
+  if(id==='store_job'){
+    removeOpportunity(state,id);
+    const {job,previous}=takeJob(state,'store_clerk','maya');
+    state.relationships.maya=Math.max(5,state.relationships.maya);
+    addHistory(state,previous?'Umur 18 · Beralih menjadi Pramuniaga di Toko Serba Ada.':'Umur 18 · Mulai bekerja sebagai Pramuniaga di Toko Serba Ada.');
+    addRecent(state,'Kamu diterima bekerja di Toko Serba Ada.');
+    return `Maya menerimamu sebagai ${job.name}.`;
+  }
+
+  if(id==='tech_course'){
+    if(state.player.money<250000) return 'Uangmu belum cukup untuk mengikuti kelas ini.';
+    removeOpportunity(state,id);
+    state.player.money-=250000;
+    state.time.totalHours+=8;
+    state.player.fatigue=Math.min(100,state.player.fatigue+12);
+    discoverSkill(state,'technology');
+    state.skills.technology+=80;
+    state.skills.learning+=25;
+    addHistory(state,'Umur 18 · Mengikuti kelas komputer dasar.');
+    return 'Kelas selesai. Teknologi meningkat pesat dan jalur baru mulai terbuka.';
+  }
+
+  if(id==='tech_side_job'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(250000*sideMultiplier(state,true));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+10);
+    state.skills.technology+=18;
+    state.relationships.rian+=4;
+    state.scheduled.push({at:state.time.totalHours+36,kind:'tech_referral'});
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addHistory(state,'Umur 18 · Mendapat pekerjaan teknologi pertama lewat Rian.');
+    addRecent(state,'Rian mengenalkanmu ke pekerjaan setup komputer kecil.');
+    return `Kamu menyelesaikan setup komputer pertamamu · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+  if(id==='it_job'){
+    removeOpportunity(state,id);
+    const {job,previous}=takeJob(state,'it_assistant','nadia');
+    state.relationships.nadia=Math.max(5,state.relationships.nadia);
+    addHistory(state,previous?'Umur 18 · Beralih menjadi Asisten Teknisi IT di Nusa Komputer.':'Umur 18 · Mulai bekerja sebagai Asisten Teknisi IT di Nusa Komputer.');
+    addRecent(state,'Rekomendasi pekerjaan kecil membawamu ke Nusa Komputer.');
+    return `Kamu sekarang bekerja sebagai ${job.name}.`;
+  }
+
+  if(id==='private_repair'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(350000*sideMultiplier(state,true));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+14);
+    state.skills.mechanics+=18;
+    state.relationships.rian+=5;
+    state.scheduled.push({at:state.time.totalHours+36,kind:'private_referral'});
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addHistory(state,'Umur 18 · Mengambil servis privat pertama lewat Rian.');
+    addRecent(state,'Kamu mulai dikenal di luar Bengkel Sinar Jaya.');
+    return `Servis privat selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+  if(id==='private_repeat'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(300000*sideMultiplier(state,state.flags.rianTrusted));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+12);
+    state.skills.mechanics+=16;
+    addRecent(state,'Pelanggan baru datang lewat rekomendasi.');
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    state.scheduled.push({at:state.time.totalHours+sideCooldown(state,96),kind:'private_repeat_offer'});
+    return `Servis rekomendasi selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+  if(id==='promotion'){
+    removeOpportunity(state,id);
+    const {job}=takeJob(state,'mechanic_senior','pak_arman');
+    state.flags.promoted=true;
+    state.relationships.pak_arman+=6;
+    addHistory(state,'Umur 18 · Dipromosikan menjadi Mekanik Senior.');
+    addRecent(state,'Pak Arman mempromosikanmu menjadi Mekanik Senior.');
+    return `Kamu sekarang ${job.name}. Tanggung jawab dan gajimu meningkat.`;
+  }
+
+  if(id==='store_promotion'){
+    removeOpportunity(state,id);
+    const {job}=takeJob(state,'store_supervisor','maya');
+    state.flags.storePromoted=true;
+    state.relationships.maya+=6;
+    addHistory(state,'Umur 18 · Dipromosikan menjadi Supervisor Toko.');
+    addRecent(state,'Maya mempercayakan satu shift toko kepadamu.');
+    return `Kamu sekarang ${job.name}. Mengelola orang mulai menjadi bagian dari pekerjaanmu.`;
+  }
+
+
+
+  if(id==='career_mechanic'){
+    removeOpportunity(state,id);
+    const jobId=state.flags.promoted?'mechanic_senior':'mechanic_junior';
+    const {job,previous}=takeJob(state,jobId,'pak_arman');
+    state.npc.dika.known=true;
+    addHistory(state,`Umur 18 · Beralih dari ${JOBS[previous]?.name||'pekerjaan lama'} ke ${job.name}.`);
+    addRecent(state,`Kamu mengubah arah karier dan kembali ke jalur bengkel sebagai ${job.name}.`);
+    return `Kamu sekarang bekerja sebagai ${job.name}. Skill Mekanik yang pernah kamu bangun tetap terbawa.`;
+  }
+
+  if(id==='career_store'){
+    removeOpportunity(state,id);
+    const jobId=state.flags.storePromoted?'store_supervisor':'store_clerk';
+    const {job,previous}=takeJob(state,jobId,'maya');
+    addHistory(state,`Umur 18 · Beralih dari ${JOBS[previous]?.name||'pekerjaan lama'} ke ${job.name}.`);
+    addRecent(state,`Kamu mengubah arah karier ke jalur pelayanan sebagai ${job.name}.`);
+    return `Kamu sekarang bekerja sebagai ${job.name}. Pengalaman Sosialmu tidak hilang saat berganti jalur.`;
+  }
+
+  if(id==='career_it'){
+    removeOpportunity(state,id);
+    const {job,previous}=takeJob(state,'it_assistant','nadia');
+    state.relationships.nadia=Math.max(5,state.relationships.nadia);
+    addHistory(state,`Umur 18 · Beralih dari ${JOBS[previous]?.name||'pekerjaan lama'} ke ${job.name}.`);
+    addRecent(state,'Kamu mengubah arah karier ke Nusa Komputer.');
+    return `Teknologi yang kamu pelajari di luar pekerjaan utama akhirnya menjadi karier utama.`;
+  }
+
+  if(id==='buy_laptop'){
+    if(state.player.money<750000) return 'Uangmu belum cukup untuk membeli laptop ini.';
+    removeOpportunity(state,id);
+    state.player.money-=750000;
+    state.assets.laptop=true;
+    if(!state.player.statuses.includes('punya_laptop')) state.player.statuses.push('punya_laptop');
+    state.scheduled.push({at:state.time.totalHours+24,kind:'tech_freelance_offer'});
+    addHistory(state,'Umur 18 · Membeli laptop bekas untuk belajar dan kerja sampingan.');
+    addRecent(state,'Laptop membuka kemungkinan kerja teknologi dari rumah.');
+    return 'Kamu membeli laptop bekas. Tabungan turun, tetapi kemampuan Teknologi sekarang bisa menghasilkan uang lebih fleksibel.';
+  }
+
+  if(id==='tech_freelance'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(220000*sideMultiplier(state,false));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+9);
+    state.skills.technology+=16;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    state.scheduled.push({at:state.time.totalHours+sideCooldown(state,72),kind:'tech_freelance_offer'});
+    addRecent(state,'Kamu menyelesaikan pekerjaan teknologi dari laptopmu sendiri.');
+    return `Kerja lepas teknologi selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+  if(id==='promo_side_job'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(180000*sideMultiplier(state,false));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+8);
+    state.skills.social+=14;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    state.scheduled.push({at:state.time.totalHours+sideCooldown(state,96),kind:'promo_side_offer'});
+    addRecent(state,'Kamu mengambil shift promosi singkat di luar pekerjaan utama.');
+    return `Shift promosi selesai · +Rp${payout.toLocaleString('id-ID')} · Sosial meningkat.`;
+  }
+
+  if(id==='rent_room'){
+    const deposit=state.flags.familySupport?1000000:1200000;
+    if(state.player.money<deposit) return `Kamu membutuhkan Rp${deposit.toLocaleString('id-ID')} untuk deposit dan biaya awal.`;
+    removeOpportunity(state,id);
+    state.player.money-=deposit;
+    state.housing={id:'rented_room',label:'Kamar sewa sendiri',monthlyCost:1100000,movedAt:state.time.totalHours};
+    state.economy.livingCost=1100000;
+    state.player.statuses=state.player.statuses.filter(x=>x!=='tinggal_bersama_keluarga');
+    if(!state.player.statuses.includes('tinggal_sendiri')) state.player.statuses.push('tinggal_sendiri');
+    state.flags.movedOut=true;
+    state.relationships.family-=2;
+    state.scheduled.push({at:state.time.totalHours+12,kind:'move_out_reflection'});
+    addHistory(state,'Umur 18 · Pindah dari rumah keluarga ke kamar sewa sendiri.');
+    addRecent(state,'Kamu mulai tinggal sendiri. Biaya hidup naik, tetapi ruang dan ritmemu sekarang milikmu sendiri.');
+    return 'Kamu pindah ke kamar sewa. Biaya hidup bulanan naik menjadi Rp1.100.000, tetapi belajar dan istirahat di rumah menjadi lebih efektif.';
+  }
+
+  if(id==='repay_family'){
+    if(state.player.money<300000) return 'Uangmu belum cukup untuk melunasi utang keluarga.';
+    removeOpportunity(state,id);
+    state.player.money-=300000;
+    state.player.statuses=state.player.statuses.filter(x=>x!=='utang_keluarga');
+    state.relationships.family+=8;
+    addHistory(state,'Umur 18 · Melunasi utang kepada keluarga.');
+    return 'Utang keluarga lunas. Beban hubungan itu selesai.';
+  }
+
+  if(id==='repay_rian'){
+    if(state.player.money<300000) return 'Uangmu belum cukup untuk melunasi utang kepada Rian.';
+    removeOpportunity(state,id);
+    state.player.money-=300000;
+    state.player.statuses=state.player.statuses.filter(x=>x!=='utang_rian');
+    state.relationships.rian+=8;
+    addHistory(state,'Umur 18 · Melunasi utang kepada Rian.');
+    return 'Utang kepada Rian lunas. Hubungan kalian kembali lebih ringan.';
+  }
+
+  return 'Peluang belum memiliki aksi.';
+}
+
+// ---- src/data/events.js ----
+
+function event(id,type,title,text,choices){ return {id,type,title,text,choices}; }
+function workCount(state,job){ return state.career.jobWorkCounts?.[job]||0; }
+
+function housingDecisionEvent(state,revisit=false){
+  const deposit=state.flags.familySupport?1000000:1200000;
+  return event(revisit?'housing_revisit':'housing_choice','ARAH HIDUP',revisit?'Soal Tinggal Sendiri Muncul Lagi':'Tetap di Rumah atau Mulai Mandiri?',
+    revisit
+      ? 'Beberapa waktu berlalu. Ide untuk punya ruang sendiri masih terasa masuk akal, tapi biaya hidupnya juga belum berubah.'
+      : 'Penghasilanmu mulai lebih stabil. Kamar sewa dekat area kerja tersedia, tapi pindah berarti deposit besar dan biaya bulanan hampir dua kali lipat.',[
+      {label:'Pertimbangkan pindah',hint:`Deposit Rp${deposit.toLocaleString('id-ID')} · biaya hidup Rp1,1jt/bulan`,effects:[{type:'flag',key:'housingOfferSeen',value:true},{type:'opportunity',opportunity:{id:'rent_room',name:'Sewa Kamar Sendiri',summary:`Deposit Rp${deposit.toLocaleString('id-ID')} · belajar & istirahat lebih efektif`}}],result:'Pilihan pindah sekarang tersedia. Kamu tidak harus mengambilnya langsung.'},
+      {label:'Tetap bersama keluarga dulu',hint:'Lebih murah · hubungan keluarga lebih dekat',effects:[{type:'flag',key:'housingOfferSeen',value:true},{type:'relationship',target:'family',value:2},{type:'schedule',after:360,kind:'housing_revisit'}],result:'Kamu memilih mempertahankan biaya hidup rendah. Pilihan mandiri bisa muncul lagi nanti.'}
+    ]);
+}
+
+function dueScheduledEvent(state){
+  const idx=state.scheduled.findIndex(item=>item.at<=state.time.totalHours);
+  if(idx<0) return null;
+  const item=state.scheduled.splice(idx,1)[0];
+
+  if(item.kind==='dika_return_favor'){
+    return event('dika_return_favor','KONSEKUENSI','Dika Membalas Bantuanmu','Beberapa hari setelah kamu membantunya pulang terlambat, Dika menawarkan menutup satu shift supaya kamu bisa beristirahat.',[
+      {label:'Terima bantuannya',hint:'8j · pulihkan kondisi',effects:[{type:'hours',value:8},{type:'fatigue',value:-35},{type:'relationship',target:'dika',value:4},{type:'recent',text:'Dika menutup satu shift untukmu.'}],result:'Kamu menerima bantuan Dika. Hubungan kalian mulai terasa seperti kerja sama, bukan sekadar persaingan.'},
+      {label:'Tidak perlu',effects:[{type:'relationship',target:'dika',value:1}],result:'Kamu menolak dengan baik. Dika tetap mengingat bahwa utang bantuannya sudah dia tawarkan.'}
+    ]);
+  }
+
+  if(item.kind==='store_customer_returns'){
+    return event('store_customer_returns','KONSEKUENSI','Pelanggan Itu Kembali','Pelanggan yang dulu kamu tangani kembali ke toko dan langsung mencarimu. Maya memperhatikan itu.',[
+      {label:'Layani sendiri',effects:[{type:'skill',skill:'social',value:15},{type:'relationship',target:'maya',value:4},{type:'store_progress',value:2},{type:'recent',text:'Seorang pelanggan mulai mengenalmu secara pribadi.'}],result:'Kamu menyelesaikan urusannya dengan lebih lancar. Maya mulai melihatmu sebagai orang yang bisa diandalkan.'},
+      {label:'Serahkan ke rekan lain',effects:[{type:'skill',skill:'learning',value:4}],result:'Kamu memilih tidak mengambil semua perhatian. Pelanggan tetap terlayani.'}
+    ]);
+  }
+
+  if(item.kind==='private_referral'){
+    return event('private_referral','KONSEKUENSI','Nama Kamu Mulai Disebut','Pelanggan servis privatmu puas dan merekomendasikanmu ke temannya.',[
+      {label:'Ambil pelanggan baru',effects:[{type:'opportunity',opportunity:{id:'private_repeat',name:'Servis dari Rekomendasi',summary:'4j · Rp300rb · pelanggan baru',expireAt:state.time.totalHours+72}},{type:'relationship',target:'rian',value:3},{type:'history',text:'Umur 18 · Mulai mendapat pelanggan dari rekomendasi.'}],result:'Pekerjaan sampinganmu mulai punya aliran pelanggan sendiri.'},
+      {label:'Jangan dulu',effects:[],result:'Kamu memilih tidak memperbesar pekerjaan sampingan sekarang.'}
+    ]);
+  }
+
+  if(item.kind==='tech_referral'){
+    return event('tech_referral','KONSEKUENSI','Pekerjaan Kecil Membuka Pintu','Pemilik usaha yang kamu bantu merekomendasikanmu ke Nusa Komputer. Mereka sedang mencari asisten teknisi junior.',[
+      {label:'Minta informasi lowongannya',effects:[{type:'opportunity',opportunity:{id:'it_job',name:'Asisten Teknisi IT',summary:'8j/hari · Rp140rb · jalur Teknologi'}},{type:'flag',key:'techJobSeen',value:true},{type:'recent',text:'Lowongan Nusa Komputer terbuka lewat rekomendasi klien.'}],result:'Kemampuan Teknologi yang tadinya cuma hobi sekarang membuka jalur kerja nyata.'},
+      {label:'Tetap sebagai kerja sampingan',effects:[{type:'flag',key:'techJobSeen',value:true}],result:'Kamu memilih belum menjadikan Teknologi sebagai pekerjaan utama.'}
+    ]);
+  }
+
+  if(item.kind==='mechanic_complaint'){
+    return event('mechanic_complaint','KONSEKUENSI','Mobil Itu Kembali','Perbaikan sulit yang kamu kerjakan ternyata belum sepenuhnya menyelesaikan masalah. Pelanggan kembali ke bengkel.',[
+      {label:'Perbaiki lagi tanpa biaya',hint:'2j · lebih melelahkan',effects:[{type:'hours',value:2},{type:'fatigue',value:5},{type:'skill',skill:'mechanics',value:12},{type:'relationship',target:'pak_arman',value:3},{type:'promotion',value:1},{type:'recent',text:'Kamu memperbaiki ulang pekerjaanmu tanpa melempar tanggung jawab.'}],result:'Kesalahan itu memakan waktu, tapi cara kamu menanganinya justru menambah kepercayaan Pak Arman.'},
+      {label:'Minta Pak Arman mengambil alih',effects:[{type:'relationship',target:'pak_arman',value:-2}],result:'Masalah selesai, tetapi Pak Arman tahu kamu belum siap menangani semuanya sendiri.'}
+    ]);
+  }
+
+
+  if(item.kind==='private_repeat_offer'){
+    return event('private_repeat_offer','PELUANG SAMPINGAN','Pelanggan Lama Membawa Teman Lagi','Beberapa hari berlalu dan jaringan kecil pelangganmu masih hidup. Ada satu servis baru yang bisa kamu ambil tanpa meninggalkan pekerjaan utama.',[
+      {label:'Buka jadwal servis',effects:[{type:'opportunity',opportunity:{id:'private_repeat',name:'Servis Rekomendasi',summary:'4j · Rp300rb · bisa dijalankan sebagai kerja sampingan',expireAt:state.time.totalHours+72}}],result:'Satu servis rekomendasi masuk ke peluang aktifmu.'},
+      {label:'Lewatkan kali ini',effects:[],result:'Kamu membiarkan kesempatan itu lewat tanpa merusak jaringan pelangganmu.'}
+    ]);
+  }
+
+  if(item.kind==='tech_freelance_offer'){
+    return event('tech_freelance_offer','PELUANG SAMPINGAN','Ada Pesan Masuk ke Laptopmu','Seseorang membutuhkan bantuan setup, backup, dan perapihan komputer. Pekerjaan kecil ini bisa dikerjakan di luar jam kerja utama.',[
+      {label:'Ambil detail pekerjaannya',effects:[{type:'opportunity',opportunity:{id:'tech_freelance',name:'Kerja Lepas Teknologi',summary:'4j · Rp220rb · dari laptop sendiri',expireAt:state.time.totalHours+72}}],result:'Pekerjaan lepas tersedia selama beberapa hari.'},
+      {label:'Abaikan dulu',effects:[{type:'schedule',after:96,kind:'tech_freelance_offer'}],result:'Kamu memilih menjaga waktu luangmu. Peluang lain bisa muncul nanti.'}
+    ]);
+  }
+
+  if(item.kind==='promo_side_offer'){
+    return event('promo_side_offer','PELUANG SAMPINGAN','Shift Promosi Akhir Pekan','Sebuah brand lokal butuh orang untuk menjaga booth promosi selama beberapa jam. Kemampuan Sosialmu membuat pekerjaan seperti ini mulai datang dari mulut ke mulut.',[
+      {label:'Ambil shift promosi',effects:[{type:'opportunity',opportunity:{id:'promo_side_job',name:'Shift Promosi',summary:'4j · Rp180rb · latih Sosial',expireAt:state.time.totalHours+72}}],result:'Shift promosi masuk ke peluang aktifmu.'},
+      {label:'Lewatkan',effects:[{type:'schedule',after:120,kind:'promo_side_offer'}],result:'Kamu memilih tidak memenuhi setiap jam kosong dengan pekerjaan.'}
+    ]);
+  }
+
+  if(item.kind==='move_out_reflection' && state.housing?.id==='rented_room'){
+    return event('move_out_reflection','KEHIDUPAN','Malam Pertama di Tempat Sendiri','Tidak ada suara keluarga di ruangan sebelah. Rasanya lebih bebas, tapi juga lebih sepi daripada yang kamu bayangkan.',[
+      {label:'Telepon keluarga',effects:[{type:'relationship',target:'family',value:4},{type:'flag',key:'moveReflectionSeen',value:true},{type:'recent',text:'Kamu tetap menjaga hubungan keluarga setelah pindah.'}],result:'Tinggal terpisah tidak berarti hubungan harus menjauh.'},
+      {label:'Nikmati ruang sendiri',effects:[{type:'skill',skill:'learning',value:5},{type:'flag',key:'moveReflectionSeen',value:true}],result:'Kamu mulai menikmati bahwa waktu dan ruangmu sekarang benar-benar milikmu.'}
+    ]);
+  }
+
+  if(item.kind==='housing_revisit' && state.housing?.id!=='rented_room'){
+    state.flags.housingRevisitSeen=true;
+    return housingDecisionEvent(state,true);
+  }
+
+  return null;
+}
+
+function getNextEvent(state){
+  if(state.pendingEvent) return state.pendingEvent;
+
+  const scheduled=dueScheduledEvent(state);
+  if(scheduled) return scheduled;
+
+
+  if(state.housing?.id==='rented_room' && state.player.money<350000 && !state.flags.rentPressureSeen){
+    return event('rent_pressure','KEUANGAN','Biaya Hidup Mulai Terasa','Tinggal sendiri memberi ruang lebih besar, tapi saldo mulai menipis. Sewa bulan berikutnya sekarang terasa seperti keputusan nyata.',[
+      {label:'Bertahan sendiri',hint:'Pertahankan biaya Rp1,1jt/bulan',effects:[{type:'flag',key:'rentPressureSeen',value:true},{type:'recent',text:'Kamu memilih mempertahankan tempat tinggal sendiri meski cashflow ketat.'}],result:'Kamu mempertahankan kemandirian dan menerima tekanan keuangannya.'},
+      {label:'Pulang ke keluarga sementara',hint:'Biaya hidup kembali Rp600rb/bulan',effects:[{type:'flag',key:'rentPressureSeen',value:true},{type:'flag',key:'movedOut',value:false},{type:'housing',value:{id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null}},{type:'status_remove',status:'tinggal_sendiri'},{type:'status_add',status:'tinggal_bersama_keluarga'},{type:'relationship',target:'family',value:3},{type:'schedule',after:360,kind:'housing_revisit'},{type:'history',text:'Umur 18 · Kembali tinggal bersama keluarga untuk menstabilkan keuangan.'}],result:'Kamu pulang. Ini bukan reset—hanya perubahan strategi hidup karena kondisi keuangan.'}
+    ]);
+  }
+
+  if(state.career.workCount>=6 && state.relationships.family>=55 && !state.flags.familyMilestoneSeen){
+    return event('family_milestone','HUBUNGAN','Keluarga Membutuhkan Satu Hari yang Benar-benar Hadir','Ada urusan keluarga penting yang harus diselesaikan di jam kerja. Mereka tidak sekadar butuh uang—mereka butuh waktumu.',[
+      {label:'Luangkan waktu untuk keluarga',hint:'6j · mengorbankan waktu produktif',effects:[{type:'hours',value:6},{type:'fatigue',value:5},{type:'relationship',target:'family',value:12},{type:'flag',key:'familyMilestoneSeen',value:true},{type:'flag',key:'familySupport',value:true},{type:'history',text:'Umur 18 · Memilih hadir untuk keluarga saat mereka benar-benar membutuhkan waktu.'}],result:'Hubungan ini sekarang lebih dari sekadar angka. Keluargamu tahu kamu bisa diandalkan ketika hal penting terjadi.'},
+      {label:'Prioritaskan pekerjaan',hint:'+Rp80rb · hubungan sedikit menjauh',effects:[{type:'hours',value:4},{type:'money',value:80000},{type:'relationship',target:'family',value:-4},{type:'flag',key:'familyMilestoneSeen',value:true}],result:'Kamu memilih pekerjaan. Keputusan itu masuk akal, tapi keluarga mengingat bahwa kali ini kamu tidak bisa hadir.'}
+    ]);
+  }
+
+  if(state.relationships.rian>=50 && !state.flags.rianMilestoneSeen){
+    return event('rian_milestone','HUBUNGAN','Rian Minta Bantuan yang Tidak Bisa Dibayar','Rian mendapat shift yang tidak bisa ditinggalkan dan perlu seseorang menangani urusan penting untuk keluarganya. Kali ini dia tidak menawarkan uang atau pekerjaan sebagai gantinya.',[
+      {label:'Bantu Rian',hint:'4j · tidak ada bayaran',effects:[{type:'hours',value:4},{type:'fatigue',value:5},{type:'relationship',target:'rian',value:12},{type:'flag',key:'rianMilestoneSeen',value:true},{type:'flag',key:'rianTrusted',value:true},{type:'history',text:'Umur 18 · Membantu Rian ketika tidak ada keuntungan langsung.'}],result:'Rian sekarang melihatmu sebagai orang yang bisa dipercaya, bukan cuma teman nongkrong atau koneksi kerja.'},
+      {label:'Tidak bisa kali ini',effects:[{type:'relationship',target:'rian',value:-1},{type:'flag',key:'rianMilestoneSeen',value:true}],result:'Rian memahami. Hubungan kalian tetap baik, tapi tidak berubah menjadi kepercayaan yang lebih dalam.'}
+    ]);
+  }
+
+  if(state.player.job && state.career.workCount>=10 && state.housing?.id!=='rented_room' && !state.flags.housingOfferSeen){
+    return housingDecisionEvent(state,false);
+  }
+
+  if(state.player.job && state.career.workCount>=8 && (state.career.sideIncomeTotal||0)>=500000 && state.life?.trajectory==='open' && !state.flags.trajectoryChoiceSeen){
+    return event('trajectory_choice','KEPUTUSAN BESAR','Dua Arah yang Sama-sama Masuk Akal','Pekerjaan utama mulai stabil, tapi pemasukan sampingan juga sudah terbukti nyata. Kamu tidak bisa memberi energi maksimal ke keduanya tanpa trade-off.',[
+      {label:'Perkuat karier utama',hint:'Progres promosi lebih cepat saat bekerja',effects:[{type:'trajectory',value:'career'},{type:'flag',key:'trajectoryChoiceSeen',value:true},{type:'status_add',status:'fokus_karier'},{type:'history',text:'Umur 18 · Memilih memperkuat karier utama sebagai arah hidup.'}],result:'Kamu memilih stabilitas dan kedalaman di pekerjaan utama. Progres karier akan lebih cepat saat bekerja.'},
+      {label:'Bangun jalur mandiri juga',hint:'Kerja sampingan +15% dan lebih sering · kerja utama sedikit lebih melelahkan',effects:[{type:'trajectory',value:'independent'},{type:'flag',key:'trajectoryChoiceSeen',value:true},{type:'status_add',status:'jalur_mandiri'},{type:'history',text:'Umur 18 · Memilih membangun jalur mandiri di samping pekerjaan utama.'}],result:'Kamu menerima hidup yang lebih padat demi membangun sumber penghasilan dan identitas di luar pekerjaan utama.'}
+    ]);
+  }
+
+
+  if(state.player.statuses.includes('utang_keluarga') && state.player.money>=500000 && !state.flags.familyDebtRepaySeen){
+    return event('repay_family_ready','KEUANGAN','Kamu Sudah Bisa Membayar Kembali','Tabunganmu sudah cukup untuk mengembalikan uang yang pernah kamu pinjam dari keluarga.',[
+      {label:'Siapkan pelunasan',hint:'Rp300rb',effects:[{type:'flag',key:'familyDebtRepaySeen',value:true},{type:'opportunity',opportunity:{id:'repay_family',name:'Lunasi Utang Keluarga',summary:'Rp300rb · hilangkan beban utang'}}],result:'Pelunasan sekarang tersedia sebagai keputusan finansial.'},
+      {label:'Tahan uangnya dulu',effects:[{type:'flag',key:'familyDebtRepaySeen',value:true}],result:'Kamu memilih menjaga kas untuk sekarang. Utangnya tetap ada.'}
+    ]);
+  }
+
+  if(state.player.statuses.includes('utang_rian') && state.player.money>=500000 && !state.flags.rianDebtRepaySeen){
+    return event('repay_rian_ready','KEUANGAN','Utang ke Rian Masih Ada','Kondisi keuanganmu sudah membaik. Kamu sekarang bisa mengembalikan uang Rian tanpa menghabiskan seluruh saldo.',[
+      {label:'Siapkan pelunasan',hint:'Rp300rb',effects:[{type:'flag',key:'rianDebtRepaySeen',value:true},{type:'opportunity',opportunity:{id:'repay_rian',name:'Lunasi Utang Rian',summary:'Rp300rb · pulihkan beban hubungan'}}],result:'Pelunasan sekarang tersedia.'},
+      {label:'Belum sekarang',effects:[{type:'flag',key:'rianDebtRepaySeen',value:true}],result:'Kamu menunda. Rian tidak menagih, tapi utang itu belum hilang.'}
+    ]);
+  }
+
+  if(state.time.totalHours>=240 && !state.flags.rianJobUpdateSeen){
+    return event('rian_job_update','DUNIA BERGERAK','Rian Akhirnya Dapat Kerja Tetap','Tanpa menunggu keputusanmu, Rian berhasil mendapat pekerjaan sebagai kurir. Waktunya sekarang lebih terbatas, tapi penghasilannya jauh lebih stabil.',[
+      {label:'Ikut senang untuk dia',effects:[{type:'flag',key:'rianJobUpdateSeen',value:true},{type:'npc_state',npc:'rian',key:'life',value:'kurir'},{type:'relationship',target:'rian',value:3},{type:'recent',text:'Rian mulai bekerja sebagai kurir.'}],result:'Rian punya hidupnya sendiri. Hubungan kalian tetap ada, tetapi ritmenya mulai berubah.'}
+    ]);
+  }
+
+  if(state.time.totalHours>=360 && state.npc.dika.known && !state.flags.dikaMoveSeen){
+    const close=state.relationships.dika>=20;
+    return event('dika_move','DUNIA BERGERAK','Dika Mendapat Tawaran dari Bengkel Lain','Dika mendapat tawaran dengan gaji sedikit lebih tinggi. Ini bukan keputusanmu, tapi hubungan kalian memengaruhi seberapa terbuka dia membicarakannya.',[
+      {label:'Dukung dia ambil kesempatan',effects:[{type:'flag',key:'dikaMoveSeen',value:true},{type:'flag',key:'dikaLeftWorkshop',value:true},{type:'npc_state',npc:'dika',key:'life',value:'bengkel_lain'},{type:'relationship',target:'dika',value:5},{type:'recent',text:'Dika pindah ke bengkel lain untuk mengejar peluang baru.'}],result:'Dika pindah. Kalian bukan lagi rekan satu bengkel, tapi hubungan baik tetap bisa bertahan.'},
+      {label:close?'Bilang Sinar Jaya masih butuh dia':'Dengarkan saja',effects:[{type:'flag',key:'dikaMoveSeen',value:true},{type:'npc_state',npc:'dika',key:'life',value:close?'sinar_jaya':'bengkel_lain'},{type:'flag',key:'dikaLeftWorkshop',value:!close},{type:'relationship',target:'dika',value:close?3:1}],result:close?'Karena hubungan kalian cukup baik, Dika memutuskan bertahan dulu dan melihat apakah ada ruang tumbuh di Sinar Jaya.':'Dika akhirnya mengambil tawaran itu. Hidupnya terus bergerak meski kamu tidak ikut menentukan.'}
+    ]);
+  }
+
+  if(state.time.totalHours>=480 && state.npc.maya.known && !state.flags.mayaProgressSeen){
+    return event('maya_progress','DUNIA BERGERAK','Maya Dipindahkan ke Cabang Baru','Perusahaan mempercayakan Maya membantu membuka cabang baru. Posisi dan waktunya berubah tanpa menunggu perkembangan kariermu.',[
+      {label:'Ucapkan selamat',effects:[{type:'flag',key:'mayaProgressSeen',value:true},{type:'npc_state',npc:'maya',key:'life',value:'manajer_cabang'},{type:'relationship',target:'maya',value:3},{type:'recent',text:'Maya sekarang membantu mengelola cabang baru.'}],result:'Dunia kerja terus berubah. Maya sekarang punya tanggung jawab yang lebih besar.'}
+    ]);
+  }
+
+  if(state.career.changeSearchCount>state.career.changeHandledCount){
+    const choices=[];
+    const isMechanic=state.player.job==='mechanic_junior'||state.player.job==='mechanic_senior';
+    const isStore=state.player.job==='store_clerk'||state.player.job==='store_supervisor';
+    const isTech=state.player.job==='it_assistant';
+    if(!isMechanic && getSkillTier(state.skills.mechanics).id!=='novice') choices.push({label:'Lihat jalur bengkel',hint:'Skill Mekanikmu sudah cukup untuk kembali masuk.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_mechanic',name:'Beralih ke Jalur Bengkel',summary:'Pakai skill Mekanik yang sudah kamu bangun'}}],result:'Jalur bengkel masuk ke peluang aktifmu.'});
+    if(!isStore && getSkillTier(state.skills.social).id!=='novice') choices.push({label:'Lihat jalur toko',hint:'Skill Sosialmu sudah cukup untuk pindah.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_store',name:'Beralih ke Jalur Pelayanan',summary:'Pakai kemampuan Sosial sebagai karier utama'}}],result:'Jalur pelayanan masuk ke peluang aktifmu.'});
+    if(!isTech && getSkillTier(state.skills.technology).id!=='novice') choices.push({label:'Lihat jalur teknologi',hint:'Teknologi sudah cukup kuat untuk dicoba sebagai pekerjaan utama.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_it',name:'Beralih ke Jalur Teknologi',summary:'Jadikan Teknologi pekerjaan utama'}}],result:'Jalur Teknologi masuk ke peluang aktifmu.'});
+    choices.push({label:'Belum ada yang terasa tepat',effects:[{type:'career_search_handled'}],result:'Kamu tetap di pekerjaan sekarang. Tidak ada penalti karena sekadar melihat pilihan lain.'});
+    return event('career_crossroads','ARAH HIDUP','Kamu Melihat ke Luar Jalur Sekarang','Beberapa jam mencari informasi membuatmu sadar bahwa kemampuan yang dibangun di luar pekerjaan utama bisa dipakai untuk benar-benar pindah arah.',choices);
+  }
+
+  if(state.skills.technology>=60 && !state.assets.laptop && !state.flags.laptopOfferSeen){
+    return event('laptop_offer','KEPUTUSAN FINANSIAL','Laptop Bekas yang Masih Layak','Rian menemukan laptop bekas yang cukup untuk belajar dan mengambil pekerjaan teknologi ringan. Harganya Rp750rb—cukup besar dibanding tabunganmu sekarang.',[
+      {label:'Simpan peluang pembelian',hint:'Rp750rb · investasi untuk kerja sampingan Teknologi',effects:[{type:'flag',key:'laptopOfferSeen',value:true},{type:'opportunity',opportunity:{id:'buy_laptop',name:'Beli Laptop Bekas',summary:'Rp750rb · membuka kerja lepas Teknologi'}}],result:'Laptop itu sekarang menjadi pilihan investasi, bukan kewajiban.'},
+      {label:'Jangan beli',effects:[{type:'flag',key:'laptopOfferSeen',value:true}],result:'Kamu menjaga tabunganmu. Teknologi tetap bisa dipelajari tanpa membeli aset sekarang.'}
+    ]);
+  }
+
+  if(getSkillTier(state.skills.social).id!=='novice' && !state.flags.firstPromoSideSeen){
+    return event('promo_side_intro','PELUANG SAMPINGAN','Maya Menyebut Shift Promosi Lepas','Ada event promosi akhir pekan yang mencari orang untuk menghadapi pengunjung. Ini bukan pekerjaan tetap dan bisa diambil meski karier utamamu ada di bidang lain.',[
+      {label:'Minta kontaknya',effects:[{type:'flag',key:'firstPromoSideSeen',value:true},{type:'opportunity',opportunity:{id:'promo_side_job',name:'Shift Promosi',summary:'4j · Rp180rb · kerja sampingan Sosial',expireAt:state.time.totalHours+72}}],result:'Kerja sampingan Sosial sekarang tersedia.'},
+      {label:'Tidak tertarik',effects:[{type:'flag',key:'firstPromoSideSeen',value:true}],result:'Kamu memilih tidak memenuhi semua peluang dengan kerja tambahan.'}
+    ]);
+  }
+
+  if(state.player.money<0 && !state.flags.moneyPressureSeen){
+    return event('money_pressure','KEUANGAN','Uangmu Sudah Habis','Pengeluaran hidup membuat saldo masuk negatif. Kamu masih bisa lanjut, tapi sekarang setiap pilihan uang punya tekanan yang berbeda.',[
+      {label:'Pinjam dari keluarga',hint:'+Rp300rb · hubungan keluarga turun',effects:[{type:'money',value:300000},{type:'relationship',target:'family',value:-6},{type:'status_add',status:'utang_keluarga'},{type:'flag',key:'moneyPressureSeen',value:true},{type:'history',text:'Umur 18 · Meminjam uang dari keluarga.'}],result:'Kamu punya ruang bernapas, tapi utang itu sekarang menjadi bagian dari hidupmu.'},
+      {label:'Pinjam dari Rian',hint:'+Rp300rb · hubungan dengan Rian terpengaruh',effects:[{type:'money',value:300000},{type:'relationship',target:'rian',value:-6},{type:'status_add',status:'utang_rian'},{type:'flag',key:'moneyPressureSeen',value:true},{type:'history',text:'Umur 18 · Meminjam uang dari Rian.'}],result:'Rian membantu, tetapi hubungan kalian sekarang punya beban baru.'},
+      {label:'Cari jalan sendiri',effects:[{type:'flag',key:'moneyPressureSeen',value:true}],result:'Kamu memilih tidak berutang pada siapa pun. Tekanan keuangan tetap ada.'}
+    ]);
+  }
+
+  if(getCondition(state.player.fatigue).id==='exhausted' && !state.flags.exhaustedWarningSeen){
+    return event('exhausted','KONDISI','Sudah Terlalu Dipaksakan','Kamu mulai sulit fokus. Kalau terus dipaksa, keputusan kecil bisa berubah menjadi masalah besar.',[
+      {label:'Istirahat sekarang',effects:[{type:'hours',value:8},{type:'fatigue',value:-45},{type:'flag',key:'exhaustedWarningSeen',value:true}],result:'Kamu berhenti memaksakan diri dan memulihkan kondisi.'},
+      {label:'Tetap lanjut',effects:[{type:'flag',key:'exhaustedWarningSeen',value:true}],result:'Kamu memilih tetap jalan. Kondisimu masih buruk dan risiko tetap ada.'}
+    ]);
+  }
+
+  if(state.career.jobSearchCount>=1 && !state.flags.workshopOfferSeen){
+    return event('job_leads','PELUANG AWAL','Dua Lowongan yang Masuk Akal','Setelah bertanya ke beberapa tempat, kamu menemukan dua lowongan yang bisa langsung dicoba. Jalurnya berbeda, dan kamu tidak harus memutuskan sekarang.',[
+      {label:'Catat lowongan bengkel',hint:'Mekanik Junior · Rp120rb/hari',effects:[{type:'flag',key:'workshopOfferSeen',value:true},{type:'opportunity',opportunity:{id:'workshop_job',name:'Mekanik Junior',summary:'8j/hari · Rp120rb · belajar Mekanik'}},{type:'recent',text:'Lowongan Bengkel Sinar Jaya masuk daftar peluangmu.'}],result:'Kamu menyimpan kontak Bengkel Sinar Jaya.'},
+      {label:'Catat keduanya',hint:'Tambahkan juga pekerjaan toko.',effects:[{type:'flag',key:'workshopOfferSeen',value:true},{type:'flag',key:'storeOfferSeen',value:true},{type:'opportunity',opportunity:{id:'workshop_job',name:'Mekanik Junior',summary:'8j/hari · Rp120rb · belajar Mekanik'}},{type:'opportunity',opportunity:{id:'store_job',name:'Pramuniaga',summary:'8j/hari · Rp100rb · banyak interaksi sosial'}},{type:'recent',text:'Dua lowongan awal sekarang tersedia.'}],result:'Sekarang kamu punya dua jalur kerja yang benar-benar berbeda.'}
+    ]);
+  }
+
+  if(!state.player.job && state.career.jobSearchCount>=2 && state.flags.workshopOfferSeen && !state.flags.storeOfferSeen){
+    return event('store_lead','PELUANG KERJA','Lowongan Lain Muncul','Pencarian kedua membawamu ke Toko Serba Ada. Gajinya sedikit lebih rendah dari bengkel, tapi pekerjaan ini lebih banyak melatih cara menghadapi orang.',[
+      {label:'Catat lowongan toko',effects:[{type:'flag',key:'storeOfferSeen',value:true},{type:'opportunity',opportunity:{id:'store_job',name:'Pramuniaga',summary:'8j/hari · Rp100rb · banyak interaksi sosial'}},{type:'recent',text:'Lowongan Toko Serba Ada sekarang tersedia.'}],result:'Sekarang kamu punya alternatif pekerjaan yang lebih sosial.'},
+      {label:'Tidak tertarik',effects:[{type:'flag',key:'storeOfferSeen',value:true}],result:'Kamu memilih tidak mengejar pekerjaan toko.'}
+    ]);
+  }
+
+  if(state.player.job==='mechanic_junior' && workCount(state,'mechanic_junior')>=1 && !state.flags.firstWorkshopDay){
+    return event('first_workshop','HARI PERTAMA','Hari Pertama di Bengkel','Pak Arman memasangkanmu dengan Dika. Bengkel lebih sibuk dari yang terlihat dari luar.',[
+      {label:'Dengarkan baik-baik',effects:[{type:'skill',skill:'mechanics',value:10},{type:'skill',skill:'learning',value:6},{type:'relationship',target:'pak_arman',value:4},{type:'flag',key:'firstWorkshopDay',value:true},{type:'recent',text:'Pak Arman melihat kamu serius belajar.'}],result:'Kamu fokus memahami ritme bengkel.'},
+      {label:'Coba menonjol sejak awal',effects:[{type:'skill',skill:'mechanics',value:16},{type:'relationship',target:'dika',value:-2},{type:'flag',key:'firstWorkshopDay',value:true},{type:'recent',text:'Dika mulai menganggapmu sebagai pesaing.'}],result:'Kamu belajar cepat, tapi persaingan dengan Dika mulai terasa.'}
+    ]);
+  }
+
+  if(state.player.job==='store_clerk' && workCount(state,'store_clerk')>=1 && !state.flags.firstStoreDay){
+    return event('first_store','HARI PERTAMA','Hari Pertama di Toko','Maya, supervisormu, langsung menaruhmu di depan pelanggan. Pekerjaan ini lebih banyak soal membaca orang daripada mengangkat barang.',[
+      {label:'Amati cara Maya melayani',effects:[{type:'skill',skill:'social',value:12},{type:'skill',skill:'learning',value:5},{type:'relationship',target:'maya',value:4},{type:'store_progress',value:1},{type:'flag',key:'firstStoreDay',value:true},{type:'recent',text:'Maya melihat kamu cepat menangkap cara menghadapi pelanggan.'}],result:'Kamu belajar dari cara Maya berbicara dan menyelesaikan masalah.'},
+      {label:'Langsung coba sendiri',effects:[{type:'skill',skill:'social',value:18},{type:'relationship',target:'maya',value:1},{type:'store_progress',value:1},{type:'flag',key:'firstStoreDay',value:true}],result:'Beberapa percakapan canggung, tapi kamu cepat belajar.'}
+    ]);
+  }
+
+  if(state.player.job==='it_assistant' && workCount(state,'it_assistant')>=1 && !state.flags.firstTechDay){
+    return event('first_tech_day','HARI PERTAMA','Hari Pertama di Nusa Komputer','Nadia memberimu meja kerja kecil dan daftar masalah pelanggan. Ternyata pekerjaan IT bukan cuma soal komputer—kamu juga harus menjelaskan masalah ke orang yang tidak paham teknis.',[
+      {label:'Fokus menyelesaikan masalah',effects:[{type:'skill',skill:'technology',value:18},{type:'relationship',target:'nadia',value:2},{type:'tech_progress',value:1},{type:'flag',key:'firstTechDay',value:true}],result:'Kamu cepat masuk ke pekerjaan teknis dan membuktikan dasar kemampuanmu.'},
+      {label:'Fokus memahami pelanggan',effects:[{type:'skill',skill:'technology',value:10},{type:'skill',skill:'social',value:10},{type:'relationship',target:'nadia',value:4},{type:'tech_progress',value:1},{type:'flag',key:'firstTechDay',value:true}],result:'Kamu belajar bahwa solusi yang benar tetap harus bisa dijelaskan dengan sederhana.'}
+    ]);
+  }
+
+  if(state.player.job==='mechanic_junior' && workCount(state,'mechanic_junior')>=3 && !state.flags.dikaHelpSeen){
+    return event('dika_help','HUBUNGAN','Dika Belum Selesai','Bengkel hampir tutup, tapi Dika masih punya satu kendaraan yang belum selesai.',[
+      {label:'Bantu Dika',hint:'2j · lebih melelahkan',effects:[{type:'hours',value:2},{type:'fatigue',value:5},{type:'relationship',target:'dika',value:8},{type:'flag',key:'dikaHelpSeen',value:true},{type:'flag',key:'helpedDika',value:true},{type:'schedule',after:48,kind:'dika_return_favor'},{type:'recent',text:'Kamu pulang terlambat untuk membantu Dika.'}],result:'Dika tidak banyak bicara, tetapi jelas menghargainya.'},
+      {label:'Pulang',effects:[{type:'flag',key:'dikaHelpSeen',value:true},{type:'relationship',target:'dika',value:-1}],result:'Kamu memilih menjaga tenagamu dan pulang.'}
+    ]);
+  }
+
+  if(state.player.job==='mechanic_junior' && workCount(state,'mechanic_junior')>=5 && !state.flags.difficultRepairSeen){
+    const canHandle=(state.skills.mechanics||0)>=70 && getCondition(state.player.fatigue).id!=='exhausted';
+    return event('difficult_repair','PEKERJAAN','Perbaikan Sulit','Pak Arman memberimu pekerjaan yang sedikit di atas kemampuanmu sekarang. Ini kesempatan belajar, tapi kesalahan akan terlihat.',[
+      {label:'Coba tangani sendiri',hint:canHandle?'Risiko masih masuk akal.':'Risikonya tinggi dengan kondisi/skill sekarang.',effects:canHandle?[{type:'skill',skill:'mechanics',value:25},{type:'relationship',target:'pak_arman',value:5},{type:'promotion',value:4},{type:'flag',key:'difficultRepairSeen',value:true},{type:'recent',text:'Kamu menangani perbaikan sulit sendiri.'}]:[{type:'skill',skill:'mechanics',value:16},{type:'relationship',target:'pak_arman',value:-1},{type:'schedule',after:24,kind:'mechanic_complaint'},{type:'flag',key:'difficultRepairSeen',value:true},{type:'recent',text:'Kamu mengambil perbaikan sulit meski belum benar-benar siap.'}],result:canHandle?'Kamu menyelesaikannya sendiri. Pak Arman mulai melihatmu berbeda.':'Kamu menyelesaikannya, tapi belum yakin hasilnya benar-benar beres.'},
+      {label:'Minta arahan Pak Arman',effects:[{type:'skill',skill:'mechanics',value:12},{type:'relationship',target:'pak_arman',value:4},{type:'promotion',value:2},{type:'flag',key:'difficultRepairSeen',value:true}],result:'Kamu mengurangi risiko dan belajar langsung dari pengalaman Pak Arman.'},
+      {label:'Minta bantuan Dika',effects:[{type:'skill',skill:'mechanics',value:14},{type:'relationship',target:'dika',value:state.flags.helpedDika?4:0},{type:'flag',key:'difficultRepairSeen',value:true}],result:state.flags.helpedDika?'Dika membalas bantuanmu tanpa banyak komentar.':'Dika membantu, tapi hubungan kalian belum cukup dekat untuk terasa seperti kerja sama.'}
+    ]);
+  }
+
+  if(state.player.job==='store_clerk' && workCount(state,'store_clerk')>=3 && !state.flags.storeCustomerSeen){
+    return event('store_customer','PEKERJAAN','Pelanggan yang Sulit','Seorang pelanggan marah karena harga di rak berbeda dengan harga di kasir. Maya sedang sibuk di belakang.',[
+      {label:'Tangani sendiri',hint:'Kemampuan Sosial membantu.',effects:[{type:'skill',skill:'social',value:18},{type:'relationship',target:'maya',value:3},{type:'store_progress',value:2},{type:'flag',key:'storeCustomerSeen',value:true},{type:'schedule',after:48,kind:'store_customer_returns'},{type:'recent',text:'Kamu menyelesaikan masalah pelanggan tanpa memanggil Maya.'}],result:'Percakapannya tidak nyaman, tapi kamu berhasil menenangkan situasi.'},
+      {label:'Panggil Maya',effects:[{type:'skill',skill:'learning',value:6},{type:'relationship',target:'maya',value:1},{type:'store_progress',value:1},{type:'flag',key:'storeCustomerSeen',value:true}],result:'Maya mengambil alih dan kamu memperhatikan bagaimana dia menyelesaikannya.'}
+    ]);
+  }
+
+  if(state.player.job==='store_clerk' && workCount(state,'store_clerk')>=6 && !state.flags.storeRushSeen){
+    return event('store_rush','PEKERJAAN','Toko Mendadak Penuh','Dua rekan kerja tidak masuk dan antrean mulai panjang. Maya harus memilih siapa yang memegang lantai toko.',[
+      {label:'Ambil kendali di depan',hint:'Lebih melelahkan · progres karier tinggi',effects:[{type:'hours',value:2},{type:'fatigue',value:8},{type:'skill',skill:'social',value:20},{type:'relationship',target:'maya',value:5},{type:'store_progress',value:4},{type:'flag',key:'storeRushSeen',value:true}],result:'Kamu menjaga situasi tetap terkendali. Maya melihatmu bukan lagi sekadar pegawai baru.'},
+      {label:'Tetap di tugas biasa',effects:[{type:'skill',skill:'social',value:8},{type:'store_progress',value:1},{type:'flag',key:'storeRushSeen',value:true}],result:'Kamu membantu sebisanya tanpa mengambil tanggung jawab ekstra.'}
+    ]);
+  }
+
+  if(state.player.job==='it_assistant' && workCount(state,'it_assistant')>=3 && !state.flags.techDeadlineSeen){
+    return event('tech_deadline','PEKERJAAN','Klien Butuh Selesai Hari Ini','Satu komputer kantor harus kembali berfungsi sebelum sore. Masalahnya belum jelas dan waktumu terbatas.',[
+      {label:'Diagnosa sampai ketemu akar masalah',hint:'Lebih melelahkan · Teknologi meningkat besar',effects:[{type:'hours',value:2},{type:'fatigue',value:8},{type:'skill',skill:'technology',value:24},{type:'relationship',target:'nadia',value:4},{type:'tech_progress',value:3},{type:'flag',key:'techDeadlineSeen',value:true}],result:'Kamu berhasil menemukan masalah yang tidak kelihatan dari awal. Nadia mulai percaya pada penilaian teknismu.'},
+      {label:'Gunakan solusi cepat yang aman',effects:[{type:'skill',skill:'technology',value:12},{type:'tech_progress',value:1},{type:'flag',key:'techDeadlineSeen',value:true}],result:'Komputer kembali bisa dipakai. Solusinya bukan yang paling elegan, tapi kebutuhan klien terpenuhi.'}
+    ]);
+  }
+
+  if(state.player.job==='mechanic_junior' && state.skills.social>=100 && !state.flags.crossMechanicSocialSeen){
+    return event('mechanic_social_cross','KOMBINASI SKILL','Pelanggan Tidak Percaya','Seorang pelanggan tidak yakin dengan penjelasan biaya perbaikan. Pak Arman sedang menangani mobil lain.',[
+      {label:'Jelaskan masalahnya sendiri',hint:'Sosial Dasar membuka pilihan ini.',effects:[{type:'skill',skill:'social',value:12},{type:'relationship',target:'pak_arman',value:4},{type:'promotion',value:3},{type:'flag',key:'crossMechanicSocialSeen',value:true},{type:'recent',text:'Kamu menangani pelanggan sulit tanpa bantuan Pak Arman.'}],result:'Kemampuan sosialmu membuat skill mekanikmu lebih berguna. Pelanggan akhirnya memahami keputusan perbaikan.'},
+      {label:'Tunggu Pak Arman',effects:[{type:'flag',key:'crossMechanicSocialSeen',value:true}],result:'Kamu menunggu Pak Arman. Masalah selesai, tapi kamu tidak mengambil peran lebih jauh.'}
+    ]);
+  }
+
+  if(state.player.job==='store_clerk' && state.skills.technology>=100 && !state.flags.crossStoreTechSeen){
+    return event('store_tech_cross','KOMBINASI SKILL','Kasir Mendadak Bermasalah','Sistem kasir berhenti merespons saat toko sedang ramai. Teknisi baru bisa datang beberapa jam lagi.',[
+      {label:'Coba periksa sendiri',hint:'Teknologi Dasar membuka pilihan ini.',effects:[{type:'skill',skill:'technology',value:18},{type:'relationship',target:'maya',value:5},{type:'store_progress',value:3},{type:'flag',key:'crossStoreTechSeen',value:true},{type:'recent',text:'Kemampuan teknologimu menyelamatkan operasional toko.'}],result:'Kamu menemukan masalah sederhana pada koneksi perangkat dan membuat kasir berjalan lagi.'},
+      {label:'Jalankan kasir manual',effects:[{type:'skill',skill:'social',value:8},{type:'flag',key:'crossStoreTechSeen',value:true}],result:'Kamu menjaga pelanggan tetap tenang sampai teknisi datang.'}
+    ]);
+  }
+
+  if(state.skills.technology>=25 && !state.flags.techCourseSeen){
+    return event('tech_course','PELUANG BELAJAR','Kelas Komputer Malam','Kamu menemukan kelas komputer dasar yang lebih terstruktur daripada belajar sendiri. Biayanya cukup terasa untuk kondisi keuanganmu sekarang.',[
+      {label:'Simpan informasinya',hint:'Biaya Rp250rb · 8j',effects:[{type:'flag',key:'techCourseSeen',value:true},{type:'opportunity',opportunity:{id:'tech_course',name:'Kelas Komputer Dasar',summary:'8j · Rp250rb · peningkatan Teknologi besar'}}],result:'Kelas itu sekarang tersedia sebagai peluang.'},
+      {label:'Belajar sendiri dulu',effects:[{type:'flag',key:'techCourseSeen',value:true}],result:'Kamu memilih tidak mengeluarkan uang sekarang.'}
+    ]);
+  }
+
+  if(getSkillTier(state.skills.mechanics).id!=='novice' && state.relationships.rian>=20 && !state.flags.privateIntroSeen){
+    return event('private_intro','PELUANG','Rian Punya Kenalan','Rian kenal seseorang yang butuh servis sederhana. Dia mulai percaya kemampuanmu cukup untuk mengerjakannya di luar bengkel.',[
+      {label:'Minta detailnya',effects:[{type:'flag',key:'privateIntroSeen',value:true},{type:'opportunity',opportunity:{id:'private_repair',name:'Servis Privat',summary:'4j · Rp350rb · dari Rian',expireAt:state.time.totalHours+48}}],result:'Pekerjaan itu tersedia selama dua hari.'},
+      {label:'Belum sekarang',effects:[{type:'flag',key:'privateIntroSeen',value:true}],result:'Rian tidak mempermasalahkannya.'}
+    ]);
+  }
+
+  if(getSkillTier(state.skills.technology).id!=='novice' && state.relationships.rian>=20 && !state.flags.techSideJobSeen){
+    return event('tech_side_intro','PELUANG','Bukan Cuma Servis Motor','Rian punya kenalan lain yang butuh bantuan memasang komputer dan printer untuk usaha kecilnya. Bayarannya lumayan untuk pekerjaan beberapa jam.',[
+      {label:'Ambil kontaknya',effects:[{type:'flag',key:'techSideJobSeen',value:true},{type:'opportunity',opportunity:{id:'tech_side_job',name:'Setup Komputer Usaha',summary:'4j · Rp250rb · butuh Teknologi Dasar',expireAt:state.time.totalHours+72}}],result:'Sekarang kemampuan Teknologimu mulai punya nilai ekonomi.'},
+      {label:'Lewatkan',effects:[{type:'flag',key:'techSideJobSeen',value:true}],result:'Kamu belum ingin mengambil pekerjaan itu.'}
+    ]);
+  }
+
+  if(state.player.job==='mechanic_junior' && state.career.promotionProgress>=12 && getSkillTier(state.skills.mechanics).id!=='novice' && !state.flags.promotionTalkSeen){
+    return event('promotion_talk','PELUANG KARIER','Pak Arman Ingin Bicara','Pak Arman merasa kamu mulai bisa diberi tanggung jawab lebih besar.',[
+      {label:'Pertimbangkan promosi',effects:[{type:'flag',key:'promotionTalkSeen',value:true},{type:'opportunity',opportunity:{id:'promotion',name:'Promosi Mekanik Senior',summary:'Gaji Rp170rb/hari · tanggung jawab lebih besar'}}],result:'Promosi sekarang tersedia sebagai pilihan.'},
+      {label:'Belum sekarang',effects:[{type:'flag',key:'promotionTalkSeen',value:true}],result:'Kamu memilih tidak terburu-buru.'}
+    ]);
+  }
+
+  if(state.player.job==='store_clerk' && state.career.storeProgress>=10 && getSkillTier(state.skills.social).id!=='novice' && state.relationships.maya>=10 && !state.flags.storePromotionTalkSeen){
+    return event('store_promotion_talk','PELUANG KARIER','Maya Menawarkan Tanggung Jawab Baru','Maya ingin kamu mulai memegang shift ketika dia tidak ada. Gajinya lebih tinggi, tapi masalah orang lain juga akan ikut menjadi masalahmu.',[
+      {label:'Pertimbangkan posisi supervisor',effects:[{type:'flag',key:'storePromotionTalkSeen',value:true},{type:'opportunity',opportunity:{id:'store_promotion',name:'Supervisor Toko',summary:'Gaji Rp145rb/hari · tanggung jawab tim'}}],result:'Posisi Supervisor Toko sekarang tersedia.'},
+      {label:'Tetap sebagai pramuniaga',effects:[{type:'flag',key:'storePromotionTalkSeen',value:true}],result:'Kamu belum ingin membawa pekerjaan lebih jauh.'}
+    ]);
+  }
+
+  return null;
+}
+
+function applyEventChoice(state,choice){
+  resolveEffects(state,choice.effects||[]);
+  state.pendingEvent=null;
+  state.pacing=state.pacing||{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8};
+  state.pacing.lastResolvedEventAt=state.time.totalHours;
+  state.pacing.eventCount=(state.pacing.eventCount||0)+1;
+}
+
+function urgentStateNeedsAttention(state){
+  const rentPressure=state.housing?.id==='rented_room' && state.player.money<350000 && !state.flags.rentPressureSeen;
+  const moneyCrisis=state.player.money<0 && !state.flags.moneyPressureSeen;
+  const exhaustion=getCondition(state.player.fatigue).id==='exhausted' && !state.flags.exhaustedWarningSeen;
+  return rentPressure||moneyCrisis||exhaustion;
+}
+
+function refreshEvent(state){
+  if(state.pendingEvent) return;
+  state.pacing=state.pacing||{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8};
+  const gap=Math.max(4,state.pacing.minGapHours||8);
+  const elapsed=state.time.totalHours-(state.pacing.lastResolvedEventAt??-999);
+  if(!urgentStateNeedsAttention(state) && elapsed<gap) return;
+  const next=getNextEvent(state);
+  if(next){
+    state.pendingEvent=next;
+    state.pacing.lastSurfacedEventAt=state.time.totalHours;
+  }
+}
+
+function expireOpportunities(state){
+  const expired=state.opportunities.filter(item=>item.expireAt && item.expireAt<=state.time.totalHours);
+  if(expired.length) addRecent(state,'Sebuah peluang lewat karena waktunya habis.');
+  state.opportunities=state.opportunities.filter(item=>!item.expireAt || item.expireAt>state.time.totalHours);
+}
+
+// ---- src/ui/render.js ----
+
+const SKILL_NAMES={mechanics:'Mekanik',learning:'Belajar',social:'Sosial',technology:'Teknologi'};
+const STATUS_NAMES={tinggal_bersama_keluarga:'Tinggal bersama keluarga',tinggal_sendiri:'Tinggal sendiri',utang_keluarga:'Berutang pada keluarga',utang_rian:'Berutang pada Rian',punya_laptop:'Punya laptop sendiri',fokus_karier:'Memprioritaskan karier utama',jalur_mandiri:'Membangun jalur mandiri'};
+
+function money(value){
+  const sign=value<0?'-':'';
+  return sign+'Rp'+Math.abs(Math.round(value)).toLocaleString('id-ID');
+}
+function compactMoney(value){
+  const sign=value<0?'-':'';
+  return sign+'Rp'+Math.abs(Math.round(value/1000)).toLocaleString('id-ID')+'rb';
+}
+function esc(value=''){return String(value).replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));}
+
+function primarySkill(state){
+  if(state.player.job==='mechanic_junior'||state.player.job==='mechanic_senior') return 'mechanics';
+  if(state.player.job==='store_clerk'||state.player.job==='store_supervisor') return 'social';
+  if(state.player.job==='it_assistant') return 'technology';
+  return state.discoveredSkills.includes('technology')?'technology':'learning';
+}
+
+function skillProgress(state,id){
+  const xp=state.skills[id]||0;
+  const current=getSkillTier(xp);
+  const idx=skillTiers.findIndex(t=>t.id===current.id);
+  if(idx===skillTiers.length-1) return {pct:100,text:'Ahli'};
+  const next=skillTiers[idx+1];
+  const pct=Math.max(0,Math.min(100,((xp-current.min)/(next.min-current.min))*100));
+  return {pct,text:`${Math.round(pct)}% menuju ${next.label}`};
+}
+
+function jobText(state){
+  if(!state.player.job) return 'Belum bekerja';
+  return `${jobLabel(state.player.job)} · ${state.player.workplace}`;
+}
+
+
+function renderChapter(profile){
+  if(!profile) return '';
+  return `<div class="card event"><div class="label">BAB PERTAMA SELESAI</div><div class="section-title" style="font-size:1.2rem;margin-top:6px">${esc(profile.title)}</div><div class="muted small" style="margin-top:8px;line-height:1.5">${esc(profile.summary)}</div><div class="list" style="margin-top:12px">${profile.traits.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div><div class="note" style="margin-top:12px">Ini bukan ending. Ini pembacaan sementara dari hidup yang sudah kamu bangun di Vertical Slice.</div><button class="btn primary" style="width:100%;margin-top:14px" data-ui="close-chapter">Lanjutkan hidup</button></div>`;
+}
+
+function renderEvent(state){
+  const ev=state.pendingEvent;
+  if(!ev) return '';
+  return `<div class="card event">
+    <div class="label">${esc(ev.type||'SESUATU TERJADI')}</div>
+    <div class="section-title" style="font-size:1.1rem;margin-top:6px">${esc(ev.title)}</div>
+    <div class="muted small" style="margin-top:8px;line-height:1.5">${esc(ev.text)}</div>
+    <div class="choices">${ev.choices.map((choice,index)=>`<button class="choice" data-event-choice="${index}"><b>${esc(choice.label)}</b>${choice.hint?`<span class="hint">${esc(choice.hint)}</span>`:''}</button>`).join('')}</div>
+  </div>`;
+}
+
+function renderOpportunities(state){
+  if(!state.opportunities.length) return '';
+  return `<div class="opp">${state.opportunities.map(op=>{
+    const left=op.expireAt?Math.max(0,op.expireAt-state.time.totalHours):null;
+    const expiry=left===null?'':`<span class="label">${left<=24?'Segera berakhir':Math.ceil(left/24)+' hari lagi'}</span>`;
+    return `<div class="opp-card"><div class="row"><div><div class="label">PELUANG</div><div class="section-title" style="margin-top:4px">${esc(op.name)}</div><div class="muted small" style="margin-top:4px">${esc(op.summary)}</div></div>${expiry}</div><button class="btn primary" style="width:100%;margin-top:10px" data-opportunity="${esc(op.id)}">Ambil peluang</button></div>`;
+  }).join('')}</div>`;
+}
+
+function renderLife(state,ui){
+  const condition=getCondition(state.player.fatigue);
+  const skillId=primarySkill(state), tier=getSkillTier(state.skills[skillId]||0), progress=skillProgress(state,skillId);
+  const acts=availableActivities(state);
+  return `<section id="life">
+    ${renderChapter(ui.chapterProfile)}
+    ${ui.offlineSummary?`<div class="card event"><div class="label">SAAT KAMU PERGI</div><div class="section-title" style="font-size:1.1rem;margin-top:6px">Rutinitas tetap berjalan</div><div class="muted small" style="margin-top:8px;line-height:1.5">${ui.offlineSummary}</div><button class="btn primary" style="width:100%;margin-top:14px" data-ui="close-offline">Lanjutkan hidup</button></div>`:''}
+    ${ui.milestone?`<div class="card event"><div class="label">PENCAPAIAN VERTICAL SLICE</div><div class="section-title" style="font-size:1.15rem;margin-top:6px">Pilihan hidupmu mulai saling terhubung</div><div class="muted small" style="margin-top:8px;line-height:1.5">Karier, kemampuan, hubungan, dan pekerjaan sampingan sekarang mulai menciptakan konsekuensi yang berbeda. Ini sudah lebih dekat ke bentuk game final daripada sekadar prototipe loop.</div><button class="btn primary" style="width:100%;margin-top:14px" data-ui="close-milestone">Lanjut bermain</button></div>`:''}
+    ${renderEvent(state)}
+    <div class="card">
+      <div class="row"><div><div class="section-title">Hidup Saat Ini</div><div class="muted small">${esc(jobText(state))}</div></div><div class="pill">${esc(SKILL_NAMES[skillId])} · ${esc(tier.label)}</div></div>
+      <div style="margin-top:18px"><div class="row small"><span>${esc(SKILL_NAMES[skillId])}</span><span class="muted">${esc(progress.text)}</span></div><div class="bar"><div style="width:${progress.pct}%"></div></div></div>
+      ${renderOpportunities(state)}
+      ${state.pendingEvent?'':`<div style="margin-top:18px"><div class="muted small">Mau melakukan apa selanjutnya?</div><div class="actions">${acts.map(a=>`<button class="btn" data-action="${a.id}"><b>${esc(a.name)}</b><span class="hint">${esc(a.hint)}</span></button>`).join('')}</div></div>`}
+      <div class="result small">${esc(ui.result||'Pilihanmu akan menentukan jalur yang mulai terbuka.')}</div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="row"><div><div class="section-title">Rutinitas</div><div class="muted small">${state.flags.routineUnlocked?(state.routine.enabled?'Aktif · kerja otomatis, istirahat saat kelelahan':'Sudah tersedia, belum aktif'):'Terbuka setelah kamu punya ritme kerja.'}</div></div><button class="btn center" style="min-height:44px" data-ui="toggle-routine" ${state.flags.routineUnlocked?'':'disabled'}>${state.routine.enabled?'Matikan':'Aktifkan'}</button></div>
+      <div class="note" style="margin-top:10px">Rutinitas hanya mengotomatisasi hal repetitif. Event, peluang, dan keputusan penting tetap menunggumu.</div>
+      <div class="toolbar"><button class="btn center" data-ui="simulate-offline" ${state.routine.enabled?'':'disabled'}>Simulasikan saat tidak bermain</button>${ui.installAvailable?'<button class="btn center" data-ui="install">Pasang aplikasi</button>':''}</div>
+    </div>
+
+    <div class="stats"><div class="stat"><div class="label">Uang</div><div class="value">${compactMoney(state.player.money)}</div></div><div class="stat"><div class="label">Kondisi</div><div class="value">${condition.label}</div></div><div class="stat"><div class="label">Arah</div><div class="value">${esc(lifeDirection(state))}</div></div></div>
+  </section>`;
+}
+
+function renderWorld(state){
+  const people=[];
+  people.push({name:'Rian',relation:relationshipLabel(state.relationships.rian),desc:state.npc.rian?.life==='kurir'?'Teman masa kecil · sekarang bekerja sebagai kurir':'Teman masa kecil · ramah, impulsif'});
+  if(state.npc.pak_arman.known) people.push({name:'Pak Arman',relation:relationshipLabel(state.relationships.pak_arman),desc:'Pemilik bengkel · tegas, adil'});
+  if(state.npc.dika.known) people.push({name:'Dika',relation:relationshipLabel(state.relationships.dika),desc:state.npc.dika.life==='bengkel_lain'?'Mantan rekan bengkel · sekarang bekerja di tempat lain':'Rekan bengkel · ambisius, kompetitif'});
+  if(state.npc.maya.known) people.push({name:'Maya',relation:relationshipLabel(state.relationships.maya),desc:state.npc.maya.life==='manajer_cabang'?'Manajer cabang · tenang, praktis':'Supervisor toko · tenang, praktis'});
+  if(state.npc.nadia.known) people.push({name:'Nadia',relation:relationshipLabel(state.relationships.nadia),desc:'Teknisi senior · cepat, pragmatis'});
+  return `<section id="world">
+    <div class="card"><div class="section-title">Peluang Aktif</div><div class="list">${state.opportunities.length?state.opportunities.map(o=>`<div class="item"><b>${esc(o.name)}</b><div class="muted small" style="margin-top:4px">${esc(o.summary)}</div></div>`).join(''):'<div class="empty">Belum ada peluang penting.</div>'}</div>
+    <div class="section-title" style="margin-top:22px">Orang</div><div class="people">${people.map(p=>`<div class="person"><div class="row"><b>${esc(p.name)}</b><span class="small">${esc(p.relation)}</span></div><div class="muted small">${esc(p.desc)}</div></div>`).join('')}</div>
+    <div class="section-title" style="margin-top:22px">Perubahan Terbaru</div><div class="list">${state.recent.length?state.recent.map(x=>`<div class="item small">${esc(x)}</div>`).join(''):'<div class="empty">Belum ada hal penting.</div>'}</div></div>
+  </section>`;
+}
+
+function renderYou(state){
+  const skills=state.discoveredSkills.map(id=>({id,name:SKILL_NAMES[id]||id,tier:getSkillTier(state.skills[id]||0).label}));
+  const finance=financialState(state);
+  const statuses=state.player.statuses.map(id=>STATUS_NAMES[id]||id);
+  const profile=getOutcomeProfile(state);
+  return `<section id="you"><div class="card"><div class="section-title">Kamu</div><div class="list">${skills.map(s=>`<div class="item"><div class="row"><span>${esc(s.name)}</span><b>${esc(s.tier)}</b></div></div>`).join('')}</div>
+  <div class="divider"></div><div class="section-title">Jejak Hidup Saat Ini</div><div class="item" style="margin-top:10px"><div class="row"><b>${esc(profile.title)}</b>${state.flags.verticalSliceComplete?'<span class="pill">Bab 1</span>':''}</div><div class="muted small" style="margin-top:6px;line-height:1.45">${esc(profile.summary)}</div></div>
+  <div class="divider"></div><div class="section-title">Keadaan Hidup</div><div class="list"><div class="item"><div class="row"><span>Arah</span><b>${esc(lifeDirection(state))}</b></div></div><div class="item"><div class="row"><span>Strategi</span><b>${esc(trajectoryLabel(state))}</b></div></div><div class="item"><div class="row"><span>Tempat tinggal</span><b>${esc(housingLabel(state))}</b></div><div class="muted small" style="margin-top:4px">Biaya hidup: ${money(state.economy.livingCost)}/bulan</div></div><div class="item"><div class="row"><span>Keuangan</span><b>${esc(finance.label)}</b></div></div>${statuses.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>
+  <div class="divider"></div><div class="section-title">Karier & Sampingan</div><div class="small" style="margin-top:6px">${esc(jobText(state))}</div><div class="muted small" style="margin-top:5px">Total pendapatan sampingan: ${money(state.career.sideIncomeTotal||0)}</div>
+  <div class="divider"></div><div class="section-title">Riwayat Hidup</div><div class="list">${state.history.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>
+  <button class="btn center" style="width:100%;margin-top:16px" data-ui="reset">Mulai ulang save</button></div></section>`;
+}
+
+function render(root,state,ui){
+  const cal=getCalendar(state.time.totalHours),condition=getCondition(state.player.fatigue);
+  root.innerHTML=`
+    <header class="top"><div><div class="muted small">Umur ${cal.age} · Bulan ${cal.month} Hari ${cal.day} · ${String(cal.hour).padStart(2,'0')}:00</div><div class="name">${esc(state.player.name)}</div><div class="muted small">${esc(jobText(state))}</div></div><div><div class="money">${money(state.player.money)}</div><div class="muted small" style="text-align:right">Kondisi: ${condition.label}</div></div></header>
+    <main>${ui.tab==='life'?renderLife(state,ui):ui.tab==='world'?renderWorld(state):renderYou(state)}</main>
+    <nav class="tabs"><button class="tab ${ui.tab==='life'?'active':''}" data-tab="life">HIDUP</button><button class="tab ${ui.tab==='world'?'active':''}" data-tab="world">DUNIA</button><button class="tab ${ui.tab==='you'?'active':''}" data-tab="you">KAMU</button></nav>`;
+}
+
+// ---- src/app.js ----
+
+const root=document.getElementById('app');
+let state=loadState();
+let deferredPrompt=null;
+const ui={tab:'life',result:'Pilihanmu akan menentukan jalur yang mulai terbuka.',offlineSummary:'',milestone:false,chapterProfile:null,installAvailable:false};
+
+function persist(){ saveState(state); }
+
+function postStep(){
+  expireOpportunities(state);
+  processLivingCosts(state);
+  if(state.career.workCount>=3) state.flags.routineUnlocked=true;
+  refreshEvent(state);
+  checkMilestone();
+  checkVerticalSliceOutcome();
+  persist();
+  draw();
+}
+
+function checkMilestone(){
+  if(state.flags.milestoneShown) return;
+  const mechanicDepth=state.flags.promoted;
+  const storeDepth=state.flags.storePromoted;
+  const techDepth=state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=3;
+  const mixedDepth=(getSkillTier(state.skills.technology).id!=='novice' && getSkillTier(state.skills.social).id!=='novice') ||
+    (getSkillTier(state.skills.mechanics).id!=='novice' && getSkillTier(state.skills.social).id!=='novice');
+  if(mechanicDepth||storeDepth||techDepth||mixedDepth){
+    state.flags.milestoneShown=true;
+    ui.milestone=true;
+  }
+}
+
+function checkVerticalSliceOutcome(){
+  if(state.flags.verticalSliceComplete || state.pendingEvent) return;
+  if(!isVerticalSliceReady(state)) return;
+  const profile=getOutcomeProfile(state);
+  state.flags.verticalSliceComplete=true;
+  state.life.outcomeAt=state.time.totalHours;
+  addHistory(state,`Umur 18 · Bab pertama hidupmu terbentuk sebagai “${profile.title}”.`);
+  addRecent(state,`Vertical Slice selesai dengan arah sementara: ${profile.title}.`);
+  ui.chapterProfile=profile;
+}
+
+function draw(){
+  render(root,state,ui);
+  bind();
+}
+
+function bind(){
+  root.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{ui.tab=btn.dataset.tab;draw()}));
+  root.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>runActivity(btn.dataset.action)));
+  root.querySelectorAll('[data-opportunity]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const id=btn.dataset.opportunity;
+    const existed=state.opportunities.some(x=>x.id===id);
+    const oldJob=state.player.job;
+    ui.result=runOpportunity(state,id);
+    if(existed && !state.opportunities.some(x=>x.id===id)){
+      state.playtest.opportunitiesTaken=(state.playtest.opportunitiesTaken||0)+1;
+      if(oldJob && state.player.job && oldJob!==state.player.job) state.playtest.careerChanges=(state.playtest.careerChanges||0)+1;
+    }
+    postStep();
+  }));
+  root.querySelectorAll('[data-event-choice]').forEach(btn=>btn.addEventListener('click',()=>{
+    const choice=state.pendingEvent?.choices?.[Number(btn.dataset.eventChoice)];
+    if(!choice) return;
+    applyEventChoice(state,choice);
+    ui.result=choice.result||'Keputusan dibuat.';
+    postStep();
+  }));
+  root.querySelectorAll('[data-ui]').forEach(btn=>btn.addEventListener('click',()=>handleUi(btn.dataset.ui)));
+}
+
+function runActivity(id){
+  if(state.pendingEvent) return;
+  const allowed=availableActivities(state).some(a=>a.id===id);
+  if(!allowed) return;
+  const result=executeActivity(state,id);
+  if(result && typeof result==='object' && result.error){ ui.result=result.error; draw(); return; }
+  state.playtest.actions=(state.playtest.actions||0)+1;
+  ui.result=result;
+  postStep();
+}
+
+function handleUi(action){
+  if(action==='toggle-routine'){
+    if(!state.flags.routineUnlocked) return;
+    state.routine.enabled=!state.routine.enabled;
+    ui.result=state.routine.enabled?'Rutinitas aktif. Aktivitas repetitif bisa berjalan saat kamu pergi.':'Rutinitas dimatikan.';
+    persist(); draw(); return;
+  }
+  if(action==='simulate-offline'){
+    if(!state.routine.enabled) return;
+    const report=processOffline(4*60*60*1000);
+    ui.offlineSummary=`<b>${report.gameHours} jam waktu game berlalu.</b><br>Perubahan uang: ${formatSignedMoney(report.moneyDelta)}${report.stopped?'<br>Ada keputusan penting yang menghentikan rutinitas.':''}`;
+    draw(); return;
+  }
+  if(action==='close-offline'){ ui.offlineSummary=''; draw(); return; }
+  if(action==='close-milestone'){ ui.milestone=false; draw(); return; }
+  if(action==='close-chapter'){ ui.chapterProfile=null; draw(); return; }
+  if(action==='reset'){
+    if(confirm('Mulai ulang seluruh save Vertical Slice?')){
+      clearState(); state=createInitialState(); ui.tab='life'; ui.result='Hidup baru dimulai.'; ui.offlineSummary=''; ui.milestone=false; ui.chapterProfile=null; postStep();
+    }
+    return;
+  }
+  if(action==='install' && deferredPrompt){
+    deferredPrompt.prompt(); deferredPrompt.userChoice.finally(()=>{deferredPrompt=null;ui.installAvailable=false;draw()});
+  }
+}
+
+function formatSignedMoney(value){
+  const sign=value>0?'+':value<0?'-':'';
+  return sign+'Rp'+Math.abs(Math.round(value)).toLocaleString('id-ID');
+}
+
+function processOffline(realMs){
+  const capped=Math.min(Math.max(0,realMs),8*60*60*1000);
+  const budget=Math.floor(capped/(60*60*1000)*6);
+  const startHours=state.time.totalHours,startMoney=state.player.money;
+  let consumed=0;
+  state.playtest.offlineBatches=(state.playtest.offlineBatches||0)+1;
+  while(consumed<budget && !state.pendingEvent){
+    const before=state.time.totalHours;
+    const remaining=budget-consumed;
+    if(!state.player.job){
+      if(remaining<4) break;
+      const result=executeActivity(state,state.player.money>=20000?'study':'family');
+      if(result?.error) break;
+    }else if(getCondition(state.player.fatigue).id==='exhausted'){
+      if(remaining<8) break;
+      executeActivity(state,'rest');
+    }else if(remaining>=8){
+      executeActivity(state,'work');
+    }else if(remaining>=4 && state.player.money>=20000){
+      executeActivity(state,'study');
+    }else{
+      break;
+    }
+    state.playtest.actions=(state.playtest.actions||0)+1;
+    consumed+=state.time.totalHours-before;
+    expireOpportunities(state);
+    processLivingCosts(state);
+    if(state.career.workCount>=3) state.flags.routineUnlocked=true;
+    refreshEvent(state);
+  }
+  checkMilestone();
+  checkVerticalSliceOutcome();
+  persist();
+  return {gameHours:state.time.totalHours-startHours,moneyDelta:state.player.money-startMoney,stopped:!!state.pendingEvent};
+}
+
+window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault(); deferredPrompt=event; ui.installAvailable=true; draw();
+});
+window.addEventListener('appinstalled',()=>{
+  deferredPrompt=null; ui.installAvailable=false; addRecent(state,'Aplikasi berhasil di-install di perangkat ini.'); persist(); draw();
+});
+
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
+
+const elapsed=Date.now()-(state.lastSeen||Date.now());
+if(state.routine.enabled && elapsed>45*60*1000){
+  const report=processOffline(elapsed);
+  if(report.gameHours>0) ui.offlineSummary=`<b>${report.gameHours} jam waktu game berlalu.</b><br>Perubahan uang: ${formatSignedMoney(report.moneyDelta)}${report.stopped?'<br>Ada keputusan penting yang menghentikan rutinitas.':''}`;
+}
+processLivingCosts(state);
+refreshEvent(state);
+checkVerticalSliceOutcome();
+persist();
+draw();
+  </script>
 </body>
 </html>
