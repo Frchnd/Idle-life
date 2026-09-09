@@ -4,7 +4,7 @@ import {jobLabel} from '../data/jobs.js';
 import {availableActivities} from '../data/activities.js';
 
 const SKILL_NAMES={mechanics:'Mekanik',learning:'Belajar',social:'Sosial',technology:'Teknologi'};
-const STATUS_NAMES={tinggal_bersama_keluarga:'Tinggal bersama keluarga',utang_keluarga:'Berutang pada keluarga',utang_rian:'Berutang pada Rian'};
+const STATUS_NAMES={tinggal_bersama_keluarga:'Tinggal bersama keluarga',utang_keluarga:'Berutang pada keluarga',utang_rian:'Berutang pada Rian',punya_laptop:'Punya laptop sendiri'};
 
 function money(value){
   const sign=value<0?'-':'';
@@ -86,10 +86,10 @@ function renderLife(state,ui){
 
 function renderWorld(state){
   const people=[];
-  people.push({name:'Rian',relation:relationshipLabel(state.relationships.rian),desc:'Teman masa kecil · ramah, impulsif'});
+  people.push({name:'Rian',relation:relationshipLabel(state.relationships.rian),desc:state.npc.rian?.life==='kurir'?'Teman masa kecil · sekarang bekerja sebagai kurir':'Teman masa kecil · ramah, impulsif'});
   if(state.npc.pak_arman.known) people.push({name:'Pak Arman',relation:relationshipLabel(state.relationships.pak_arman),desc:'Pemilik bengkel · tegas, adil'});
-  if(state.npc.dika.known) people.push({name:'Dika',relation:relationshipLabel(state.relationships.dika),desc:'Rekan bengkel · ambisius, kompetitif'});
-  if(state.npc.maya.known) people.push({name:'Maya',relation:relationshipLabel(state.relationships.maya),desc:'Supervisor toko · tenang, praktis'});
+  if(state.npc.dika.known) people.push({name:'Dika',relation:relationshipLabel(state.relationships.dika),desc:state.npc.dika.life==='bengkel_lain'?'Mantan rekan bengkel · sekarang bekerja di tempat lain':'Rekan bengkel · ambisius, kompetitif'});
+  if(state.npc.maya.known) people.push({name:'Maya',relation:relationshipLabel(state.relationships.maya),desc:state.npc.maya.life==='manajer_cabang'?'Manajer cabang · tenang, praktis':'Supervisor toko · tenang, praktis'});
   if(state.npc.nadia.known) people.push({name:'Nadia',relation:relationshipLabel(state.relationships.nadia),desc:'Teknisi senior · cepat, pragmatis'});
   return `<section id="world">
     <div class="card"><div class="section-title">Peluang Aktif</div><div class="list">${state.opportunities.length?state.opportunities.map(o=>`<div class="item"><b>${esc(o.name)}</b><div class="muted small" style="margin-top:4px">${esc(o.summary)}</div></div>`).join(''):'<div class="empty">Belum ada peluang penting.</div>'}</div>
@@ -104,7 +104,7 @@ function renderYou(state){
   const statuses=state.player.statuses.map(id=>STATUS_NAMES[id]||id);
   return `<section id="you"><div class="card"><div class="section-title">Kamu</div><div class="list">${skills.map(s=>`<div class="item"><div class="row"><span>${esc(s.name)}</span><b>${esc(s.tier)}</b></div></div>`).join('')}</div>
   <div class="divider"></div><div class="section-title">Keadaan Hidup</div><div class="list"><div class="item"><div class="row"><span>Arah</span><b>${esc(lifeDirection(state))}</b></div></div><div class="item"><div class="row"><span>Keuangan</span><b>${esc(finance.label)}</b></div></div>${statuses.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>
-  <div class="divider"></div><div class="section-title">Karier</div><div class="small" style="margin-top:6px">${esc(jobText(state))}</div>
+  <div class="divider"></div><div class="section-title">Karier & Sampingan</div><div class="small" style="margin-top:6px">${esc(jobText(state))}</div><div class="muted small" style="margin-top:5px">Total pendapatan sampingan: ${money(state.career.sideIncomeTotal||0)}</div>
   <div class="divider"></div><div class="section-title">Riwayat Hidup</div><div class="list">${state.history.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>
   <button class="btn center" style="width:100%;margin-top:16px" data-ui="reset">Mulai ulang save</button></div></section>`;
 }

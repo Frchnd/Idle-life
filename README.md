@@ -1,20 +1,19 @@
-# Hidup — Vertical Slice Build G
+# Hidup — Vertical Slice Build H
 
-Build G memperdalam Fase 2 tanpa menambah tab baru.
+Build H membuat jalur hidup lebih fleksibel tanpa menambah tab baru.
 
 ## Perubahan utama
 
-- Save Build F dimigrasikan otomatis; progres tidak perlu di-reset.
-- Jalur Bengkel: perbaikan sulit, konsekuensi pelanggan kembali, bantuan Dika yang bisa dibalas, dan promosi Mekanik Senior.
-- Jalur Toko: pelanggan sulit, rush shift, pelanggan kembali, kombinasi Teknologi + pekerjaan toko, dan promosi Supervisor Toko.
-- Jalur Teknologi: kelas komputer, side job melalui Rian, rekomendasi tertunda, pekerjaan Asisten Teknisi IT, dan event deadline klien.
-- Skill lintas jalur mulai berinteraksi. Sosial bisa membantu karier mekanik; Teknologi bisa membantu pekerjaan toko.
-- State hidup baru: arah hidup, kondisi keuangan, dan utang kontekstual.
-- Biaya hidup bulanan mulai berjalan untuk memberi tekanan ekonomi jangka menengah.
-- Service worker/cache diperbarui untuk Build G.
+- Save Build G tetap dipakai dan dimigrasikan otomatis ke versi 4.
+- Setelah punya ritme kerja, pemain bisa memakai **Cari Peluang Lain** untuk berpindah karier tanpa reset skill atau hubungan.
+- Mekanik, Sosial, dan Teknologi bisa tetap menghasilkan kerja sampingan walau bukan pekerjaan utama.
+- Servis privat sekarang dapat berulang lewat rekomendasi pelanggan.
+- Skill Sosial membuka shift promosi lepas; laptop membuka freelance Teknologi berulang.
+- Keputusan finansial baru: membeli laptop sebagai aset produktif dan melunasi utang keluarga/Rian.
+- NPC mulai bergerak sendiri: Rian mendapat pekerjaan, Dika bisa pindah bengkel, Maya bisa naik tanggung jawab tanpa menunggu pemain.
+- Tab tetap hanya HIDUP / DUNIA / KAMU.
+- Cache service worker diperbarui untuk Build H.
 
 ## Deploy GitHub Pages
 
-Ganti isi root repo dengan isi folder ini, commit, lalu push ke branch yang dipakai GitHub Pages.
-
-Karena service worker lama bisa masih aktif beberapa saat, setelah deploy lakukan refresh/reopen aplikasi. Build G memakai nama cache baru dan akan membersihkan cache Build F saat service worker baru aktif.
+Ganti isi root repo dengan isi folder/ZIP Build H, commit, lalu push. Setelah deploy, tutup dan buka ulang PWA atau refresh agar service worker Build H mengambil cache terbaru.

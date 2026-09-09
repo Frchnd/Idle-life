@@ -39,6 +39,10 @@ export function resolveEffects(state,effects=[]){
       case 'promotion': state.career.promotionProgress+=effect.value; break;
       case 'store_progress': state.career.storeProgress+=effect.value; break;
       case 'tech_progress': state.career.techProgress+=effect.value; break;
+      case 'career_search_handled': state.career.changeHandledCount=state.career.changeSearchCount; break;
+      case 'side_income': state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+effect.value; break;
+      case 'asset': state.assets[effect.asset]=effect.value; break;
+      case 'npc_state': if(state.npc[effect.npc]) state.npc[effect.npc][effect.key]=effect.value; break;
       case 'job':
         state.player.job=effect.job;
         state.player.workplace=effect.workplace;

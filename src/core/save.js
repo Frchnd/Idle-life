@@ -25,6 +25,7 @@ function mergeState(base,saved){
   out.economy={...base.economy,...(saved.economy||{})};
   out.skills={...base.skills,...(saved.skills||{})};
   out.relationships={...base.relationships,...(saved.relationships||{})};
+  out.assets={...base.assets,...(saved.assets||{})};
   out.npc={...base.npc,...(saved.npc||{})};
   for(const key of Object.keys(base.npc)) out.npc[key]={...base.npc[key],...(saved.npc?.[key]||{})};
   out.career={...base.career,...(saved.career||{})};

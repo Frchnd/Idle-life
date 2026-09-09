@@ -22,6 +22,7 @@ export function availableActivities(state){
   list.push({id:'study',name:'Belajar',hint:'4j · Rp20rb',duration:4});
   list.push({id:'rest',name:'Istirahat',hint:'8j · pulihkan kondisi',duration:8});
   list.push({id:'rian',name:'Main dengan Rian',hint:'3j · sosial',duration:3});
+  if(state.career.workCount>=4) list.push({id:'career_search',name:'Cari Peluang Lain',hint:'4j · lihat arah karier lain',duration:4});
   return list;
 }
 
@@ -55,6 +56,12 @@ export function executeActivity(state,id){
     state.relationships.rian=Math.min(60,state.relationships.rian+3);
     state.skills.social+=6;
     return 'Kamu menghabiskan waktu bersama Rian. Hubungan kalian tetap hangat.';
+  }
+  if(id==='career_search'){
+    state.time.totalHours+=4;
+    state.player.fatigue=Math.min(100,state.player.fatigue+5);
+    state.career.changeSearchCount++;
+    return 'Kamu meluangkan waktu melihat lowongan, bertanya ke kenalan, dan membandingkan arah hidup lain.';
   }
   if(id==='rest'){
     state.time.totalHours+=8;

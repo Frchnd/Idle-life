@@ -44,6 +44,28 @@ function dueScheduledEvent(state){
     ]);
   }
 
+
+  if(item.kind==='private_repeat_offer'){
+    return event('private_repeat_offer','PELUANG SAMPINGAN','Pelanggan Lama Membawa Teman Lagi','Beberapa hari berlalu dan jaringan kecil pelangganmu masih hidup. Ada satu servis baru yang bisa kamu ambil tanpa meninggalkan pekerjaan utama.',[
+      {label:'Buka jadwal servis',effects:[{type:'opportunity',opportunity:{id:'private_repeat',name:'Servis Rekomendasi',summary:'4j · Rp300rb · bisa dijalankan sebagai kerja sampingan',expireAt:state.time.totalHours+72}}],result:'Satu servis rekomendasi masuk ke peluang aktifmu.'},
+      {label:'Lewatkan kali ini',effects:[],result:'Kamu membiarkan kesempatan itu lewat tanpa merusak jaringan pelangganmu.'}
+    ]);
+  }
+
+  if(item.kind==='tech_freelance_offer'){
+    return event('tech_freelance_offer','PELUANG SAMPINGAN','Ada Pesan Masuk ke Laptopmu','Seseorang membutuhkan bantuan setup, backup, dan perapihan komputer. Pekerjaan kecil ini bisa dikerjakan di luar jam kerja utama.',[
+      {label:'Ambil detail pekerjaannya',effects:[{type:'opportunity',opportunity:{id:'tech_freelance',name:'Freelance Teknologi',summary:'4j · Rp220rb · dari laptop sendiri',expireAt:state.time.totalHours+72}}],result:'Pekerjaan freelance tersedia selama beberapa hari.'},
+      {label:'Abaikan dulu',effects:[{type:'schedule',after:96,kind:'tech_freelance_offer'}],result:'Kamu memilih menjaga waktu luangmu. Peluang lain bisa muncul nanti.'}
+    ]);
+  }
+
+  if(item.kind==='promo_side_offer'){
+    return event('promo_side_offer','PELUANG SAMPINGAN','Shift Promosi Akhir Pekan','Sebuah brand lokal butuh orang untuk menjaga booth promosi selama beberapa jam. Kemampuan Sosialmu membuat pekerjaan seperti ini mulai datang dari mulut ke mulut.',[
+      {label:'Ambil shift promosi',effects:[{type:'opportunity',opportunity:{id:'promo_side_job',name:'Shift Promosi',summary:'4j · Rp180rb · latih Sosial',expireAt:state.time.totalHours+72}}],result:'Shift promosi masuk ke peluang aktifmu.'},
+      {label:'Lewatkan',effects:[{type:'schedule',after:120,kind:'promo_side_offer'}],result:'Kamu memilih tidak memenuhi setiap jam kosong dengan pekerjaan.'}
+    ]);
+  }
+
   return null;
 }
 
@@ -52,6 +74,67 @@ export function getNextEvent(state){
 
   const scheduled=dueScheduledEvent(state);
   if(scheduled) return scheduled;
+
+
+  if(state.player.statuses.includes('utang_keluarga') && state.player.money>=500000 && !state.flags.familyDebtRepaySeen){
+    return event('repay_family_ready','KEUANGAN','Kamu Sudah Bisa Membayar Kembali','Tabunganmu sudah cukup untuk mengembalikan uang yang pernah kamu pinjam dari keluarga.',[
+      {label:'Siapkan pelunasan',hint:'Rp300rb',effects:[{type:'flag',key:'familyDebtRepaySeen',value:true},{type:'opportunity',opportunity:{id:'repay_family',name:'Lunasi Utang Keluarga',summary:'Rp300rb · hilangkan beban utang'}}],result:'Pelunasan sekarang tersedia sebagai keputusan finansial.'},
+      {label:'Tahan uangnya dulu',effects:[{type:'flag',key:'familyDebtRepaySeen',value:true}],result:'Kamu memilih menjaga kas untuk sekarang. Utangnya tetap ada.'}
+    ]);
+  }
+
+  if(state.player.statuses.includes('utang_rian') && state.player.money>=500000 && !state.flags.rianDebtRepaySeen){
+    return event('repay_rian_ready','KEUANGAN','Utang ke Rian Masih Ada','Kondisi keuanganmu sudah membaik. Kamu sekarang bisa mengembalikan uang Rian tanpa menghabiskan seluruh saldo.',[
+      {label:'Siapkan pelunasan',hint:'Rp300rb',effects:[{type:'flag',key:'rianDebtRepaySeen',value:true},{type:'opportunity',opportunity:{id:'repay_rian',name:'Lunasi Utang Rian',summary:'Rp300rb · pulihkan beban hubungan'}}],result:'Pelunasan sekarang tersedia.'},
+      {label:'Belum sekarang',effects:[{type:'flag',key:'rianDebtRepaySeen',value:true}],result:'Kamu menunda. Rian tidak menagih, tapi utang itu belum hilang.'}
+    ]);
+  }
+
+  if(state.time.totalHours>=240 && !state.flags.rianJobUpdateSeen){
+    return event('rian_job_update','DUNIA BERGERAK','Rian Akhirnya Dapat Kerja Tetap','Tanpa menunggu keputusanmu, Rian berhasil mendapat pekerjaan sebagai kurir. Waktunya sekarang lebih terbatas, tapi penghasilannya jauh lebih stabil.',[
+      {label:'Ikut senang untuk dia',effects:[{type:'flag',key:'rianJobUpdateSeen',value:true},{type:'npc_state',npc:'rian',key:'life',value:'kurir'},{type:'relationship',target:'rian',value:3},{type:'recent',text:'Rian mulai bekerja sebagai kurir.'}],result:'Rian punya hidupnya sendiri. Hubungan kalian tetap ada, tetapi ritmenya mulai berubah.'}
+    ]);
+  }
+
+  if(state.time.totalHours>=360 && state.npc.dika.known && !state.flags.dikaMoveSeen){
+    const close=state.relationships.dika>=20;
+    return event('dika_move','DUNIA BERGERAK','Dika Mendapat Tawaran dari Bengkel Lain','Dika mendapat tawaran dengan gaji sedikit lebih tinggi. Ini bukan keputusanmu, tapi hubungan kalian memengaruhi seberapa terbuka dia membicarakannya.',[
+      {label:'Dukung dia ambil kesempatan',effects:[{type:'flag',key:'dikaMoveSeen',value:true},{type:'flag',key:'dikaLeftWorkshop',value:true},{type:'npc_state',npc:'dika',key:'life',value:'bengkel_lain'},{type:'relationship',target:'dika',value:5},{type:'recent',text:'Dika pindah ke bengkel lain untuk mengejar peluang baru.'}],result:'Dika pindah. Kalian bukan lagi rekan satu bengkel, tapi hubungan baik tetap bisa bertahan.'},
+      {label:close?'Bilang Sinar Jaya masih butuh dia':'Dengarkan saja',effects:[{type:'flag',key:'dikaMoveSeen',value:true},{type:'npc_state',npc:'dika',key:'life',value:close?'sinar_jaya':'bengkel_lain'},{type:'flag',key:'dikaLeftWorkshop',value:!close},{type:'relationship',target:'dika',value:close?3:1}],result:close?'Karena hubungan kalian cukup baik, Dika memutuskan bertahan dulu dan melihat apakah ada ruang tumbuh di Sinar Jaya.':'Dika akhirnya mengambil tawaran itu. Hidupnya terus bergerak meski kamu tidak ikut menentukan.'}
+    ]);
+  }
+
+  if(state.time.totalHours>=480 && state.npc.maya.known && !state.flags.mayaProgressSeen){
+    return event('maya_progress','DUNIA BERGERAK','Maya Dipindahkan ke Cabang Baru','Perusahaan mempercayakan Maya membantu membuka cabang baru. Posisi dan waktunya berubah tanpa menunggu perkembangan kariermu.',[
+      {label:'Ucapkan selamat',effects:[{type:'flag',key:'mayaProgressSeen',value:true},{type:'npc_state',npc:'maya',key:'life',value:'manajer_cabang'},{type:'relationship',target:'maya',value:3},{type:'recent',text:'Maya sekarang membantu mengelola cabang baru.'}],result:'Dunia kerja terus berubah. Maya sekarang punya tanggung jawab yang lebih besar.'}
+    ]);
+  }
+
+  if(state.career.changeSearchCount>state.career.changeHandledCount){
+    const choices=[];
+    const isMechanic=state.player.job==='mechanic_junior'||state.player.job==='mechanic_senior';
+    const isStore=state.player.job==='store_clerk'||state.player.job==='store_supervisor';
+    const isTech=state.player.job==='it_assistant';
+    if(!isMechanic && getSkillTier(state.skills.mechanics).id!=='novice') choices.push({label:'Lihat jalur bengkel',hint:'Skill Mekanikmu sudah cukup untuk kembali masuk.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_mechanic',name:'Beralih ke Jalur Bengkel',summary:'Pakai skill Mekanik yang sudah kamu bangun'}}],result:'Jalur bengkel masuk ke peluang aktifmu.'});
+    if(!isStore && getSkillTier(state.skills.social).id!=='novice') choices.push({label:'Lihat jalur toko',hint:'Skill Sosialmu sudah cukup untuk pindah.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_store',name:'Beralih ke Jalur Pelayanan',summary:'Pakai kemampuan Sosial sebagai karier utama'}}],result:'Jalur pelayanan masuk ke peluang aktifmu.'});
+    if(!isTech && getSkillTier(state.skills.technology).id!=='novice') choices.push({label:'Lihat jalur teknologi',hint:'Teknologi sudah cukup kuat untuk dicoba sebagai pekerjaan utama.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_it',name:'Beralih ke Jalur Teknologi',summary:'Jadikan Teknologi pekerjaan utama'}}],result:'Jalur Teknologi masuk ke peluang aktifmu.'});
+    choices.push({label:'Belum ada yang terasa tepat',effects:[{type:'career_search_handled'}],result:'Kamu tetap di pekerjaan sekarang. Tidak ada penalti karena sekadar melihat pilihan lain.'});
+    return event('career_crossroads','ARAH HIDUP','Kamu Melihat ke Luar Jalur Sekarang','Beberapa jam mencari informasi membuatmu sadar bahwa kemampuan yang dibangun di luar pekerjaan utama bisa dipakai untuk benar-benar pindah arah.',choices);
+  }
+
+  if(state.skills.technology>=60 && !state.assets.laptop && !state.flags.laptopOfferSeen){
+    return event('laptop_offer','KEPUTUSAN FINANSIAL','Laptop Bekas yang Masih Layak','Rian menemukan laptop bekas yang cukup untuk belajar dan mengambil pekerjaan teknologi ringan. Harganya Rp750rb—cukup besar dibanding tabunganmu sekarang.',[
+      {label:'Simpan peluang pembelian',hint:'Rp750rb · investasi untuk kerja sampingan Teknologi',effects:[{type:'flag',key:'laptopOfferSeen',value:true},{type:'opportunity',opportunity:{id:'buy_laptop',name:'Beli Laptop Bekas',summary:'Rp750rb · membuka freelance Teknologi'}}],result:'Laptop itu sekarang menjadi pilihan investasi, bukan kewajiban.'},
+      {label:'Jangan beli',effects:[{type:'flag',key:'laptopOfferSeen',value:true}],result:'Kamu menjaga tabunganmu. Teknologi tetap bisa dipelajari tanpa membeli aset sekarang.'}
+    ]);
+  }
+
+  if(getSkillTier(state.skills.social).id!=='novice' && !state.flags.firstPromoSideSeen){
+    return event('promo_side_intro','PELUANG SAMPINGAN','Maya Menyebut Shift Promosi Lepas','Ada event promosi akhir pekan yang mencari orang untuk menghadapi pengunjung. Ini bukan pekerjaan tetap dan bisa diambil meski karier utamamu ada di bidang lain.',[
+      {label:'Minta kontaknya',effects:[{type:'flag',key:'firstPromoSideSeen',value:true},{type:'opportunity',opportunity:{id:'promo_side_job',name:'Shift Promosi',summary:'4j · Rp180rb · kerja sampingan Sosial',expireAt:state.time.totalHours+72}}],result:'Kerja sampingan Sosial sekarang tersedia.'},
+      {label:'Tidak tertarik',effects:[{type:'flag',key:'firstPromoSideSeen',value:true}],result:'Kamu memilih tidak memenuhi semua peluang dengan kerja tambahan.'}
+    ]);
+  }
 
   if(state.player.money<0 && !state.flags.moneyPressureSeen){
     return event('money_pressure','KEUANGAN','Uangmu Sudah Habis','Pengeluaran hidup membuat saldo masuk negatif. Kamu masih bisa lanjut, tapi sekarang setiap pilihan uang punya tekanan yang berbeda.',[

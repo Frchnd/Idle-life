@@ -1,4 +1,4 @@
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export function createInitialState(){
   return {
@@ -18,17 +18,22 @@ export function createInitialState(){
     discoveredSkills:['mechanics','learning','social'],
     relationships:{family:60,rian:35,pak_arman:0,dika:0,maya:0,nadia:0},
     npc:{
-      pak_arman:{known:false},
-      dika:{known:false,rivalry:10},
-      maya:{known:false},
-      nadia:{known:false}
+      rian:{known:true,life:'serabutan'},
+      pak_arman:{known:false,life:'pemilik_bengkel'},
+      dika:{known:false,rivalry:10,life:'sinar_jaya'},
+      maya:{known:false,life:'supervisor'},
+      nadia:{known:false,life:'teknisi_senior'}
     },
+    assets:{laptop:false},
     career:{
       workCount:0,
       jobSearchCount:0,
       promotionProgress:0,
       storeProgress:0,
       techProgress:0,
+      changeSearchCount:0,
+      changeHandledCount:0,
+      sideIncomeTotal:0,
       jobWorkCounts:{mechanic_junior:0,mechanic_senior:0,store_clerk:0,store_supervisor:0,it_assistant:0}
     },
     flags:{
@@ -56,7 +61,16 @@ export function createInitialState(){
       moneyPressureSeen:false,
       routineUnlocked:false,
       milestoneShown:false,
-      exhaustedWarningSeen:false
+      exhaustedWarningSeen:false,
+      laptopOfferSeen:false,
+      firstTechFreelanceSeen:false,
+      firstPromoSideSeen:false,
+      rianJobUpdateSeen:false,
+      dikaMoveSeen:false,
+      dikaLeftWorkshop:false,
+      mayaProgressSeen:false,
+      familyDebtRepaySeen:false,
+      rianDebtRepaySeen:false
     },
     opportunities:[],
     scheduled:[],
