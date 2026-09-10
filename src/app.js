@@ -10,9 +10,20 @@ if(contentValidation.warnings.length) console.warn('[Hidup] Content warnings',co
 let prefs=applyPrefs(loadPrefs());
 let state=loadState();
 let deferredPrompt=null;
+let swRegistration=null;
+let reloadOnController=false;
 let hadSaveAtLaunch=hasSavedState();
 let gamePrepared=false;
-const ui={screen:'menu',tab:'life',result:'Pilihanmu akan menentukan jalur yang mulai terbuka.',offlineSummary:'',milestone:false,chapterProfile:null,installAvailable:false,hasSave:hadSaveAtLaunch,prefs};
+if(hadSaveAtLaunch && !prefs.onboardingSeen){
+  prefs=savePrefs({...prefs,onboardingSeen:true});
+  prefs=applyPrefs(prefs);
+}
+const ui={
+  screen:'menu',tab:'life',result:'Pilihanmu akan menentukan jalur yang mulai terbuka.',offlineSummary:'',
+  milestone:false,chapterProfile:null,installAvailable:false,hasSave:hadSaveAtLaunch,prefs,
+  onboardingStep:0,confirm:null,feedback:null,updateAvailable:false,
+  networkOnline:typeof navigator==='undefined'?true:navigator.onLine!==false
+};
 
 function persist(){
   saveState(state);
@@ -89,18 +100,22 @@ function bind(){
     const id=btn.dataset.opportunity;
     const existed=state.opportunities.some(x=>x.id===id);
     const oldJob=state.player.job;
+    const before=feedbackSnapshot(state);
     ui.result=runOpportunity(state,id);
     if(existed && !state.opportunities.some(x=>x.id===id)){
       state.playtest.opportunitiesTaken=(state.playtest.opportunitiesTaken||0)+1;
       if(oldJob && state.player.job && oldJob!==state.player.job) state.playtest.careerChanges=(state.playtest.careerChanges||0)+1;
     }
+    ui.feedback=buildFeedback(before,state,ui.result,'Peluang diambil');
     postStep();
   }));
   root.querySelectorAll('[data-event-choice]').forEach(btn=>btn.addEventListener('click',()=>{
     const choice=state.pendingEvent?.choices?.[Number(btn.dataset.eventChoice)];
     if(!choice) return;
+    const before=feedbackSnapshot(state);
     applyEventChoice(state,choice);
     ui.result=choice.result||'Keputusan dibuat.';
+    ui.feedback=buildFeedback(before,state,ui.result,'Keputusan dibuat');
     postStep();
   }));
   root.querySelectorAll('[data-ui]').forEach(btn=>btn.addEventListener('click',()=>handleUi(btn.dataset.ui)));
@@ -108,19 +123,72 @@ function bind(){
   root.querySelectorAll('[data-pref-text]').forEach(btn=>btn.addEventListener('click',()=>updatePrefs({textSize:btn.dataset.prefText})));
 }
 
+function feedbackSnapshot(source){
+  return {
+    money:source.player.money,
+    fatigue:source.player.fatigue,
+    hours:source.time.totalHours,
+    condition:getCondition(source.player.fatigue).id,
+    skills:{...source.skills}
+  };
+}
+
+function buildFeedback(before,after,message,title='Aksi selesai'){
+  const details=[];
+  const hourDelta=Math.max(0,(after.time.totalHours||0)-(before.hours||0));
+  const moneyDelta=(after.player.money||0)-(before.money||0);
+  if(hourDelta>0) details.push(`${hourDelta} jam berlalu`);
+  if(moneyDelta!==0) details.push(formatSignedMoney(moneyDelta));
+  const skillNames={mechanics:'Mekanik',learning:'Belajar',social:'Sosial',technology:'Teknologi'};
+  Object.keys(skillNames).forEach(id=>{
+    if((after.skills[id]||0)>(before.skills[id]||0)) details.push(`${skillNames[id]} berkembang`);
+  });
+  const nowCondition=getCondition(after.player.fatigue).id;
+  if(nowCondition!==before.condition){
+    const rank={good:0,tired:1,exhausted:2};
+    details.push(rank[nowCondition]>rank[before.condition]?'Kondisi lebih berat':'Kondisi membaik');
+  }
+  let tone='neutral';
+  if(after.player.money<0 || nowCondition==='exhausted') tone='danger';
+  else if(nowCondition==='tired' && before.condition==='good') tone='warning';
+  else if(moneyDelta>0 || Object.keys(skillNames).some(id=>(after.skills[id]||0)>(before.skills[id]||0))) tone='positive';
+  return {title,message:String(message||'Perubahan tersimpan.'),details:details.slice(0,4),tone};
+}
+
 function runActivity(id){
   if(state.pendingEvent) return;
   const allowed=availableActivities(state).some(a=>a.id===id);
   if(!allowed) return;
+  const before=feedbackSnapshot(state);
   const result=executeActivity(state,id);
-  if(result && typeof result==='object' && result.error){ ui.result=result.error; draw(); return; }
+  if(result && typeof result==='object' && result.error){
+    ui.result=result.error;
+    ui.feedback={title:'Belum bisa dilakukan',message:String(result.error),details:[],tone:'warning'};
+    draw();
+    return;
+  }
   state.playtest.actions=(state.playtest.actions||0)+1;
   ui.result=result;
+  ui.feedback=buildFeedback(before,state,result,'Aksi selesai');
   postStep();
 }
 
-function startNewLife(){
-  if(ui.hasSave && !confirm('Mulai hidup baru? Save hidup sekarang akan diganti.')) return;
+function requestStartNewLife(){
+  if(ui.hasSave){
+    ui.confirm={type:'new-life',title:'Mulai hidup baru?',text:'Hidup Fernando yang sekarang akan diganti. Pengaturan tampilan tetap tersimpan.'};
+    draw();
+    return;
+  }
+  if(!prefs.onboardingSeen){
+    ui.onboardingStep=0;
+    ui.screen='onboarding';
+    draw();
+    return;
+  }
+  commitNewLife();
+}
+
+function commitNewLife(){
   clearState();
   state=createInitialState();
   syncContentPackRuntime(state);
@@ -129,11 +197,20 @@ function startNewLife(){
   ui.offlineSummary='';
   ui.milestone=false;
   ui.chapterProfile=null;
+  ui.feedback={title:'Hidup dimulai',message:'Umur 18. Belum ada pekerjaan tetap. Arah hidup masih terbuka.',details:[],tone:'neutral'};
+  ui.confirm=null;
   gamePrepared=false;
   persist();
   prepareGame({allowOffline:false});
   ui.screen='game';
   draw();
+}
+
+function finishOnboarding(){
+  prefs=savePrefs({...prefs,onboardingSeen:true});
+  prefs=applyPrefs(prefs);
+  ui.prefs=prefs;
+  commitNewLife();
 }
 
 function updatePrefs(patch){
@@ -150,34 +227,56 @@ function handleUi(action){
     draw();
     return;
   }
-  if(action==='start-new'){ startNewLife(); return; }
+  if(action==='start-new'){requestStartNewLife();return;}
+  if(action==='confirm-new-life'){commitNewLife();return;}
+  if(action==='cancel-confirm'){ui.confirm=null;draw();return;}
+  if(action==='onboarding-next'){
+    ui.onboardingStep=Math.min(2,(ui.onboardingStep||0)+1);
+    draw();return;
+  }
+  if(action==='onboarding-back'){
+    if((ui.onboardingStep||0)<=0){ui.screen='menu';draw();return;}
+    ui.onboardingStep=Math.max(0,ui.onboardingStep-1);draw();return;
+  }
+  if(action==='onboarding-finish'||action==='onboarding-skip'){finishOnboarding();return;}
   if(action==='open-menu'){
     persist();
     ui.screen='menu';
+    ui.confirm=null;
     draw();
     return;
   }
-  if(action==='open-settings'){ ui.screen='settings'; draw(); return; }
-  if(action==='settings-back'){ ui.screen='menu'; draw(); return; }
-  if(action==='toggle-motion'){ updatePrefs({motion:!prefs.motion}); return; }
+  if(action==='open-settings'){ui.screen='settings';draw();return;}
+  if(action==='settings-back'){ui.screen='menu';draw();return;}
+  if(action==='toggle-motion'){updatePrefs({motion:!prefs.motion});return;}
+  if(action==='close-feedback'){ui.feedback=null;draw();return;}
   if(action==='toggle-routine'){
     if(!state.flags.routineUnlocked) return;
     state.routine.enabled=!state.routine.enabled;
     ui.result=state.routine.enabled?'Rutinitas aktif. Aktivitas repetitif bisa berjalan saat kamu pergi.':'Rutinitas dimatikan.';
-    persist(); draw(); return;
+    ui.feedback={title:state.routine.enabled?'Rutinitas aktif':'Rutinitas berhenti',message:ui.result,details:[],tone:'neutral'};
+    persist();draw();return;
   }
   if(action==='simulate-offline'){
     if(!state.routine.enabled) return;
     const report=processOffline(4*60*60*1000);
     ui.offlineSummary=`<b>${report.gameHours} jam waktu game berlalu.</b><br>Perubahan uang: ${formatSignedMoney(report.moneyDelta)}${report.stopped?'<br>Ada keputusan penting yang menghentikan rutinitas.':''}`;
-    draw(); return;
+    draw();return;
   }
-  if(action==='close-offline'){ ui.offlineSummary=''; draw(); return; }
-  if(action==='close-milestone'){ ui.milestone=false; draw(); return; }
-  if(action==='close-chapter'){ ui.chapterProfile=null; draw(); return; }
+  if(action==='close-offline'){ui.offlineSummary='';draw();return;}
+  if(action==='close-milestone'){ui.milestone=false;draw();return;}
+  if(action==='close-chapter'){ui.chapterProfile=null;draw();return;}
   if(action==='install' && deferredPrompt){
     deferredPrompt.prompt();
     deferredPrompt.userChoice.finally(()=>{deferredPrompt=null;ui.installAvailable=false;draw();});
+    return;
+  }
+  if(action==='apply-update'){
+    const waiting=swRegistration?.waiting;
+    if(waiting){
+      reloadOnController=true;
+      waiting.postMessage({type:'SKIP_WAITING'});
+    }else if(typeof location!=='undefined') location.reload();
   }
 }
 
@@ -225,14 +324,38 @@ function processOffline(realMs){
   return {gameHours:state.time.totalHours-startHours,moneyDelta:state.player.money-startMoney,stopped:!!state.pendingEvent};
 }
 
+function registerServiceWorker(){
+  if(typeof navigator==='undefined'||!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    swRegistration=reg;
+    if(reg.waiting && navigator.serviceWorker.controller){ui.updateAvailable=true;draw();}
+    reg.addEventListener('updatefound',()=>{
+      const worker=reg.installing;
+      if(!worker) return;
+      worker.addEventListener('statechange',()=>{
+        if(worker.state==='installed' && navigator.serviceWorker.controller){
+          ui.updateAvailable=true;
+          draw();
+        }
+      });
+    });
+    reg.update().catch(()=>{});
+  }).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(reloadOnController && typeof location!=='undefined') location.reload();
+  });
+}
+
 window.addEventListener('beforeinstallprompt',event=>{
-  event.preventDefault(); deferredPrompt=event; ui.installAvailable=true; draw();
+  event.preventDefault();deferredPrompt=event;ui.installAvailable=true;draw();
 });
 window.addEventListener('appinstalled',()=>{
-  deferredPrompt=null; ui.installAvailable=false;
+  deferredPrompt=null;ui.installAvailable=false;
   if(ui.hasSave){addRecent(state,'Aplikasi berhasil di-install di perangkat ini.');persist();}
   draw();
 });
+window.addEventListener('online',()=>{ui.networkOnline=true;draw();});
+window.addEventListener('offline',()=>{ui.networkOnline=false;draw();});
 
 if(window.matchMedia){
   const mq=window.matchMedia('(prefers-color-scheme: dark)');
@@ -240,6 +363,6 @@ if(window.matchMedia){
   if(mq.addEventListener) mq.addEventListener('change',listener); else if(mq.addListener) mq.addListener(listener);
 }
 
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
+registerServiceWorker();
 if(ui.hasSave) prepareGame({allowOffline:true});
 draw();

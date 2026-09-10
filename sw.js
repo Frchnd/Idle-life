@@ -1,4 +1,4 @@
-const CACHE='hidup-build-t-v1';
+const CACHE='hidup-build-u-v1';
 const ASSETS=[
   './','./index.html','./manifest.webmanifest','./styles/main.css',
   './icon-192.png','./icon-512.png',
@@ -6,7 +6,7 @@ const ASSETS=[
   './src/data/content-foundation.js','./src/data/jobs.js','./src/data/content.js','./src/data/content-packs.js','./src/data/activities.js','./src/data/opportunities.js','./src/data/events.js',
   './src/ui/render.js','./src/app.js'
 ];
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS))));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET') return;
@@ -14,3 +14,5 @@ self.addEventListener('fetch',event=>{
     const copy=resp.clone(); caches.open(CACHE).then(cache=>cache.put(event.request,copy)); return resp;
   }).catch(()=>caches.match('./index.html'))));
 });
+
+self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING') self.skipWaiting();});

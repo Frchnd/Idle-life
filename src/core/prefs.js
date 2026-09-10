@@ -1,5 +1,5 @@
 const PREFS_KEY='hidup-app-prefs-v1';
-const DEFAULT_PREFS={theme:'system',textSize:'normal',motion:true};
+const DEFAULT_PREFS={theme:'system',textSize:'normal',motion:true,onboardingSeen:false};
 
 function loadPrefs(){
   try{
@@ -16,7 +16,8 @@ function sanitizePrefs(prefs){
   return {
     theme:['system','light','dark'].includes(prefs.theme)?prefs.theme:'system',
     textSize:['normal','large'].includes(prefs.textSize)?prefs.textSize:'normal',
-    motion:prefs.motion!==false
+    motion:prefs.motion!==false,
+    onboardingSeen:prefs.onboardingSeen===true
   };
 }
 

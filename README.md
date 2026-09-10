@@ -1,26 +1,24 @@
-# Hidup — Build T
+# Hidup — Build U
 
-Build T adalah checkpoint **Fase 4.5 — UI/UX Foundation + Main Menu**.
+Build U menutup checkpoint **Fase 4.5 — UI/UX Foundation** dengan fokus pada UX operasional dan feedback pemain.
 
-## Fokus Build T
+## Fokus Build U
 
-- Main Menu minimal dengan Continue / Mulai Hidup / Mulai Hidup Baru.
-- Snapshot save terakhir di Main Menu.
-- Settings foundation yang tersimpan terpisah dari save:
-  - Tema Sistem / Terang / Gelap
-  - Ukuran teks Normal / Besar
-  - Animasi lembut on/off
-- Header gameplay dan bottom navigation dipoles tanpa menambah tab baru.
-- Event penting mendapat visual focus yang lebih kuat.
-- DUNIA dan KAMU dipecah menjadi section yang lebih mudah dipindai.
-- Riwayat hidup menjadi panel expandable agar layar tidak terlalu padat.
-- Responsive pass untuk mobile dan desktop.
-- Save Build S tetap dimigrasikan otomatis ke save version 16.
+- First-time onboarding 3 langkah yang hanya muncul untuk pemain baru.
+- Pemain dengan save Build T atau lebih lama langsung dianggap sudah onboarded.
+- Feedback setelah aksi/keputusan tanpa membocorkan angka backend mentah.
+- Semantic visual states untuk kondisi positif, waspada, bahaya, dan informasi.
+- Empty states yang menjelaskan kapan konten akan muncul.
+- Dialog konfirmasi in-game untuk Mulai Hidup Baru.
+- Boot/loading placeholder sebelum JavaScript selesai memuat.
+- Status offline dan fondasi update PWA dengan tombol Muat ulang ketika service worker baru menunggu.
+- Tema, ukuran teks, motion, dan status onboarding tetap tersimpan terpisah dari save game.
+- Save Build T dimigrasikan otomatis ke save version 17.
 
 ## Struktur
 
-Project memakai struktur folder normal (`src/`, `styles/`) dan bisa langsung di-host sebagai static site / GitHub Pages.
+Project tetap memakai struktur folder normal (`src/`, `styles/`) untuk static hosting / GitHub Pages.
 
 ## Save
 
-Save key lama tetap dipertahankan agar save Build F–S terbawa. Pengaturan aplikasi memakai key terpisah, sehingga Mulai Hidup Baru tidak mereset tema/aksesibilitas.
+Save key lama dipertahankan agar progres Build F–T terbawa. Mulai Hidup Baru tidak mereset preference aplikasi.
