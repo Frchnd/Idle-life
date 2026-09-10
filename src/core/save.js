@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build Z.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AA.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -43,6 +43,8 @@ function mergeState(base,saved){
   for(const key of Object.keys(base.world.workplaces)) out.world.workplaces[key]={...base.world.workplaces[key],...(saved.world?.workplaces?.[key]||{})};
   if(!Array.isArray(out.world.news)) out.world.news=[];
   out.housing={...base.housing,...(saved.housing||{})};
+  out.city={...base.city,...(saved.city||{})};
+  out.city.visits={...base.city.visits,...(saved.city?.visits||{})};
   out.life={...base.life,...(saved.life||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
   out.playtest={...base.playtest,...(saved.playtest||{})};
@@ -67,6 +69,7 @@ function mergeState(base,saved){
   out.career.jobWorkCounts={...base.career.jobWorkCounts,...(saved.career?.jobWorkCounts||{})};
   if(!Array.isArray(out.career.salaryNegotiatedJobs)) out.career.salaryNegotiatedJobs=[];
   ensureEducationState(out);
+  ensureCityState(out);
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];

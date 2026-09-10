@@ -1,11 +1,13 @@
-Hidup Build Z — Content Validation
+Hidup Build AA — Content Validation
 Errors: 0
 Warnings: 0
 Activities: 4
-Opportunities: 11
+Opportunities (registry): 11
 Events: 14
 Jobs: 12
 Certifications: 3
 Event Pools: 6
 Content Packs: 6
 Requirement Presets: 15
+City Locations: 3
+City NPCs: 2

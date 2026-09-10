@@ -108,6 +108,21 @@ function draw(){
 function bind(){
   root.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{ui.tab=btn.dataset.tab;draw();}));
   root.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>runActivity(btn.dataset.action)));
+  root.querySelectorAll('[data-city-visit]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);
+    const result=visitCityLocation(state,btn.dataset.cityVisit);
+    if(result && typeof result==='object' && result.error){
+      ui.result=result.error;
+      ui.feedback={title:'Belum bisa pergi',message:String(result.error),details:[],tone:'warning'};
+      draw();
+      return;
+    }
+    state.playtest.actions=(state.playtest.actions||0)+1;
+    ui.result=result;
+    ui.feedback=buildFeedback(before,state,result,'Kunjungan selesai');
+    postStep();
+  }));
   root.querySelectorAll('[data-opportunity]').forEach(btn=>btn.addEventListener('click',()=>{
     if(state.pendingEvent) return;
     const id=btn.dataset.opportunity;

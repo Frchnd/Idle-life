@@ -1,4 +1,4 @@
-const SAVE_VERSION = 22;
+const SAVE_VERSION = 23;
 
 function createInitialState(){
   return {
@@ -16,6 +16,7 @@ function createInitialState(){
     economy:{lastLivingCostAt:0,livingCost:600000,baseLivingCost:600000},
     world:{lastSimulatedAt:0,week:0,economy:52,costIndex:100,jobMarket:50,sectors:{mechanics:54,retail:50,technology:56,hospitality:52,logistics:53},phase:'stabil',news:[],lastOpportunityWeek:{},workplaces:{sinar_jaya:{health:58,staffing:52,pressure:52,status:'stabil',revenueIndex:56,margin:6,cashReserve:58,headcount:8,lastStaffActionWeek:-99},serba_ada:{health:56,staffing:54,pressure:48,status:'stabil',revenueIndex:52,margin:4,cashReserve:55,headcount:16,lastStaffActionWeek:-99},nusa_komputer:{health:60,staffing:50,pressure:56,status:'stabil',revenueIndex:60,margin:8,cashReserve:62,headcount:7,lastStaffActionWeek:-99},kafe_senja:{health:57,staffing:55,pressure:50,status:'stabil',revenueIndex:55,margin:5,cashReserve:55,headcount:10,lastStaffActionWeek:-99},lintas_kota:{health:59,staffing:51,pressure:58,status:'stabil',revenueIndex:58,margin:7,cashReserve:60,headcount:18,lastStaffActionWeek:-99}},competitors:{mechanics:{name:'Servis Prima',strength:52,reputation:50,action:'stabil',lastActionWeek:0},retail:{name:'PromoKita Lokal',strength:50,reputation:48,action:'stabil',lastActionWeek:0},technology:{name:'Klik Cepat Digital',strength:55,reputation:54,action:'stabil',lastActionWeek:0},hospitality:{name:'Kopi Ruang Kota',strength:50,reputation:51,action:'stabil',lastActionWeek:0},logistics:{name:'Kargo Nusantara',strength:53,reputation:50,action:'stabil',lastActionWeek:0}}},
     housing:{id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null},
+    city:{name:'Kota Harapan',lastVisited:null,lastVisitedAt:-999,visits:{kampus_harapan:0,pasar_tradisional:0,gym_sehat:0}},
     life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null},
     pacing:{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8},
     playtest:{actions:0,opportunitiesTaken:0,careerChanges:0,offlineBatches:0},
@@ -23,14 +24,14 @@ function createInitialState(){
     contentRuntime:{eventHistory:[],eventCooldowns:{},poolHistory:{},poolRecent:{},rngSeed:137,enabledPacks:[],packVersions:{}},
     skills:{mechanics:0,learning:25,social:40,technology:0,hospitality:0,logistics:0},
     discoveredSkills:['mechanics','learning','social'],
-    relationships:{family:60,rian:35,pak_arman:0,dika:0,maya:0,nadia:0,ari:0,sari:0,dimas:0},
+    relationships:{family:60,rian:35,pak_arman:0,dika:0,maya:0,nadia:0,ari:0,sari:0,dimas:0,andi:0,bu_lestari:0},
     npc:{
       rian:{known:true,life:'serabutan',progress:0},
       pak_arman:{known:false,life:'pemilik_bengkel',progress:0},
       dika:{known:false,rivalry:10,life:'sinar_jaya',progress:0},
       maya:{known:false,life:'supervisor',progress:0},
       nadia:{known:false,life:'teknisi_senior',progress:0},
-      ari:{known:false,life:'belum_terlibat',progress:0},sari:{known:false,life:'barista_senior',progress:0},dimas:{known:false,life:'koordinator_shift',progress:0}
+      ari:{known:false,life:'belum_terlibat',progress:0},sari:{known:false,life:'barista_senior',progress:0},dimas:{known:false,life:'koordinator_shift',progress:0},andi:{known:false,life:'mahasiswa',progress:0},bu_lestari:{known:false,life:'pedagang_pasar',progress:0}
     },
     assets:{laptop:false},
     business:{active:false,sector:null,name:null,level:0,reputation:0,marketReputation:0,clients:0,lastManagedAt:0,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:null,equipmentLevel:0,retainedClients:0,capacity:2,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999,scale:'solo',helperActive:false,helperName:'Ari',helperTrust:40,helperSkill:35,helperWage:220000,helperWeeks:0,delegated:false,ownerFullTime:false,lastScaleDecisionAt:-999,lastDelegationDecisionAt:-999,lastOwnerChoiceAt:-999,lastHelperIssueAt:-999,helperIssuePending:false,competitorPressure:50,marketStrategy:'balanced',strategyUntilWeek:0,lastMarketEventWeek:-99,marketEventPending:null,clientsWon:0,clientsLost:0,marketWinStreak:0,marketLossStreak:0},

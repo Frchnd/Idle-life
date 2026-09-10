@@ -65,6 +65,36 @@ function runOpportunity(state,id){
     return `Dimas memasukkanmu ke tim sebagai ${job.name}.`;
   }
 
+
+  if(id==='campus_project'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(160000*sectorMultiplier(state,'technology'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+8);
+    state.skills.technology=(state.skills.technology||0)+12;
+    state.skills.social=(state.skills.social||0)+6;
+    state.relationships.andi=(state.relationships.andi||0)+4;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Proyek kecil di Kampus Harapan selesai dan Andi mulai percaya kamu bisa diandalkan.');
+    return `Setup acara kampus selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+  if(id==='market_helper'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=3;
+    const payout=Math.round(120000*sectorMultiplier(state,'logistics'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+7);
+    state.skills.logistics=(state.skills.logistics||0)+10;
+    state.skills.social=(state.skills.social||0)+8;
+    state.relationships.bu_lestari=(state.relationships.bu_lestari||0)+4;
+    if(!state.discoveredSkills.includes('logistics')) state.discoveredSkills.push('logistics');
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Membantu Bu Lestari membuat namamu makin dikenal di lingkungan pasar.');
+    return `Bantuan pasar selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
   if(id==='tech_course'){
     if(state.player.money<250000) return 'Uangmu belum cukup untuk mengikuti kelas ini.';
     removeOpportunity(state,id);

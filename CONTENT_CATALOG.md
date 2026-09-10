@@ -1,4 +1,4 @@
-# Hidup — Content Catalog (Build Z)
+# Hidup — Content Catalog (Build AA)
 
 Fase 4 memisahkan **engine** dari **content**. Konten data-driven dimiliki oleh satu content pack, memakai template/preset bila cocok, dan harus lolos validator sebelum game boot.
 
@@ -99,3 +99,9 @@ Pack `city_expansion_one` memperluas kota tanpa mengubah core loop.
 - NPC: `sari`, `dimas`
 
 Lowongan awal baru muncul setelah pemain cukup lama mencari kerja. Sesudah masuk, promosi tetap mempertimbangkan jam terbang, relationship dengan orang di tempat kerja, dan kesehatan perusahaan. Demand sektor juga dapat memunculkan opportunity pasar yang diperebutkan.
+
+## Build AA — City Life Expansion
+
+Lapisan kota ditambahkan sebagai data `src/data/locations.js` + runtime `src/core/city.js`. Lokasi sengaja bukan tab baru; pemain mengaksesnya dari DUNIA dan setiap kunjungan langsung mengonsumsi waktu serta biaya.
+
+Lokasi awal: `kampus_harapan`, `pasar_tradisional`, `gym_sehat`.
