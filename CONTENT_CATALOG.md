@@ -1,4 +1,4 @@
-# Hidup — Content Catalog (Build AA)
+# Hidup — Content Catalog (Build AB)
 
 Fase 4 memisahkan **engine** dari **content**. Konten data-driven dimiliki oleh satu content pack, memakai template/preset bila cocok, dan harus lolos validator sebelum game boot.
 
@@ -105,3 +105,7 @@ Lowongan awal baru muncul setelah pemain cukup lama mencari kerja. Sesudah masuk
 Lapisan kota ditambahkan sebagai data `src/data/locations.js` + runtime `src/core/city.js`. Lokasi sengaja bukan tab baru; pemain mengaksesnya dari DUNIA dan setiap kunjungan langsung mengonsumsi waktu serta biaya.
 
 Lokasi awal: `kampus_harapan`, `pasar_tradisional`, `gym_sehat`.
+
+
+## Build AB — Social City Layer
+Build AB menambahkan `src/data/social.js` + `src/core/social.js` sebagai simulation/presentation layer di luar data-driven content registry. Jadwal NPC sengaja dipisahkan dari event pool karena presence dihitung dari waktu + lokasi. Pertemuan sosial menghasilkan event runtime dengan portrait, cooldown, dan relationship gates.

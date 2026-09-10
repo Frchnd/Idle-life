@@ -1,13 +1,14 @@
-Hidup Build AA — Content Validation
+Hidup Build AB — Content Validation
 Errors: 0
 Warnings: 0
 Activities: 4
 Opportunities (registry): 11
-Events: 14
+Events (registry): 14
 Jobs: 12
 Certifications: 3
 Event Pools: 6
 Content Packs: 6
 Requirement Presets: 15
-City Locations: 3
-City NPCs: 2
+City Locations: 4
+Scheduled City NPCs: 4
+Runtime Social Event Families: 4
