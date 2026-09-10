@@ -35,5 +35,23 @@ defineFromTemplate('jobs','advanced_job',{
   skill:'technology',skillXp:18,fatigue:17,tags:['employment','full_time','specialist','technology','certified']
 });
 
+// Build Z — dua industri baru di kota.
+defineFromTemplate('jobs','entry_job',{
+  id:'cafe_crew',name:'Barista Pemula',workplace:'Kafe Senja',workplaceId:'kafe_senja',salary:110000,
+  skill:'hospitality',skillXp:15,fatigue:14,tags:['employment','full_time','entry','hospitality']
+});
+defineFromTemplate('jobs','advanced_job',{
+  id:'cafe_lead',name:'Barista Senior',workplace:'Kafe Senja',workplaceId:'kafe_senja',salary:165000,
+  skill:'hospitality',skillXp:17,fatigue:15,tags:['employment','full_time','advanced','hospitality']
+});
+defineFromTemplate('jobs','entry_job',{
+  id:'warehouse_staff',name:'Staf Gudang',workplace:'Lintas Kota Logistik',workplaceId:'lintas_kota',salary:120000,
+  skill:'logistics',skillXp:15,fatigue:17,tags:['employment','full_time','entry','logistics']
+});
+defineFromTemplate('jobs','advanced_job',{
+  id:'dispatch_coordinator',name:'Koordinator Pengiriman',workplace:'Lintas Kota Logistik',workplaceId:'lintas_kota',salary:180000,
+  skill:'logistics',skillXp:17,fatigue:16,tags:['employment','full_time','advanced','logistics']
+});
+
 const JOBS=Object.fromEntries(listContent('jobs').map(job=>[job.id,job]));
 function jobLabel(jobId){ return JOBS[jobId]?.name||'Belum bekerja'; }

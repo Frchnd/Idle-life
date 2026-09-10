@@ -58,9 +58,11 @@ function checkMilestone(){
   const mechanicDepth=state.flags.promoted;
   const storeDepth=state.flags.storePromoted;
   const techDepth=(state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=3)||state.player.job==='network_technician';
+  const cafeDepth=state.player.job==='cafe_lead'||(state.career.jobWorkCounts.cafe_crew||0)>=6;
+  const logisticsDepth=state.player.job==='dispatch_coordinator'||(state.career.jobWorkCounts.warehouse_staff||0)>=6;
   const mixedDepth=(getSkillTier(state.skills.technology).id!=='novice' && getSkillTier(state.skills.social).id!=='novice') ||
     (getSkillTier(state.skills.mechanics).id!=='novice' && getSkillTier(state.skills.social).id!=='novice');
-  if(mechanicDepth||storeDepth||techDepth||mixedDepth){
+  if(mechanicDepth||storeDepth||techDepth||cafeDepth||logisticsDepth||mixedDepth){
     state.flags.milestoneShown=true;
     ui.milestone=true;
   }
@@ -150,7 +152,7 @@ function buildFeedback(before,after,message,title='Aksi selesai'){
   const moneyDelta=(after.player.money||0)-(before.money||0);
   if(hourDelta>0) details.push(`${hourDelta} jam berlalu`);
   if(moneyDelta!==0) details.push(formatSignedMoney(moneyDelta));
-  const skillNames={mechanics:'Mekanik',learning:'Belajar',social:'Sosial',technology:'Teknologi'};
+  const skillNames={mechanics:'Mekanik',learning:'Belajar',social:'Sosial',technology:'Teknologi',hospitality:'Hospitality',logistics:'Logistik'};
   Object.keys(skillNames).forEach(id=>{
     if((after.skills[id]||0)>(before.skills[id]||0)) details.push(`${skillNames[id]} berkembang`);
   });

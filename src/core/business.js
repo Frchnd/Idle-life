@@ -1,7 +1,9 @@
 const BUSINESS_META={
   mechanics:{name:'Servis Mandiri',label:'Jasa mekanik panggilan',baseTicket:150000,fixedCost:115000,skill:'mechanics'},
   retail:{name:'Jasa Promosi Lokal',label:'Jasa event & pelayanan',baseTicket:125000,fixedCost:95000,skill:'social'},
-  technology:{name:'Bantuan Digital',label:'Jasa teknologi kecil',baseTicket:145000,fixedCost:105000,skill:'technology'}
+  technology:{name:'Bantuan Digital',label:'Jasa teknologi kecil',baseTicket:145000,fixedCost:105000,skill:'technology'},
+  hospitality:{name:'Kopi Keliling',label:'Jasa minuman & hospitality kecil',baseTicket:120000,fixedCost:90000,skill:'hospitality'},
+  logistics:{name:'Antar Rapi',label:'Jasa bantu kirim & logistik lokal',baseTicket:135000,fixedCost:100000,skill:'logistics'}
 };
 
 function ensureBusinessState(state){
@@ -26,7 +28,9 @@ function strongestBusinessSector(state){
   const ranked=[
     ['mechanics',state.skills.mechanics||0],
     ['technology',state.skills.technology||0],
-    ['retail',state.skills.social||0]
+    ['retail',state.skills.social||0],
+    ['hospitality',state.skills.hospitality||0],
+    ['logistics',state.skills.logistics||0]
   ].sort((a,b)=>b[1]-a[1]);
   return ranked[0][1]>=100?ranked[0][0]:null;
 }

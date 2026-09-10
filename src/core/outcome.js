@@ -1,5 +1,5 @@
 function basicCount(state){
-  return ['mechanics','social','technology','learning'].filter(id=>getSkillTier(state.skills[id]||0).id!=='novice').length;
+  return ['mechanics','social','technology','hospitality','logistics','learning'].filter(id=>getSkillTier(state.skills[id]||0).id!=='novice').length;
 }
 
 function workedPathCount(state){
@@ -7,7 +7,9 @@ function workedPathCount(state){
   const paths=[
     (counts.mechanic_junior||0)+(counts.mechanic_senior||0)+(counts.mechanic_diagnostic||0),
     (counts.store_clerk||0)+(counts.store_supervisor||0)+(counts.operations_coordinator||0),
-    (counts.it_assistant||0)+(counts.network_technician||0)
+    (counts.it_assistant||0)+(counts.network_technician||0),
+    (counts.cafe_crew||0)+(counts.cafe_lead||0),
+    (counts.warehouse_staff||0)+(counts.dispatch_coordinator||0)
   ];
   return paths.filter(x=>x>0).length;
 }
@@ -17,12 +19,12 @@ function hasDebt(state){
 }
 
 function getOutcomeProfile(state){
-  const advancedJob=['mechanic_senior','store_supervisor','mechanic_diagnostic','operations_coordinator','network_technician'].includes(state.player.job) || (state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=5);
+  const advancedJob=['mechanic_senior','store_supervisor','mechanic_diagnostic','operations_coordinator','network_technician','cafe_lead','dispatch_coordinator'].includes(state.player.job) || (state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=5);
   const basics=basicCount(state);
   const paths=workedPathCount(state);
   const finance=financialState(state).id;
   const side=state.career.sideIncomeTotal||0;
-  const relAvg=(state.relationships.family+state.relationships.rian+Math.max(0,state.relationships.pak_arman)+Math.max(0,state.relationships.maya)+Math.max(0,state.relationships.nadia))/5;
+  const relAvg=(state.relationships.family+state.relationships.rian+Math.max(0,state.relationships.pak_arman)+Math.max(0,state.relationships.maya)+Math.max(0,state.relationships.nadia)+Math.max(0,state.relationships.sari||0)+Math.max(0,state.relationships.dimas||0))/7;
 
   if(hasDebt(state) && state.player.money<150000){
     return {
@@ -84,7 +86,7 @@ function isVerticalSliceReady(state){
   const enoughChoices=(state.pacing?.eventCount||0)>=7;
   const enoughWork=(state.career?.workCount||0)>=8;
   const meaningfulState=state.player.job && (
-    state.flags.promoted || state.flags.storePromoted || ['mechanic_diagnostic','operations_coordinator','network_technician'].includes(state.player.job) ||
+    state.flags.promoted || state.flags.storePromoted || ['mechanic_diagnostic','operations_coordinator','network_technician','cafe_lead','dispatch_coordinator'].includes(state.player.job) ||
     (state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=3) ||
     (state.career.sideIncomeTotal||0)>=500000 ||
     state.life?.trajectory!=='open' ||

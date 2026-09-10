@@ -5,11 +5,13 @@ function managerTargetForWorkplace(id){
   if(id==='sinar_jaya') return 'pak_arman';
   if(id==='serba_ada') return 'maya';
   if(id==='nusa_komputer') return 'nadia';
+  if(id==='kafe_senja') return 'sari';
+  if(id==='lintas_kota') return 'dimas';
   return null;
 }
 
 function basicSkillCount(state){
-  return ['mechanics','social','technology','learning'].filter(id=>getSkillTier(state.skills[id]||0).id!=='novice').length;
+  return ['mechanics','social','technology','hospitality','logistics','learning'].filter(id=>getSkillTier(state.skills[id]||0).id!=='novice').length;
 }
 
 function housingDecisionEvent(state,revisit=false){
@@ -290,9 +292,13 @@ function getNextEvent(state){
     const isMechanic=['mechanic_junior','mechanic_senior','mechanic_diagnostic'].includes(state.player.job);
     const isStore=['store_clerk','store_supervisor','operations_coordinator'].includes(state.player.job);
     const isTech=['it_assistant','network_technician'].includes(state.player.job);
+    const isCafe=['cafe_crew','cafe_lead'].includes(state.player.job);
+    const isLogistics=['warehouse_staff','dispatch_coordinator'].includes(state.player.job);
     if(!isMechanic && getSkillTier(state.skills.mechanics).id!=='novice') choices.push({label:'Lihat jalur bengkel',hint:'Skill Mekanikmu sudah cukup untuk kembali masuk.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_mechanic',name:'Beralih ke Jalur Bengkel',summary:'Pakai skill Mekanik yang sudah kamu bangun'}}],result:'Jalur bengkel masuk ke peluang aktifmu.'});
     if(!isStore && getSkillTier(state.skills.social).id!=='novice') choices.push({label:'Lihat jalur toko',hint:'Skill Sosialmu sudah cukup untuk pindah.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_store',name:'Beralih ke Jalur Pelayanan',summary:'Pakai kemampuan Sosial sebagai karier utama'}}],result:'Jalur pelayanan masuk ke peluang aktifmu.'});
     if(!isTech && getSkillTier(state.skills.technology).id!=='novice') choices.push({label:'Lihat jalur teknologi',hint:'Teknologi sudah cukup kuat untuk dicoba sebagai pekerjaan utama.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_it',name:'Beralih ke Jalur Teknologi',summary:'Jadikan Teknologi pekerjaan utama'}}],result:'Jalur Teknologi masuk ke peluang aktifmu.'});
+    if(!isCafe && getSkillTier(state.skills.hospitality||0).id!=='novice') choices.push({label:'Lihat jalur kafe',hint:'Pengalaman Hospitality-mu bisa dibawa ke Kafe Senja.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_cafe',name:'Beralih ke Kafe Senja',summary:'Jadikan Hospitality pekerjaan utama'}}],result:'Jalur Kafe Senja masuk ke peluang aktifmu.'});
+    if(!isLogistics && getSkillTier(state.skills.logistics||0).id!=='novice') choices.push({label:'Lihat jalur logistik',hint:'Skill Logistikmu sudah cukup untuk dicoba sebagai pekerjaan utama.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_logistics',name:'Beralih ke Logistik',summary:'Jadikan Logistik pekerjaan utama'}}],result:'Jalur logistik masuk ke peluang aktifmu.'});
     choices.push({label:'Belum ada yang terasa tepat',effects:[{type:'career_search_handled'}],result:'Kamu tetap di pekerjaan sekarang. Tidak ada penalti karena sekadar melihat pilihan lain.'});
     return event('career_crossroads','ARAH HIDUP','Kamu Melihat ke Luar Jalur Sekarang','Beberapa jam mencari informasi membuatmu sadar bahwa kemampuan yang dibangun di luar pekerjaan utama bisa dipakai untuk benar-benar pindah arah.',choices);
   }
@@ -425,6 +431,20 @@ function getNextEvent(state){
     return event('store_promotion_talk','PELUANG KARIER','Mira Menawarkan Tanggung Jawab Baru','Mira ingin kamu mulai memegang shift ketika dia tidak ada. Gajinya lebih tinggi, tapi masalah orang lain juga akan ikut menjadi masalahmu.',[
       {label:'Pertimbangkan posisi supervisor',effects:[{type:'flag',key:'storePromotionTalkSeen',value:true},{type:'opportunity',opportunity:{id:'store_promotion',name:'Supervisor Toko',summary:'Gaji Rp145rb/hari · tanggung jawab tim'}}],result:'Posisi Supervisor Toko sekarang tersedia.'},
       {label:'Tetap sebagai pramuniaga',effects:[{type:'flag',key:'storePromotionTalkSeen',value:true}],result:'Kamu belum ingin membawa pekerjaan lebih jauh.'}
+    ]);
+  }
+
+  if(state.player.job==='cafe_crew' && workCount(state,'cafe_crew')>=6 && getSkillTier(state.skills.hospitality||0).id!=='novice' && (state.relationships.sari||0)>=8 && companyCanPromote(state,'kafe_senja') && !state.flags.cafePromotionTalkSeen){
+    return event('cafe_promotion_talk','PELUANG KARIER','Sari Mulai Menyerahkan Satu Shift','Kafe Senja makin ramai. Sari butuh orang yang bisa menjaga kualitas minuman sekaligus ritme pelayanan saat dia tidak terus berada di sampingmu.',[
+      {label:'Pertimbangkan jadi Barista Senior',effects:[{type:'flag',key:'cafePromotionTalkSeen',value:true},{type:'opportunity',opportunity:{id:'cafe_promotion',name:'Barista Senior',summary:'Gaji Rp165rb/hari · jaga kualitas & ritme shift'}}],result:'Posisi Barista Senior sekarang tersedia.'},
+      {label:'Tetap belajar dulu',effects:[{type:'flag',key:'cafePromotionTalkSeen',value:true},{type:'relationship',target:'sari',value:1}],result:'Kamu memilih memperkuat dasar sebelum membawa tanggung jawab lebih besar.'}
+    ]);
+  }
+
+  if(state.player.job==='warehouse_staff' && workCount(state,'warehouse_staff')>=6 && getSkillTier(state.skills.logistics||0).id!=='novice' && (state.relationships.dimas||0)>=8 && companyCanPromote(state,'lintas_kota') && !state.flags.logisticsPromotionTalkSeen){
+    return event('logistics_promotion_talk','PELUANG KARIER','Dimas Butuh Orang di Meja Koordinasi','Volume pengiriman naik. Dimas menawarkanmu pindah dari sekadar menangani barang ke posisi yang ikut menentukan urutan rute dan prioritas tim.',[
+      {label:'Pertimbangkan jadi Koordinator',effects:[{type:'flag',key:'logisticsPromotionTalkSeen',value:true},{type:'opportunity',opportunity:{id:'logistics_promotion',name:'Koordinator Pengiriman',summary:'Gaji Rp180rb/hari · koordinasi rute & tim'}}],result:'Posisi Koordinator Pengiriman sekarang tersedia.'},
+      {label:'Tetap di operasional dulu',effects:[{type:'flag',key:'logisticsPromotionTalkSeen',value:true},{type:'relationship',target:'dimas',value:1}],result:'Kamu belum ingin menukar kerja langsung dengan tanggung jawab koordinasi.'}
     ]);
   }
 

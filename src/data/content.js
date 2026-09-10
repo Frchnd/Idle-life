@@ -191,3 +191,50 @@ defineFromTemplate('events','learning_lead',{
     {label:'Jangan beli',effects:[{type:'flag',key:'laptopOfferSeen',value:true}],result:'Kamu menjaga tabunganmu. Teknologi tetap bisa dipelajari tanpa membeli aset sekarang.'}
   ]
 });
+
+// === Build Z: city expansion — dua jalur kerja baru ===
+defineFromTemplate('events','career_lead',{
+  id:'city_job_leads',name:'Kota Mulai Terasa Lebih Luas',type:'PELUANG KOTA',priority:68,weight:4,
+  title:'Dua Tempat Baru Membuka Pintu',
+  text:'Pencarianmu membawa kabar dari Kafe Senja dan Lintas Kota Logistik. Satu lebih banyak berurusan dengan orang dan ritme pelayanan; satunya lagi soal alur barang, ketepatan, dan kerja tim.',
+  requirements:[{preset:'unemployed'},{path:'career.jobSearchCount',op:'gte',value:3},{preset:'flag_false',params:{flag:'cafeOfferSeen'}},{preset:'flag_false',params:{flag:'logisticsOfferSeen'}}],
+  choices:[
+    {label:'Catat Kafe Senja',hint:'Barista Pemula · Rp110rb/hari',effects:[{type:'flag',key:'cafeOfferSeen',value:true},{type:'opportunity',opportunity:{id:'cafe_job',name:'Barista Pemula',summary:'8j/hari · Rp110rb · Hospitality'}},{type:'recent',text:'Kafe Senja masuk daftar peluang kerja barumu.'}],result:'Kamu menyimpan kontak Kafe Senja.'},
+    {label:'Catat Lintas Kota',hint:'Staf Gudang · Rp120rb/hari',effects:[{type:'flag',key:'logisticsOfferSeen',value:true},{type:'opportunity',opportunity:{id:'logistics_job',name:'Staf Gudang',summary:'8j/hari · Rp120rb · Logistik'}},{type:'recent',text:'Lintas Kota Logistik masuk daftar peluang kerja barumu.'}],result:'Kamu menyimpan kontak Lintas Kota Logistik.'},
+    {label:'Catat keduanya',hint:'Biarkan pilihan tetap terbuka.',effects:[{type:'flag',key:'cafeOfferSeen',value:true},{type:'flag',key:'logisticsOfferSeen',value:true},{type:'opportunity',opportunity:{id:'cafe_job',name:'Barista Pemula',summary:'8j/hari · Rp110rb · Hospitality'}},{type:'opportunity',opportunity:{id:'logistics_job',name:'Staf Gudang',summary:'8j/hari · Rp120rb · Logistik'}}],result:'Kamu sekarang punya dua arah kota baru untuk dicoba.'}
+  ]
+});
+
+
+
+defineFromTemplate('events','career_lead',{
+  id:'city_career_discovery',name:'Ada Jalur yang Belum Pernah Kamu Coba',type:'ARAH KARIER',priority:69,weight:4,
+  title:'Kota Punya Pilihan Lebih Banyak',
+  text:'Saat melihat lowongan di luar rutinitas sekarang, dua bidang yang belum pernah kamu jalani mulai terasa realistis: pelayanan di Kafe Senja atau operasi di Lintas Kota Logistik. Keduanya menerima orang yang mau belajar dari dasar.',
+  requirements:[{preset:'employed'},{path:'career.changeSearchCount',op:'gte',value:1},{path:'player.job',op:'neq',value:'cafe_crew'},{path:'player.job',op:'neq',value:'cafe_lead'},{path:'player.job',op:'neq',value:'warehouse_staff'},{path:'player.job',op:'neq',value:'dispatch_coordinator'}],
+  choices:[
+    {label:'Lihat Kafe Senja',hint:'Mulai dari Barista Pemula · skill baru',effects:[{type:'opportunity',opportunity:{id:'career_cafe',name:'Coba Jalur Kafe Senja',summary:'Barista Pemula · mulai Hospitality dari dasar'}},{type:'career_search_handled'}],result:'Kafe Senja masuk ke peluang aktifmu.'},
+    {label:'Lihat Lintas Kota',hint:'Mulai dari Staf Gudang · skill baru',effects:[{type:'opportunity',opportunity:{id:'career_logistics',name:'Coba Jalur Logistik',summary:'Staf Gudang · mulai Logistik dari dasar'}},{type:'career_search_handled'}],result:'Lintas Kota Logistik masuk ke peluang aktifmu.'},
+    {label:'Catat keduanya',effects:[{type:'opportunity',opportunity:{id:'career_cafe',name:'Coba Jalur Kafe Senja',summary:'Barista Pemula · mulai Hospitality dari dasar'}},{type:'opportunity',opportunity:{id:'career_logistics',name:'Coba Jalur Logistik',summary:'Staf Gudang · mulai Logistik dari dasar'}},{type:'career_search_handled'}],result:'Dua arah baru masuk ke peluang aktifmu.'}
+  ]
+});
+
+defineFromTemplate('events','first_day',{
+  id:'first_cafe',name:'Hari Pertama di Kafe Senja',
+  title:'Hari Pertama di Kafe Senja',text:'Sari menunjukkan bahwa pekerjaan di kafe bukan cuma membuat minuman. Kamu harus membaca antrean, mengingat pesanan, dan tetap ramah ketika ritme mulai padat.',
+  requirements:[{preset:'job_is',params:{job:'cafe_crew'}},{preset:'job_work_min',params:{job:'cafe_crew',count:1}},{preset:'flag_false',params:{flag:'firstCafeDay'}}],
+  choices:[
+    {label:'Pelajari ritme pelayanan',effects:[{type:'skill',skill:'hospitality',value:14},{type:'skill',skill:'social',value:6},{type:'relationship',target:'sari',value:5},{type:'npc_known',npc:'sari'},{type:'flag',key:'firstCafeDay',value:true}],result:'Kamu mulai memahami bagaimana pelayanan yang baik tetap terasa ringan di tengah kesibukan.'},
+    {label:'Fokus ke teknik minuman',effects:[{type:'skill',skill:'hospitality',value:20},{type:'relationship',target:'sari',value:2},{type:'npc_known',npc:'sari'},{type:'flag',key:'firstCafeDay',value:true}],result:'Teknikmu tumbuh lebih cepat, walau kamu masih perlu belajar membaca pelanggan.'}
+  ]
+});
+
+defineFromTemplate('events','first_day',{
+  id:'first_logistics',name:'Hari Pertama di Lintas Kota',
+  title:'Hari Pertama di Lintas Kota Logistik',text:'Dimas memberimu daftar barang dan jadwal keberangkatan. Kesalahan kecil di sini bisa membuat satu rute terlambat, jadi kerja cepat saja tidak cukup.',
+  requirements:[{preset:'job_is',params:{job:'warehouse_staff'}},{preset:'job_work_min',params:{job:'warehouse_staff',count:1}},{preset:'flag_false',params:{flag:'firstLogisticsDay'}}],
+  choices:[
+    {label:'Utamakan ketelitian',effects:[{type:'skill',skill:'logistics',value:16},{type:'skill',skill:'learning',value:5},{type:'relationship',target:'dimas',value:5},{type:'npc_known',npc:'dimas'},{type:'flag',key:'firstLogisticsDay',value:true}],result:'Dimas melihat kamu nggak asal cepat; alur kerja mulai masuk akal di kepalamu.'},
+    {label:'Ikuti ritme tim',effects:[{type:'skill',skill:'logistics',value:12},{type:'skill',skill:'social',value:8},{type:'relationship',target:'dimas',value:4},{type:'npc_known',npc:'dimas'},{type:'flag',key:'firstLogisticsDay',value:true}],result:'Kamu belajar bahwa gudang berjalan karena koordinasi, bukan tenaga satu orang.'}
+  ]
+});

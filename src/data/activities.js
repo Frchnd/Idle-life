@@ -75,7 +75,7 @@ function executeActivity(state,id){
     if(state.player.job==='mechanic_junior') state.career.promotionProgress+=1+focusBonus+growthBonus;
     if(state.player.job==='store_clerk') state.career.storeProgress+=1+focusBonus+growthBonus;
     if(state.player.job==='it_assistant') state.career.techProgress+=1+focusBonus+growthBonus;
-    const skillName={mechanics:'Mekanik',social:'Sosial',technology:'Teknologi'}[job.skill]||'kemampuan utama';
+    const skillName={mechanics:'Mekanik',social:'Sosial',technology:'Teknologi',hospitality:'Hospitality',logistics:'Logistik'}[job.skill]||'kemampuan utama';
     const parts=[];
     if(careerFocus(state)) parts.push('Fokus karier membuat progres pekerjaanmu lebih cepat.');
     if(independentFocus(state)) parts.push('Menjaga jalur mandiri membuat harimu sedikit lebih berat.');

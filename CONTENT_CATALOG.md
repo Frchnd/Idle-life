@@ -1,4 +1,4 @@
-# Hidup — Content Catalog (Build Y)
+# Hidup — Content Catalog (Build Z)
 
 Fase 4 memisahkan **engine** dari **content**. Konten data-driven dimiliki oleh satu content pack, memakai template/preset bila cocok, dan harus lolos validator sebelum game boot.
 
@@ -87,3 +87,15 @@ Report berisi hasil validasi; catalog berisi pack, jumlah konten per tipe, dan i
 
 ## Build Y — Career Specialization
 Pack `career_specialization` menambahkan tipe konten `certifications`, tiga pendidikan lanjutan, dan tiga pekerjaan spesialis. Opportunity pendidikan muncul ketika skill mencapai tier Terampil; lowongan spesialis baru disinkronkan setelah sertifikasi selesai dan kondisi perusahaan memungkinkan.
+
+
+## Build Z — City Expansion I
+Pack `city_expansion_one` memperluas kota tanpa mengubah core loop.
+
+- Jobs: `cafe_crew`, `cafe_lead`, `warehouse_staff`, `dispatch_coordinator`
+- Events: `city_job_leads`, `city_career_discovery`, `first_cafe`, `first_logistics`
+- World sectors: `hospitality`, `logistics`
+- Workplaces: `kafe_senja`, `lintas_kota`
+- NPC: `sari`, `dimas`
+
+Lowongan awal baru muncul setelah pemain cukup lama mencari kerja. Sesudah masuk, promosi tetap mempertimbangkan jam terbang, relationship dengan orang di tempat kerja, dan kesehatan perusahaan. Demand sektor juga dapat memunculkan opportunity pasar yang diperebutkan.

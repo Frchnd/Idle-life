@@ -384,14 +384,14 @@ function validateRequirement(req,path,errors,warnings){
   if(req.all) req.all.forEach((item,i)=>validateRequirement(item,`${path}.all[${i}]`,errors,warnings));
   if(req.any) req.any.forEach((item,i)=>validateRequirement(item,`${path}.any[${i}]`,errors,warnings));
   if(req.not) validateRequirement(req.not,`${path}.not`,errors,warnings);
-  if(req.skillTier && !['mechanics','learning','social','technology'].includes(req.skillTier)) errors.push(`${path} memakai skill tidak dikenal: ${req.skillTier}`);
-  if(req.relationship && !['family','rian','pak_arman','dika','maya','nadia','ari'].includes(req.relationship)) warnings.push(`${path} memakai relationship target baru: ${req.relationship}`);
+  if(req.skillTier && !['mechanics','learning','social','technology','hospitality','logistics'].includes(req.skillTier)) errors.push(`${path} memakai skill tidak dikenal: ${req.skillTier}`);
+  if(req.relationship && !['family','rian','pak_arman','dika','maya','nadia','ari','sari','dimas'].includes(req.relationship)) warnings.push(`${path} memakai relationship target baru: ${req.relationship}`);
 }
 
 function validateEffect(effect,path,errors,warnings,knownEffectTypes){
   if(!effect?.type){ errors.push(`${path} tidak punya effect.type`); return; }
   if(!knownEffectTypes.has(effect.type)){ errors.push(`${path} memakai effect tidak dikenal: ${effect.type}`); return; }
-  if(effect.type==='skill' && !['mechanics','learning','social','technology'].includes(effect.skill)) errors.push(`${path} memakai skill tidak dikenal: ${effect.skill}`);
+  if(effect.type==='skill' && !['mechanics','learning','social','technology','hospitality','logistics'].includes(effect.skill)) errors.push(`${path} memakai skill tidak dikenal: ${effect.skill}`);
   if((effect.type==='relationship'||effect.type==='relationship_clamped') && !effect.target) errors.push(`${path} tidak punya target relationship`);
   if((effect.type==='path_increment'||effect.type==='path_set') && !effect.path) errors.push(`${path} tidak punya path`);
   if(effect.type==='opportunity' && !effect.opportunity?.id) errors.push(`${path} membuat opportunity tanpa id`);
@@ -423,7 +423,7 @@ function validateContentFramework(){
         if(!def.workplace) errors.push(`${label} tidak punya workplace`);
         if(!Number.isFinite(Number(def.salary)) || Number(def.salary)<0) errors.push(`${label} punya salary tidak valid`);
         if(!Number.isFinite(Number(def.duration)) || Number(def.duration)<=0) errors.push(`${label} punya duration tidak valid`);
-        if(!['mechanics','social','technology'].includes(def.skill)) errors.push(`${label} memakai skill pekerjaan tidak dikenal: ${def.skill}`);
+        if(!['mechanics','social','technology','hospitality','logistics'].includes(def.skill)) errors.push(`${label} memakai skill pekerjaan tidak dikenal: ${def.skill}`);
       }
       if(type==='certifications'){
         if(!['mechanics','social','technology'].includes(def.skill)) errors.push(`${label} memakai skill sertifikasi tidak dikenal: ${def.skill}`);

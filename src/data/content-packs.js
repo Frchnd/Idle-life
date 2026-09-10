@@ -46,3 +46,13 @@ registerContentPack('career_specialization',{
     opportunities:['cert_engine_diagnostics','cert_retail_operations','cert_network_foundations','job_mechanic_diagnostic','job_operations_coordinator','job_network_technician']
   }
 });
+
+
+registerContentPack('city_expansion_one',{
+  name:'City Expansion I',version:1,dependsOn:['career_core'],
+  description:'Kafe Senja dan Lintas Kota Logistik, beserta karakter, event awal, dan jalur promosi.',
+  content:{
+    jobs:['cafe_crew','cafe_lead','warehouse_staff','dispatch_coordinator'],
+    events:['city_job_leads','city_career_discovery','first_cafe','first_logistics']
+  }
+});

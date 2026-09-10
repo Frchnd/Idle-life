@@ -47,6 +47,24 @@ function runOpportunity(state,id){
     return `Mira menerimamu sebagai ${job.name}.`;
   }
 
+  if(id==='cafe_job'){
+    removeOpportunity(state,id);
+    const {job,previous}=takeJob(state,'cafe_crew','sari');
+    state.relationships.sari=Math.max(5,state.relationships.sari||0);
+    addHistory(state,previous?'Umur 18 · Beralih menjadi Barista Pemula di Kafe Senja.':'Umur 18 · Mulai bekerja sebagai Barista Pemula di Kafe Senja.');
+    addRecent(state,'Kamu diterima bekerja di Kafe Senja.');
+    return `Sari membawamu masuk sebagai ${job.name}.`;
+  }
+
+  if(id==='logistics_job'){
+    removeOpportunity(state,id);
+    const {job,previous}=takeJob(state,'warehouse_staff','dimas');
+    state.relationships.dimas=Math.max(5,state.relationships.dimas||0);
+    addHistory(state,previous?'Umur 18 · Beralih menjadi Staf Gudang di Lintas Kota Logistik.':'Umur 18 · Mulai bekerja sebagai Staf Gudang di Lintas Kota Logistik.');
+    addRecent(state,'Kamu diterima bekerja di Lintas Kota Logistik.');
+    return `Dimas memasukkanmu ke tim sebagai ${job.name}.`;
+  }
+
   if(id==='tech_course'){
     if(state.player.money<250000) return 'Uangmu belum cukup untuk mengikuti kelas ini.';
     removeOpportunity(state,id);
@@ -133,6 +151,25 @@ function runOpportunity(state,id){
   }
 
 
+  if(id==='cafe_promotion'){
+    removeOpportunity(state,id);
+    const {job}=takeJob(state,'cafe_lead','sari');
+    state.relationships.sari=(state.relationships.sari||0)+6;
+    addHistory(state,'Umur 18 · Dipercaya menjadi Barista Senior di Kafe Senja.');
+    addRecent(state,'Sari mulai mempercayakan ritme satu shift kepadamu.');
+    return `Kamu sekarang ${job.name}. Pelayanan, kualitas, dan ritme tim mulai jadi tanggung jawabmu.`;
+  }
+
+  if(id==='logistics_promotion'){
+    removeOpportunity(state,id);
+    const {job}=takeJob(state,'dispatch_coordinator','dimas');
+    state.relationships.dimas=(state.relationships.dimas||0)+6;
+    addHistory(state,'Umur 18 · Naik menjadi Koordinator Pengiriman di Lintas Kota Logistik.');
+    addRecent(state,'Dimas mempercayakan koordinasi rute dan alur barang kepadamu.');
+    return `Kamu sekarang ${job.name}. Kesalahan kecil kini bisa memengaruhi satu tim, bukan cuma tugasmu sendiri.`;
+  }
+
+
 
   if(id==='career_mechanic'){
     removeOpportunity(state,id);
@@ -160,6 +197,27 @@ function runOpportunity(state,id){
     addHistory(state,`Umur 18 · Beralih dari ${JOBS[previous]?.name||'pekerjaan lama'} ke ${job.name}.`);
     addRecent(state,'Kamu mengubah arah karier ke Nusa Komputer.');
     return `Teknologi yang kamu pelajari di luar pekerjaan utama akhirnya menjadi karier utama.`;
+  }
+
+
+  if(id==='career_cafe'){
+    removeOpportunity(state,id);
+    const jobId=(state.career.jobWorkCounts.cafe_crew||0)>=6?'cafe_lead':'cafe_crew';
+    const {job,previous}=takeJob(state,jobId,'sari');
+    state.relationships.sari=Math.max(5,state.relationships.sari||0);
+    addHistory(state,`Umur 18 · Beralih dari ${JOBS[previous]?.name||'pekerjaan lama'} ke ${job.name} di Kafe Senja.`);
+    addRecent(state,'Kamu mengubah arah karier ke dunia hospitality.');
+    return `Kamu sekarang bekerja sebagai ${job.name}. Pengalaman pelayananmu punya arah baru.`;
+  }
+
+  if(id==='career_logistics'){
+    removeOpportunity(state,id);
+    const jobId=(state.career.jobWorkCounts.warehouse_staff||0)>=6?'dispatch_coordinator':'warehouse_staff';
+    const {job,previous}=takeJob(state,jobId,'dimas');
+    state.relationships.dimas=Math.max(5,state.relationships.dimas||0);
+    addHistory(state,`Umur 18 · Beralih dari ${JOBS[previous]?.name||'pekerjaan lama'} ke ${job.name} di Lintas Kota Logistik.`);
+    addRecent(state,'Kamu mengubah arah karier ke operasi logistik.');
+    return `Kamu sekarang bekerja sebagai ${job.name}. Ketelitian dan koordinasi menjadi modal utama.`;
   }
 
   if(id==='buy_laptop'){
@@ -254,6 +312,34 @@ function runOpportunity(state,id){
     state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
     addRecent(state,'Permintaan digital lokal menghasilkan pekerjaan teknologi tambahan.');
     return `Setup digital selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+
+  if(id==='market_hospitality'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(185000*sideMultiplier(state,false,'hospitality'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+9);
+    discoverSkill(state,'hospitality');
+    state.skills.hospitality+=16;
+    state.skills.social+=5;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Keramaian kota memberimu shift hospitality tambahan.');
+    return `Shift kafe selesai · +Rp${payout.toLocaleString('id-ID')} · Hospitality berkembang.`;
+  }
+
+  if(id==='market_logistics'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(205000*sideMultiplier(state,false,'logistics'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+11);
+    discoverSkill(state,'logistics');
+    state.skills.logistics+=17;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Lonjakan paket kota memberimu shift sortir tambahan.');
+    return `Shift logistik selesai · +Rp${payout.toLocaleString('id-ID')} · Logistik berkembang.`;
   }
 
   if(id==='start_business'){

@@ -15,28 +15,32 @@ function ensureWorldState(state){
   state.world.economy=Number.isFinite(state.world.economy)?state.world.economy:52;
   state.world.costIndex=Number.isFinite(state.world.costIndex)?state.world.costIndex:100;
   state.world.jobMarket=Number.isFinite(state.world.jobMarket)?state.world.jobMarket:50;
-  state.world.sectors={mechanics:54,retail:50,technology:56,...(state.world.sectors||{})};
+  state.world.sectors={mechanics:54,retail:50,technology:56,hospitality:52,logistics:53,...(state.world.sectors||{})};
   state.world.phase=state.world.phase||phaseFromEconomy(state.world.economy).id;
   state.world.news=Array.isArray(state.world.news)?state.world.news:[];
   state.world.lastOpportunityWeek=state.world.lastOpportunityWeek||{};
   const competitorDefaults={
     mechanics:{name:'Servis Prima',strength:52,reputation:50,action:'stabil',lastActionWeek:0},
     retail:{name:'PromoKita Lokal',strength:50,reputation:48,action:'stabil',lastActionWeek:0},
-    technology:{name:'Klik Cepat Digital',strength:55,reputation:54,action:'stabil',lastActionWeek:0}
+    technology:{name:'Klik Cepat Digital',strength:55,reputation:54,action:'stabil',lastActionWeek:0},
+    hospitality:{name:'Kopi Ruang Kota',strength:50,reputation:51,action:'stabil',lastActionWeek:0},
+    logistics:{name:'Kargo Nusantara',strength:53,reputation:50,action:'stabil',lastActionWeek:0}
   };
   state.world.competitors=state.world.competitors||{};
   for(const [sector,base] of Object.entries(competitorDefaults)) state.world.competitors[sector]={...base,...(state.world.competitors[sector]||{})};
   const workplaceDefaults={
     sinar_jaya:{health:58,staffing:52,pressure:52,status:'stabil',revenueIndex:56,margin:6,cashReserve:58,headcount:8,lastStaffActionWeek:-99},
     serba_ada:{health:56,staffing:54,pressure:48,status:'stabil',revenueIndex:52,margin:4,cashReserve:55,headcount:16,lastStaffActionWeek:-99},
-    nusa_komputer:{health:60,staffing:50,pressure:56,status:'stabil',revenueIndex:60,margin:8,cashReserve:62,headcount:7,lastStaffActionWeek:-99}
+    nusa_komputer:{health:60,staffing:50,pressure:56,status:'stabil',revenueIndex:60,margin:8,cashReserve:62,headcount:7,lastStaffActionWeek:-99},
+    kafe_senja:{health:57,staffing:55,pressure:50,status:'stabil',revenueIndex:55,margin:5,cashReserve:55,headcount:10,lastStaffActionWeek:-99},
+    lintas_kota:{health:59,staffing:51,pressure:58,status:'stabil',revenueIndex:58,margin:7,cashReserve:60,headcount:18,lastStaffActionWeek:-99}
   };
   state.world.workplaces=state.world.workplaces||{};
   for(const [id,base] of Object.entries(workplaceDefaults)){
     state.world.workplaces[id]={...base,...(state.world.workplaces[id]||{})};
   }
 
-  for(const [id,base] of Object.entries({rian:0,dika:0,maya:0,nadia:0})){
+  for(const [id,base] of Object.entries({rian:0,dika:0,maya:0,nadia:0,sari:0,dimas:0})){
     if(state.npc?.[id] && !Number.isFinite(state.npc[id].progress)) state.npc[id].progress=base;
   }
   return state.world;
@@ -99,7 +103,9 @@ function employmentRiskLabel(company){
 const WORKPLACE_META={
   sinar_jaya:{name:'Bengkel Sinar Jaya',sector:'mechanics'},
   serba_ada:{name:'Toko Serba Ada',sector:'retail'},
-  nusa_komputer:{name:'Nusa Komputer',sector:'technology'}
+  nusa_komputer:{name:'Nusa Komputer',sector:'technology'},
+  kafe_senja:{name:'Kafe Senja',sector:'hospitality'},
+  lintas_kota:{name:'Lintas Kota Logistik',sector:'logistics'}
 };
 
 function workplaceIdFromState(state){
@@ -107,6 +113,8 @@ function workplaceIdFromState(state){
   if(name.includes('Sinar Jaya')) return 'sinar_jaya';
   if(name.includes('Serba Ada')) return 'serba_ada';
   if(name.includes('Nusa Komputer')) return 'nusa_komputer';
+  if(name.includes('Kafe Senja')) return 'kafe_senja';
+  if(name.includes('Lintas Kota')) return 'lintas_kota';
   return null;
 }
 
@@ -145,7 +153,7 @@ function pushWorldNews(state,text){
 function maybeWorldOpportunity(state,sector,demand){
   if(demand<66) return;
   if(state.world.lastOpportunityWeek[sector]===state.world.week) return;
-  const skillMap={mechanics:'mechanics',retail:'social',technology:'technology'};
+  const skillMap={mechanics:'mechanics',retail:'social',technology:'technology',hospitality:'hospitality',logistics:'logistics'};
   const skill=skillMap[sector];
   if((state.skills?.[skill]||0)<100) return;
 
@@ -164,6 +172,16 @@ function maybeWorldOpportunity(state,sector,demand){
     pushWorldNews(state,'Usaha kecil di sekitar kota sedang ramai melakukan setup digital.');
     state.world.lastOpportunityWeek[sector]=state.world.week;
   }
+  if(sector==='hospitality' && !state.opportunities.some(x=>x.id==='market_hospitality')){
+    addOpportunity(state,{id:'market_hospitality',name:'Shift Kafe Akhir Pekan',summary:'4j · Hospitality · bayaran mengikuti keramaian kota · diperebutkan',expireAt:state.time.totalHours+72,...contestedMeta(state,'hospitality')});
+    pushWorldNews(state,'Kafe dan tempat nongkrong sedang mencari tenaga tambahan untuk akhir pekan.');
+    state.world.lastOpportunityWeek[sector]=state.world.week;
+  }
+  if(sector==='logistics' && !state.opportunities.some(x=>x.id==='market_logistics')){
+    addOpportunity(state,{id:'market_logistics',name:'Bantuan Sortir Pengiriman',summary:'4j · Logistik · bayaran mengikuti arus barang · diperebutkan',expireAt:state.time.totalHours+72,...contestedMeta(state,'logistics')});
+    pushWorldNews(state,'Arus paket kota meningkat dan gudang mencari bantuan shift tambahan.');
+    state.world.lastOpportunityWeek[sector]=state.world.week;
+  }
 }
 
 
@@ -180,7 +198,7 @@ function competitorSnapshot(state,sector){
 
 function simulateCompetitors(state){
   const w=ensureWorldState(state);
-  for(const sector of ['mechanics','retail','technology']){
+  for(const sector of ['mechanics','retail','technology','hospitality','logistics']){
     const c=w.competitors[sector];
     const demand=w.sectors[sector]??50;
     const roll=noise(w.week,sector.length+21);
@@ -222,7 +240,9 @@ function simulateWorkplaces(state){
   const configs={
     sinar_jaya:{sector:'mechanics',healthBias:1,staffBias:-1,baseHeadcount:8},
     serba_ada:{sector:'retail',healthBias:0,staffBias:2,baseHeadcount:16},
-    nusa_komputer:{sector:'technology',healthBias:4,staffBias:-2,baseHeadcount:7}
+    nusa_komputer:{sector:'technology',healthBias:4,staffBias:-2,baseHeadcount:7},
+    kafe_senja:{sector:'hospitality',healthBias:1,staffBias:1,baseHeadcount:10},
+    lintas_kota:{sector:'logistics',healthBias:2,staffBias:-1,baseHeadcount:18}
   };
   for(const [id,cfg] of Object.entries(configs)){
     const company=w.workplaces[id];
@@ -273,6 +293,8 @@ function competitionName(state,sector){
   if(sector==='mechanics' && state.npc?.dika?.known) return {name:'Dika',npc:'dika'};
   if(sector==='retail' && state.npc?.rian?.life!=='koordinator_logistik') return {name:'Rian',npc:'rian'};
   if(sector==='technology' && state.npc?.nadia?.known) return {name:'Nadia',npc:'nadia'};
+  if(sector==='hospitality' && state.npc?.sari?.known) return {name:'Sari',npc:'sari'};
+  if(sector==='logistics' && state.npc?.dimas?.known) return {name:'Dimas',npc:'dimas'};
   return {name:'orang lain',npc:null};
 }
 
@@ -305,7 +327,9 @@ function maybeExpansionCareerOpportunity(state,id){
   const map={
     sinar_jaya:{skill:'mechanics',opp:'career_mechanic',name:'Lowongan Ekspansi Bengkel',summary:'Jalur Mekanik · Sinar Jaya sedang tumbuh',sector:'mechanics'},
     serba_ada:{skill:'social',opp:'career_store',name:'Lowongan Cabang Ramai',summary:'Jalur Pelayanan · kebutuhan staf sedang naik',sector:'retail'},
-    nusa_komputer:{skill:'technology',opp:'career_it',name:'Lowongan Teknologi Baru',summary:'Jalur Teknologi · Nusa Komputer sedang ekspansi',sector:'technology'}
+    nusa_komputer:{skill:'technology',opp:'career_it',name:'Lowongan Teknologi Baru',summary:'Jalur Teknologi · Nusa Komputer sedang ekspansi',sector:'technology'},
+    kafe_senja:{skill:'hospitality',opp:'career_cafe',name:'Lowongan Kafe Ramai',summary:'Jalur Hospitality · Kafe Senja sedang tumbuh',sector:'hospitality'},
+    lintas_kota:{skill:'logistics',opp:'career_logistics',name:'Lowongan Logistik Baru',summary:'Jalur Logistik · arus pengiriman sedang naik',sector:'logistics'}
   };
   const cfg=map[id];
   if(!cfg || (state.skills?.[cfg.skill]||0)<100) return;
@@ -357,6 +381,22 @@ function simulateNpcLives(state){
       addRecent(state,'Nadia dipercaya memimpin beberapa teknisi junior di Nusa Komputer.');
     }
   }
+
+  if(state.npc.sari?.known){
+    const sari=progressNpc(state,'sari',1+w.sectors.hospitality/40);
+    if(state.npc.sari.life==='barista_senior' && sari>=10 && w.sectors.hospitality>=58){
+      state.npc.sari.life='kepala_shift';
+      addRecent(state,'Sari sekarang dipercaya memegang satu shift penuh di Kafe Senja.');
+    }
+  }
+
+  if(state.npc.dimas?.known){
+    const dimas=progressNpc(state,'dimas',1+w.sectors.logistics/38);
+    if(state.npc.dimas.life==='koordinator_shift' && dimas>=11 && w.sectors.logistics>=60){
+      state.npc.dimas.life='supervisor_operasional';
+      addRecent(state,'Dimas naik menjadi supervisor operasional di Lintas Kota Logistik.');
+    }
+  }
 }
 
 function simulateWeek(state){
@@ -371,11 +411,15 @@ function simulateWeek(state){
   const mechTarget=54+(50-w.economy)*.18+(noise(n,2)-.5)*18;
   const retailTarget=46+(w.economy-45)*.65+(noise(n,3)-.5)*15;
   const techTarget=55+Math.min(18,n*.7)+(w.economy-50)*.24+(noise(n,4)-.5)*14;
+  const hospitalityTarget=48+(w.economy-46)*.55+7*Math.sin(n/2.2)+(noise(n,7)-.5)*14;
+  const logisticsTarget=52+(w.economy-48)*.34+(w.sectors.retail-50)*.18+(noise(n,8)-.5)*13;
   w.sectors.mechanics=Math.round(move(w.sectors.mechanics,clamp(mechTarget,30,82),9));
   w.sectors.retail=Math.round(move(w.sectors.retail,clamp(retailTarget,25,86),10));
   w.sectors.technology=Math.round(move(w.sectors.technology,clamp(techTarget,35,90),9));
+  w.sectors.hospitality=Math.round(move(w.sectors.hospitality,clamp(hospitalityTarget,26,86),9));
+  w.sectors.logistics=Math.round(move(w.sectors.logistics,clamp(logisticsTarget,32,88),9));
 
-  const jobTarget=(w.economy+w.sectors.retail+w.sectors.technology)/3+(noise(n,5)-.5)*8;
+  const jobTarget=(w.economy+w.sectors.retail+w.sectors.technology+w.sectors.hospitality+w.sectors.logistics)/5+(noise(n,5)-.5)*8;
   w.jobMarket=Math.round(move(w.jobMarket,clamp(jobTarget,28,82),8));
 
   const costTarget=100+Math.max(-4,(w.economy-48)*.13)+Math.min(11,n*.35)+(noise(n,6)-.5)*3;
@@ -391,9 +435,13 @@ function simulateWeek(state){
   maybeWorldOpportunity(state,'mechanics',w.sectors.mechanics);
   maybeWorldOpportunity(state,'retail',w.sectors.retail);
   maybeWorldOpportunity(state,'technology',w.sectors.technology);
+  maybeWorldOpportunity(state,'hospitality',w.sectors.hospitality);
+  maybeWorldOpportunity(state,'logistics',w.sectors.logistics);
   maybeExpansionCareerOpportunity(state,'sinar_jaya');
   maybeExpansionCareerOpportunity(state,'serba_ada');
   maybeExpansionCareerOpportunity(state,'nusa_komputer');
+  maybeExpansionCareerOpportunity(state,'kafe_senja');
+  maybeExpansionCareerOpportunity(state,'lintas_kota');
   simulateNpcLives(state);
   simulateBusinessWeek(state);
 }
@@ -420,15 +468,21 @@ function worldSnapshot(state){
     mechanics:demandLabel(w.sectors.mechanics),
     retail:demandLabel(w.sectors.retail),
     technology:demandLabel(w.sectors.technology),
+    hospitality:demandLabel(w.sectors.hospitality),
+    logistics:demandLabel(w.sectors.logistics),
     workplaces:{
       sinar_jaya:workplaceSnapshot(state,'sinar_jaya'),
       serba_ada:workplaceSnapshot(state,'serba_ada'),
-      nusa_komputer:workplaceSnapshot(state,'nusa_komputer')
+      nusa_komputer:workplaceSnapshot(state,'nusa_komputer'),
+      kafe_senja:workplaceSnapshot(state,'kafe_senja'),
+      lintas_kota:workplaceSnapshot(state,'lintas_kota')
     },
     competitors:{
       mechanics:competitorSnapshot(state,'mechanics'),
       retail:competitorSnapshot(state,'retail'),
-      technology:competitorSnapshot(state,'technology')
+      technology:competitorSnapshot(state,'technology'),
+      hospitality:competitorSnapshot(state,'hospitality'),
+      logistics:competitorSnapshot(state,'logistics')
     },
     news:[...w.news]
   };
