@@ -384,7 +384,7 @@ function simulateNpcLives(state){
 
   if(state.npc.sari?.known){
     const sari=progressNpc(state,'sari',1+w.sectors.hospitality/40);
-    if(state.npc.sari.life==='barista_senior' && sari>=10 && w.sectors.hospitality>=58){
+    if(['barista_senior','barista_mentor'].includes(state.npc.sari.life) && sari>=10 && w.sectors.hospitality>=58){
       state.npc.sari.life='kepala_shift';
       addRecent(state,'Sari sekarang dipercaya memegang satu shift penuh di Kafe Senja.');
     }
@@ -392,7 +392,7 @@ function simulateNpcLives(state){
 
   if(state.npc.dimas?.known){
     const dimas=progressNpc(state,'dimas',1+w.sectors.logistics/38);
-    if(state.npc.dimas.life==='koordinator_shift' && dimas>=11 && w.sectors.logistics>=60){
+    if(['koordinator_shift','koordinator_teratur'].includes(state.npc.dimas.life) && dimas>=11 && w.sectors.logistics>=60){
       state.npc.dimas.life='supervisor_operasional';
       addRecent(state,'Dimas naik menjadi supervisor operasional di Lintas Kota Logistik.');
     }

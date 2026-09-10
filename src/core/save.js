@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AB.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AC.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -49,6 +49,8 @@ function mergeState(base,saved){
   out.social.encounters={...base.social.encounters,...(saved.social?.encounters||{})};
   out.social.lastEncounterAt={...base.social.lastEncounterAt,...(saved.social?.lastEncounterAt||{})};
   out.social.lastLocationByNpc={...base.social.lastLocationByNpc,...(saved.social?.lastLocationByNpc||{})};
+  out.characterStories={...base.characterStories,...(saved.characterStories||{})};
+  for(const key of Object.keys(base.characterStories||{})) out.characterStories[key]={...base.characterStories[key],...(saved.characterStories?.[key]||{})};
   out.life={...base.life,...(saved.life||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
   out.playtest={...base.playtest,...(saved.playtest||{})};
@@ -75,6 +77,7 @@ function mergeState(base,saved){
   ensureEducationState(out);
   ensureCityState(out);
   ensureSocialState(out);
+  ensureCharacterStories(out);
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];

@@ -24,6 +24,8 @@ function takeJob(state,jobId,npc){
 function runOpportunity(state,id){
   const dataResult=runDataOpportunity(state,id);
   if(dataResult!==null) return dataResult;
+  const storyResult=runCharacterStoryOpportunity(state,id);
+  if(storyResult!==null) return storyResult;
   const opp=state.opportunities.find(item=>item.id===id);
   if(!opp) return 'Peluang itu sudah tidak tersedia.';
   if(opp.contested) addRecent(state,`Kamu bergerak lebih cepat dan mengambil “${opp.name}” sebelum ${opp.competitor||'orang lain'}.`);
@@ -83,7 +85,8 @@ function runOpportunity(state,id){
   if(id==='market_helper'){
     removeOpportunity(state,id);
     state.time.totalHours+=3;
-    const payout=Math.round(120000*sectorMultiplier(state,'logistics'));
+    const storyBonus=state.characterStories?.bu_lestari?.outcome==='helped'?1.15:1;
+    const payout=Math.round(120000*sectorMultiplier(state,'logistics')*storyBonus);
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+7);
     state.skills.logistics=(state.skills.logistics||0)+10;

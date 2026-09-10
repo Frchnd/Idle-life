@@ -41,6 +41,7 @@ function persist(){
 
 function postStep(){
   simulateWorld(state);
+  syncCharacterStories(state);
   syncEducationOpportunities(state);
   resolveContestedOpportunities(state);
   expireOpportunities(state);
@@ -90,6 +91,7 @@ function prepareGame({allowOffline=true}={}){
     }
   }
   simulateWorld(state);
+  syncCharacterStories(state);
   syncEducationOpportunities(state);
   resolveContestedOpportunities(state);
   expireOpportunities(state);
@@ -341,6 +343,7 @@ function processOffline(realMs){
     state.playtest.actions=(state.playtest.actions||0)+1;
     consumed+=state.time.totalHours-before;
     simulateWorld(state);
+    syncCharacterStories(state);
     syncEducationOpportunities(state);
     resolveContestedOpportunities(state);
     expireOpportunities(state);

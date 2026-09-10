@@ -47,6 +47,7 @@ function resolveEffects(state,effects=[]){
         state.player.salary=effect.salary;
         break;
       case 'npc_known': if(state.npc[effect.npc]) state.npc[effect.npc].known=true; break;
+      case 'story': patchCharacterStory(state,effect.npc,effect.patch||{}); break;
       case 'recent': addRecent(state,effect.text); break;
       case 'history': addHistory(state,effect.text); break;
       case 'opportunity': addOpportunity(state,effect.opportunity); break;

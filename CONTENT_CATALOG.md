@@ -1,4 +1,4 @@
-# Hidup — Content Catalog (Build AB)
+# Hidup — Content Catalog (Build AC)
 
 Fase 4 memisahkan **engine** dari **content**. Konten data-driven dimiliki oleh satu content pack, memakai template/preset bila cocok, dan harus lolos validator sebelum game boot.
 
@@ -109,3 +109,10 @@ Lokasi awal: `kampus_harapan`, `pasar_tradisional`, `gym_sehat`.
 
 ## Build AB — Social City Layer
 Build AB menambahkan `src/data/social.js` + `src/core/social.js` sebagai simulation/presentation layer di luar data-driven content registry. Jadwal NPC sengaja dipisahkan dari event pool karena presence dihitung dari waktu + lokasi. Pertemuan sosial menghasilkan event runtime dengan portrait, cooldown, dan relationship gates.
+
+
+## Build AC — Character Storylines
+
+`src/data/storylines.js` mendefinisikan arc karakter, sedangkan `src/core/storylines.js` menangani state, deadline, outcome, dan task runtime. Layer ini sengaja berada di atas Content Registry karena cerita karakter membutuhkan stateful multi-stage progression dan consequence yang berubah mengikuti waktu.
+
+Arc awal: `andi`, `bu_lestari`, `sari`, `dimas`. Masing-masing memiliki intro event, optional story opportunity, missed path, dan follow-up. NPC tidak berhenti berkembang ketika player tidak ikut campur.

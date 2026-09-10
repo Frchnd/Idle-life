@@ -476,7 +476,9 @@ function refreshEvent(state){
   const gap=Math.max(4,state.pacing.minGapHours||8);
   const elapsed=state.time.totalHours-(state.pacing.lastResolvedEventAt??-999);
   if(!urgentStateNeedsAttention(state) && elapsed<gap) return;
-  const next=getNextEvent(state);
+  let next;
+  if(urgentStateNeedsAttention(state)) next=getNextEvent(state);
+  else next=getNextCharacterStoryEvent(state)||getNextEvent(state);
   if(next){
     state.pendingEvent=next;
     state.pacing.lastSurfacedEventAt=state.time.totalHours;

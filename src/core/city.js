@@ -51,7 +51,8 @@ function visitCityLocation(state,id){
     state.skills.technology=(state.skills.technology||0)+7;
     if(!state.discoveredSkills.includes('technology')) state.discoveredSkills.push('technology');
     if(first) addRecent(state,'Kampus Harapan membuka lingkungan belajar baru di luar rutinitasmu.');
-    if(count%3===0 && (state.skills.learning||0)>=60){
+    const projectEvery=state.characterStories?.andi?.outcome==='helped'?2:3;
+    if(count%projectEvery===0 && (state.skills.learning||0)>=60){
       pushCityOpportunity(state,{id:'campus_project',name:'Bantu Acara Kampus',summary:'Komunitas kampus butuh bantuan setup perangkat untuk acara kecil.',expireAt:state.time.totalHours+72,source:'Kampus Harapan'});
     }
     message='Kamu menghabiskan beberapa jam di Kampus Harapan. Belajar terasa lebih luas ketika berada di antara orang dengan arah hidup berbeda.';

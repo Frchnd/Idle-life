@@ -1,23 +1,24 @@
-# Hidup — Build AB
+# Hidup — Build AC
 
-## Social City Expansion
+## Character Storylines
 
-Build AB membuat orang di Kota Harapan punya tempat dan waktu kemunculan. NPC tidak lagi selalu tersedia hanya karena player membuka tab DUNIA. Kunjungan kota tetap memiliki manfaat dasar, tetapi pertemuan sosial hanya terjadi ketika rutinitas NPC cocok dengan waktu kunjungan.
+Build AC memperdalam Social City Layer dengan cerita karakter bertahap. NPC tetap punya hidup sendiri: kedekatan memberi Raka kesempatan ikut membantu, tetapi melewatkan tugas cerita tidak membekukan perkembangan mereka.
 
 ### Yang baru
-- **Kafe Senja** sekarang dapat dikunjungi sebagai lokasi sosial.
-- **Andi** lebih sering berada di Kampus Harapan pada hari kerja dan kadang di gym malam.
-- **Bu Lestari** berada di Pasar Tradisional dari pagi sampai siang.
-- **Sari** punya shift nyata di Kafe Senja dan kadang datang ke gym.
-- **Dimas** sesekali muncul di Gym Sehat setelah jam kerja.
-- Kartu lokasi menampilkan portrait orang yang sedang ada **sekarang**.
-- Pertemuan sosial memakai event portrait dan pilihan interaksi.
-- Pertemuan berulang memiliki cooldown; hubungan tidak dapat digrind setiap kunjungan.
-- Kedekatan + jumlah pertemuan membuka interaksi yang lebih personal.
-- Kartu NPC menunjukkan jejak sosial seperti `Pernah bertemu di kota`, `Mulai sering bertemu`, dan `Punya rutinitas bersama`.
+- **4 character story arcs** untuk Andi, Bu Lestari, Sari, dan Dimas.
+- Setiap cerita punya tahap: pembuka → kebutuhan/tugas → outcome/follow-up.
+- Tugas cerita punya deadline. Kalau dilewatkan, NPC tetap mengambil keputusan sendiri dan cerita bergerak ke outcome berbeda.
+- Kartu NPC di tab **DUNIA** menampilkan status cerita singkat seperti `Butuh bantuan`, `Ada kabar baru`, atau `Bab selesai`.
+- Event cerita memakai portrait karakter yang sudah ada, jadi tetap konsisten dengan presentation layer anime.
+- Outcome cerita menyentuh simulation engine:
+  - membantu **Andi** membuat proyek kampus lebih sering terbuka;
+  - membantu **Bu Lestari** meningkatkan nilai kerja pasar berikutnya;
+  - membantu **Sari** sedikit memperkuat kondisi Kafe Senja;
+  - membantu **Dimas** menurunkan tekanan operasional Lintas Kota.
+- Life state NPC ikut berubah: Andi bisa jadi koordinator komunitas, Bu Lestari bisa membangun jaringan kiriman atau mengecilkan kios, Sari bisa berkembang sebagai mentor, dan Dimas bisa membangun sistem kerja yang lebih teratur.
 
 ### Save
-Build AA (v23) otomatis dimigrasikan ke Build AB (v24). SAVE_KEY lama tetap dipertahankan.
+Build AB (v24) otomatis dimigrasikan ke Build AC (v25). SAVE_KEY lama tetap dipertahankan; uang, skill, karier, relasi, kunjungan kota, dan progress lain tidak di-reset.
 
 ### Deploy
-Upload seluruh isi folder ke root GitHub Pages. Setelah deploy, hard refresh atau tutup-buka PWA agar cache `hidup-build-ab-v1` aktif.
+Upload seluruh isi folder ke root GitHub Pages. Setelah deploy, hard refresh atau tutup-buka PWA agar cache `hidup-build-ac-v1` aktif.
