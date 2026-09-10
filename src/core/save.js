@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AD.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AE.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -108,7 +108,9 @@ function mergeState(base,saved){
       ? {id:'rented_room',label:'Kamar sewa sendiri',monthlyCost:1100000,movedAt:out.time.totalHours}
       : {id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null};
   }
-  out.economy.livingCost=out.housing.id==='rented_room'?1100000:600000;
+  if(typeof ensureHousingState==='function') ensureHousingState(out);
+  out.economy.baseLivingCost=typeof housingMonthlyBase==='function'?housingMonthlyBase(out):(out.housing.id==='rented_room'?1100000:600000);
+  out.economy.livingCost=out.economy.baseLivingCost;
 
   // Build I dan versi sebelumnya belum punya pencatat pacing/playtest.
   if(!saved.pacing){

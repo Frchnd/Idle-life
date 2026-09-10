@@ -20,7 +20,8 @@ function cityLocationSnapshot(state){
   ensureCityState(state);
   return Object.values(CITY_LOCATIONS).map(loc=>{
     const presence=socialPresenceLabel(state,loc.id);
-    return {...loc,visits:state.city.visits[loc.id]||0,presence};
+    const travel=housingCityTravel(state,loc.id);
+    return {...loc,visits:state.city.visits[loc.id]||0,presence,effectiveDuration:loc.duration+travel.extraHours,effectiveCost:loc.cost+travel.extraCost,travelExtraHours:travel.extraHours};
   });
 }
 
@@ -34,11 +35,14 @@ function visitCityLocation(state,id){
   ensureCityState(state);
   const loc=CITY_LOCATIONS[id];
   if(!loc) return {error:'Lokasi itu belum tersedia.'};
-  if(state.player.money<loc.cost) return {error:`Butuh Rp${loc.cost.toLocaleString('id-ID')} untuk pergi dan beraktivitas di sini.`};
+  const travel=housingCityTravel(state,id);
+  const effectiveCost=loc.cost+travel.extraCost;
+  const effectiveDuration=loc.duration+travel.extraHours;
+  if(state.player.money<effectiveCost) return {error:`Butuh Rp${effectiveCost.toLocaleString('id-ID')} untuk pergi dan beraktivitas di sini.`};
   const presentAtArrival=socialPeopleAtLocation(state,id);
   const first=(state.city.visits[id]||0)===0;
-  state.player.money-=loc.cost;
-  state.time.totalHours+=loc.duration;
+  state.player.money-=effectiveCost;
+  state.time.totalHours+=effectiveDuration;
   state.city.lastVisited=id;
   state.city.lastVisitedAt=state.time.totalHours;
   state.city.visits[id]=(state.city.visits[id]||0)+1;
@@ -84,6 +88,9 @@ function visitCityLocation(state,id){
     }
     message='Kamu latihan ringan, mandi, dan memberi tubuh waktu untuk pulih. Kondisimu terasa lebih baik.';
   }
+
+  if(housingMeta(state).socialBonus) state.skills.social=(state.skills.social||0)+housingMeta(state).socialBonus;
+  if(travel.extraHours>0) message+=` Perjalanan dari ${housingMeta(state).neighborhood} menambah ${travel.extraHours} jam.`;
 
   const person=maybeStartSocialEncounter(state,id,presentAtArrival);
   if(person) message+=` ${person.name} kebetulan juga ada di sini.`;

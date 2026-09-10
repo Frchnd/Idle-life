@@ -112,6 +112,21 @@ function draw(){
 function bind(){
   root.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{ui.tab=btn.dataset.tab;draw();}));
   root.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>runActivity(btn.dataset.action)));
+  root.querySelectorAll('[data-housing-move]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);
+    const result=moveHousing(state,btn.dataset.housingMove);
+    if(result && typeof result==='object' && result.error){
+      ui.result=result.error;
+      ui.feedback={title:'Belum bisa pindah',message:String(result.error),details:[],tone:'warning'};
+      draw();
+      return;
+    }
+    state.playtest.actions=(state.playtest.actions||0)+1;
+    ui.result=result;
+    ui.feedback=buildFeedback(before,state,result,'Tempat tinggal berubah');
+    postStep();
+  }));
   root.querySelectorAll('[data-city-visit]').forEach(btn=>btn.addEventListener('click',()=>{
     if(state.pendingEvent) return;
     const before=feedbackSnapshot(state);

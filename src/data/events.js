@@ -15,13 +15,12 @@ function basicSkillCount(state){
 }
 
 function housingDecisionEvent(state,revisit=false){
-  const deposit=state.flags.familySupport?1000000:1200000;
-  return event(revisit?'housing_revisit':'housing_choice','ARAH HIDUP',revisit?'Soal Tinggal Sendiri Muncul Lagi':'Tetap di Rumah atau Mulai Mandiri?',
+  return event(revisit?'housing_revisit':'housing_choice','ARAH HIDUP',revisit?'Pilihan Tempat Tinggal Muncul Lagi':'Mulai Memilih Tempat Tinggal Sendiri?',
     revisit
-      ? 'Beberapa waktu berlalu. Ide untuk punya ruang sendiri masih terasa masuk akal, tapi biaya hidupnya juga belum berubah.'
-      : 'Penghasilanmu mulai lebih stabil. Kamar sewa dekat area kerja tersedia, tapi pindah berarti deposit besar dan biaya bulanan hampir dua kali lipat.',[
-      {label:'Pertimbangkan pindah',hint:`Deposit Rp${deposit.toLocaleString('id-ID')} · biaya hidup Rp1,1jt/bulan`,effects:[{type:'flag',key:'housingOfferSeen',value:true},{type:'opportunity',opportunity:{id:'rent_room',name:'Sewa Kamar Sendiri',summary:`Deposit Rp${deposit.toLocaleString('id-ID')} · belajar & istirahat lebih efektif`}}],result:'Pilihan pindah sekarang tersedia. Kamu tidak harus mengambilnya langsung.'},
-      {label:'Tetap bersama keluarga dulu',hint:'Lebih murah · hubungan keluarga lebih dekat',effects:[{type:'flag',key:'housingOfferSeen',value:true},{type:'relationship',target:'family',value:2},{type:'schedule',after:360,kind:'housing_revisit'}],result:'Kamu memilih mempertahankan biaya hidup rendah. Pilihan mandiri bisa muncul lagi nanti.'}
+      ? 'Kondisi hidupmu berubah. Pilihan hunian di kota masih terbuka, dan setiap lingkungan punya biaya serta ritme yang berbeda.'
+      : 'Penghasilanmu mulai lebih stabil. Sekarang pilihan tempat tinggal bukan cuma rumah keluarga atau satu kamar sewa—lokasi, biaya, privasi, dan waktu perjalanan mulai jadi bagian dari hidupmu.',[
+      {label:'Lihat pilihan hunian',hint:'Kost pusat kota · rumah bersama · kontrakan tepi kota',effects:[{type:'flag',key:'housingOfferSeen',value:true},{type:'recent',text:'Pilihan tempat tinggal baru terbuka di profilmu.'}],result:'Pilihan hunian sekarang tersedia di KAMU. Kamu bisa pindah saat uang dan waktunya masuk akal.'},
+      {label:'Tetap di rumah keluarga dulu',hint:'Biaya rendah · akses pusat kota lebih lambat',effects:[{type:'flag',key:'housingOfferSeen',value:true},{type:'relationship',target:'family',value:2},{type:'schedule',after:360,kind:'housing_revisit'}],result:'Kamu tetap bersama keluarga. Pasar hunian tetap bisa kamu lihat kapan pun setelah ini.'}
     ]);
 }
 
@@ -94,14 +93,14 @@ function dueScheduledEvent(state){
     ]);
   }
 
-  if(item.kind==='move_out_reflection' && state.housing?.id==='rented_room'){
-    return event('move_out_reflection','KEHIDUPAN','Malam Pertama di Tempat Sendiri','Tidak ada suara keluarga di ruangan sebelah. Rasanya lebih bebas, tapi juga lebih sepi daripada yang kamu bayangkan.',[
+  if(item.kind==='move_out_reflection' && state.housing?.id!=='family_home'){
+    return event('move_out_reflection','KEHIDUPAN','Malam Pertama di Tempat Baru',`${housingLabel(state)} terasa berbeda setelah hari mulai tenang. Ada kebebasan baru, tapi ritme lingkungan ini juga punya harga sendiri.`,[
       {label:'Telepon keluarga',effects:[{type:'relationship',target:'family',value:4},{type:'flag',key:'moveReflectionSeen',value:true},{type:'recent',text:'Kamu tetap menjaga hubungan keluarga setelah pindah.'}],result:'Tinggal terpisah tidak berarti hubungan harus menjauh.'},
       {label:'Nikmati ruang sendiri',effects:[{type:'skill',skill:'learning',value:5},{type:'flag',key:'moveReflectionSeen',value:true}],result:'Kamu mulai menikmati bahwa waktu dan ruangmu sekarang benar-benar milikmu.'}
     ]);
   }
 
-  if(item.kind==='housing_revisit' && state.housing?.id!=='rented_room'){
+  if(item.kind==='housing_revisit' && state.housing?.id==='family_home'){
     state.flags.housingRevisitSeen=true;
     return housingDecisionEvent(state,true);
   }
@@ -134,10 +133,10 @@ function getNextEvent(state){
   if(dataEvent) return dataEvent;
 
 
-  if(state.housing?.id==='rented_room' && state.player.money<350000 && !state.flags.rentPressureSeen){
-    return event('rent_pressure','KEUANGAN','Biaya Hidup Mulai Terasa','Tinggal sendiri memberi ruang lebih besar, tapi saldo mulai menipis. Sewa bulan berikutnya sekarang terasa seperti keputusan nyata.',[
-      {label:'Bertahan sendiri',hint:'Pertahankan biaya Rp1,1jt/bulan',effects:[{type:'flag',key:'rentPressureSeen',value:true},{type:'recent',text:'Kamu memilih mempertahankan tempat tinggal sendiri meski cashflow ketat.'}],result:'Kamu mempertahankan kemandirian dan menerima tekanan keuangannya.'},
-      {label:'Pulang ke keluarga sementara',hint:'Biaya hidup kembali Rp600rb/bulan',effects:[{type:'flag',key:'rentPressureSeen',value:true},{type:'flag',key:'movedOut',value:false},{type:'housing',value:{id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null}},{type:'status_remove',status:'tinggal_sendiri'},{type:'status_add',status:'tinggal_bersama_keluarga'},{type:'relationship',target:'family',value:3},{type:'schedule',after:360,kind:'housing_revisit'},{type:'history',text:'Umur 18 · Kembali tinggal bersama keluarga untuk menstabilkan keuangan.'}],result:'Kamu pulang. Ini bukan reset—hanya perubahan strategi hidup karena kondisi keuangan.'}
+  if(state.housing?.id!=='family_home' && state.player.money<housingPressureThreshold(state) && !state.flags.rentPressureSeen){
+    return event('rent_pressure','KEUANGAN','Biaya Hidup Mulai Terasa',`${housingLabel(state)} memberi ritme hidup yang berbeda, tapi saldo mulai menipis. Biaya bulan berikutnya sekarang terasa seperti keputusan nyata.`,[
+      {label:'Bertahan sendiri',hint:`Pertahankan biaya sekitar Rp${Math.round(housingCurrentMonthlyCost(state)/1000).toLocaleString('id-ID')}rb/bulan`,effects:[{type:'flag',key:'rentPressureSeen',value:true},{type:'recent',text:'Kamu memilih mempertahankan tempat tinggal sendiri meski cashflow ketat.'}],result:'Kamu mempertahankan kemandirian dan menerima tekanan keuangannya.'},
+      {label:'Pulang ke keluarga sementara',hint:'Kembali ke biaya keluarga yang lebih ringan',effects:[{type:'flag',key:'rentPressureSeen',value:true},{type:'flag',key:'movedOut',value:false},{type:'housing',value:{id:'family_home',label:'Bersama keluarga',neighborhood:'Kampung Melati',monthlyCost:600000,baseMonthlyCost:600000,movedAt:null}},{type:'status_remove',status:'tinggal_sendiri'},{type:'status_remove',status:'tinggal_bersama_penghuni'},{type:'status_remove',status:'tinggal_tepi_kota'},{type:'status_add',status:'tinggal_bersama_keluarga'},{type:'relationship',target:'family',value:3},{type:'schedule',after:360,kind:'housing_revisit'},{type:'history',text:'Umur 18 · Kembali tinggal bersama keluarga untuk menstabilkan keuangan.'}],result:'Kamu pulang. Ini bukan reset—hanya perubahan strategi hidup karena kondisi keuangan.'}
     ]);
   }
 
@@ -155,7 +154,7 @@ function getNextEvent(state){
     ]);
   }
 
-  if(state.player.job && state.career.workCount>=10 && state.housing?.id!=='rented_room' && !state.flags.housingOfferSeen){
+  if(state.player.job && state.career.workCount>=10 && state.housing?.id==='family_home' && !state.flags.housingOfferSeen){
     return housingDecisionEvent(state,false);
   }
 
@@ -469,7 +468,7 @@ function applyEventChoice(state,choice){
 }
 
 function urgentStateNeedsAttention(state){
-  const rentPressure=state.housing?.id==='rented_room' && state.player.money<350000 && !state.flags.rentPressureSeen;
+  const rentPressure=state.housing?.id!=='family_home' && state.player.money<housingPressureThreshold(state) && !state.flags.rentPressureSeen;
   const moneyCrisis=state.player.money<0 && !state.flags.moneyPressureSeen;
   const exhaustion=getCondition(state.player.fatigue).id==='exhausted' && !state.flags.exhaustedWarningSeen;
   const restructure=state.scheduled.some(item=>item.kind==='job_restructure' && item.at<=state.time.totalHours);

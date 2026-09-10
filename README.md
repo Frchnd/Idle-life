@@ -1,31 +1,25 @@
-# Hidup — Build AD
+# HIDUP — Build AE
 
-## Relationship Stakes
+Build AE memperluas tempat tinggal menjadi sistem lingkungan hidup yang memengaruhi waktu, biaya, pemulihan, belajar, dan akses kota.
 
-Build AD memperdalam hubungan setelah character storyline. Kedekatan sekarang dapat menciptakan ekspektasi nyata: seseorang bisa meminta Raka membuat janji, dan keputusan untuk menepati, menolak secara jujur, atau mangkir menghasilkan state hubungan yang berbeda.
+## Housing & Neighborhood Expansion
 
-### Yang baru
-- **4 relationship stakes** lanjutan untuk Andi, Bu Lestari, Sari, dan Dimas.
-- Hanya satu janji besar aktif pada satu waktu agar UI dan ritme keputusan tetap sederhana.
-- Janji memiliki deadline dalam waktu game dan muncul sebagai opportunity khusus.
-- Menepati janji meningkatkan kedekatan dan membuka status `bisa saling mengandalkan`.
-- Menolak secara jujur tidak menimbulkan `strain`; penalti hubungan kecil atau nol.
-- Berjanji lalu melewatkan deadline menurunkan relationship dan menambah **relationship strain**.
-- Strain tidak hilang otomatis. Pertemuan berikutnya dapat berubah menjadi momen memperbaiki hubungan.
-- Kartu NPC di **DUNIA** menampilkan status singkat seperti `Janji aktif`, `Ada rasa kecewa`, atau `Sudah terbukti bisa saling mengandalkan`.
-- **Janji Aktif** juga ditampilkan sebagai satu kartu ringkas di DUNIA tanpa menambah tab baru.
+- Rumah Keluarga — biaya terendah, hubungan keluarga dekat, akses pusat kota lebih lambat.
+- Kost Pusat Kota — biaya tertinggi, privasi tinggi, commute dan akses kota paling efisien.
+- Rumah Bersama Cendana — biaya menengah, akses kota baik, bonus sosial kecil, privasi sedang.
+- Kontrakan Tepi Kota — lebih tenang dan murah, recovery terbaik, tetapi commute ke pusat kota lebih panjang.
+- Biaya bulanan seluruh hunian tetap mengikuti indeks biaya hidup dunia.
+- Commute kerja menambah waktu dan sedikit fatigue; kartu aksi kerja menampilkan total waktu aktual.
+- Kunjungan kota ikut menghitung waktu/ongkos perjalanan dari lingkungan rumah.
+- Pindah membutuhkan deposit + waktu pindahan dan dapat memicu refleksi/tekanan sewa.
+- Pasar hunian tampil kontekstual di KAMU setelah kehidupan kerja mulai stabil.
 
-### Empat komitmen awal
-- **Andi** — hadir membantu workshop komunitas.
-- **Sari** — menemani shift penutup saat ia mencoba pola closing baru.
-- **Bu Lestari** — menalangi Rp250.000 untuk satu putaran stok; jika dipenuhi, pengembalian uang dijadwalkan kemudian.
-- **Dimas** — membantu audit rute satu malam tanpa bayaran.
+## Save
 
-### Prinsip desain
-Relationship tinggi bukan hadiah pasif. Semakin dekat seseorang, semakin mungkin hidup mereka benar-benar meminta ruang di jadwal, uang, atau perhatian Raka. Failure tetap bukan game over: hubungan yang renggang dapat diperbaiki lewat waktu dan interaksi berikutnya.
+Save version 27. SAVE_KEY lama tetap dipakai sehingga Build AD v26 bermigrasi otomatis tanpa reset.
 
-### Save
-Build AC (v25) otomatis dimigrasikan ke Build AD (v26). SAVE_KEY lama tetap dipertahankan; progress karier, uang, skill, kota, character stories, dan relationship lama tidak di-reset.
+## Deploy
 
-### Deploy
-Upload seluruh isi folder ke root GitHub Pages. Setelah deploy, hard refresh atau tutup-buka PWA agar cache `hidup-build-ad-v1` aktif.
+Upload seluruh isi folder ke root GitHub Pages, termasuk `src/`, `styles/`, dan `assets/`. Setelah deploy, hard refresh atau tutup-buka PWA agar cache Build AE aktif.
+
+Aplikasi tetap dirancang sebagai Rp0 app: tidak ada paywall, IAP, atau premium currency.

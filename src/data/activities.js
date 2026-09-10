@@ -5,7 +5,7 @@ function xpMod(state){
   return 1;
 }
 
-function isLivingAlone(state){ return state.housing?.id==='rented_room'; }
+function isLivingAlone(state){ return state.housing?.id!=='family_home'; }
 function careerFocus(state){ return state.life?.trajectory==='career'; }
 function independentFocus(state){ return state.life?.trajectory==='independent'; }
 function activityEnabledByPack(state,id){ return !getContent('activities',id) || contentEnabled(state,'activities',id); }
@@ -16,16 +16,17 @@ function availableActivities(state){
   if(!state.player.job){
     if(state.business?.active) list.push({id:'business_manage',name:state.business.ownerFullTime?'Jalankan Usaha':'Urus Usaha',hint:state.business.helperActive?'4j · klien, kualitas & koordinasi Ari':'4j · jaga kapasitas & pelanggan',duration:4});
     list.push({id:'job_search',name:state.business?.ownerFullTime?'Lihat Lowongan Kerja':'Cari Kerja',hint:'6j · cari peluang kerja',duration:6});
-    list.push({id:'study',name:'Belajar',hint:isLivingAlone(state)?'4j · Rp20rb · lebih fokus':'4j · Rp20rb',duration:4});
+    list.push({id:'study',name:'Belajar',hint:`4j · Rp20rb${housingStudyProfile(state).learning>10?' · tempat mendukung':''}`,duration:4});
     list.push({id:'family',name:'Bantu Keluarga',hint:'4j · jaga hubungan',duration:4});
     list.push({id:'rian',name:'Main dengan Rian',hint:'3j · sosial',duration:3});
     return visibleActivities(state,list);
   }
   const job=JOBS[state.player.job];
   const salary=state.player.salary||job.salary;
-  list.push({id:'work',name:'Kerja',hint:`${job.duration}j · +Rp${Math.round(salary/1000)}rb`,duration:job.duration});
-  list.push({id:'study',name:'Belajar',hint:isLivingAlone(state)?'4j · Rp20rb · lebih fokus':'4j · Rp20rb',duration:4});
-  list.push({id:'rest',name:'Istirahat',hint:isLivingAlone(state)?'8j · pulih lebih tenang':'8j · pulihkan kondisi',duration:8});
+  const commute=housingCommuteHours(state,job.workplaceId);
+  list.push({id:'work',name:'Kerja',hint:`${job.duration+commute}j${commute?` · ${commute}j perjalanan`:''} · +Rp${Math.round(salary/1000)}rb`,duration:job.duration+commute});
+  list.push({id:'study',name:'Belajar',hint:`4j · Rp20rb${housingStudyProfile(state).learning>10?' · tempat mendukung':''}`,duration:4});
+  list.push({id:'rest',name:'Istirahat',hint:`8j · pulih ${housingRestRecovery(state)>=52?'lebih baik':'normal'}`,duration:8});
   list.push({id:'rian',name:'Main dengan Rian',hint:'3j · sosial',duration:3});
   if(state.career.workCount>=4) list.push({id:'career_search',name:'Cari Peluang Lain',hint:'4j · lihat arah karier lain',duration:4});
   if(state.business?.active) list.push({id:'business_manage',name:'Urus Usaha',hint:state.business.helperActive?'4j · klien, kualitas & koordinasi Ari':'4j · jaga kapasitas & pelanggan',duration:4});
@@ -37,23 +38,26 @@ function executeActivity(state,id){
   if(dataResult!==null) return dataResult;
   if(id==='study'){
     if(state.player.money<20000) return {error:'Uangmu belum cukup untuk biaya belajar.'};
+    const home=housingStudyProfile(state);
     state.player.money-=20000;
     state.time.totalHours+=4;
-    state.player.fatigue=Math.min(100,state.player.fatigue+(isLivingAlone(state)?7:10));
-    state.skills.learning+=isLivingAlone(state)?13:10;
-    state.skills.technology+=Math.round((isLivingAlone(state)?13:10)*xpMod(state));
+    state.player.fatigue=Math.min(100,state.player.fatigue+home.fatigue);
+    state.skills.learning+=home.learning;
+    state.skills.technology+=Math.round(home.technology*xpMod(state));
+    if(home.social) state.skills.social=(state.skills.social||0)+home.social;
     if(!state.discoveredSkills.includes('technology')) state.discoveredSkills.push('technology');
-    return isLivingAlone(state)
-      ? 'Ruang sendiri membuat sesi belajarmu lebih fokus. Belajar dan Teknologi meningkat.'
-      : 'Kamu belajar beberapa jam. Kemampuan Belajar dan Teknologi meningkat.';
+    return home.learning>=12
+      ? `${housingLabel(state)} memberi ritme belajar yang lebih fokus. Belajar dan Teknologi meningkat.`
+      : home.social?`${housingLabel(state)} membuat belajar terasa lebih sosial. Belajar, Teknologi, dan sedikit Sosial meningkat.`:'Kamu belajar beberapa jam. Kemampuan Belajar dan Teknologi meningkat.';
   }
   if(id==='business_manage'){
     return manageBusiness(state);
   }
   if(id==='rest'){
     state.time.totalHours+=8;
-    state.player.fatigue=Math.max(0,state.player.fatigue-(isLivingAlone(state)?52:45));
-    return isLivingAlone(state)?'Kamu beristirahat di ruang sendiri dan pulih lebih baik.':'Kamu beristirahat dan memulihkan kondisi.';
+    const recovery=housingRestRecovery(state);
+    state.player.fatigue=Math.max(0,state.player.fatigue-recovery);
+    return `${housingLabel(state)} memberi waktu istirahat yang ${recovery>=52?'lebih tenang':'cukup'}. Kondisimu pulih.`;
   }
   if(id==='work'){
     const job=JOBS[state.player.job];
@@ -62,11 +66,12 @@ function executeActivity(state,id){
     const pressureFatigue=company?(company.pressure>=74?4:company.pressure>=62?2:company.pressure<38?-1:0):0;
     const growthBonus=company&&company.health>=68?1:0;
     const salary=state.player.salary||job.salary;
-    state.time.totalHours+=job.duration;
+    const commute=housingCommuteHours(state,job.workplaceId);
+    state.time.totalHours+=job.duration+commute;
     state.player.money+=salary;
     const flexibleRelief=state.player.statuses.includes('jam_lebih_fleksibel')?-2:0;
     const dualRoleCost=state.player.statuses.includes('peran_ganda')?2:0;
-    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0)+pressureFatigue+flexibleRelief+dualRoleCost);
+    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0)+pressureFatigue+flexibleRelief+dualRoleCost+commute);
     state.skills[job.skill]=(state.skills[job.skill]||0)+Math.round(job.skillXp*xpMod(state));
     if(!state.discoveredSkills.includes(job.skill)) state.discoveredSkills.push(job.skill);
     state.career.workCount++;
@@ -79,6 +84,7 @@ function executeActivity(state,id){
     const parts=[];
     if(careerFocus(state)) parts.push('Fokus karier membuat progres pekerjaanmu lebih cepat.');
     if(independentFocus(state)) parts.push('Menjaga jalur mandiri membuat harimu sedikit lebih berat.');
+    if(commute>0) parts.push(`Perjalanan dari ${housingMeta(state).neighborhood} menambah ${commute} jam pada harimu.`);
     if(company?.health>=68) parts.push(`${company.name} sedang tumbuh, jadi tanggung jawab dan peluang belajar datang lebih cepat.`);
     else if(company?.pressure>=74) parts.push(`${company.name} sedang sangat tertekan; shift ini terasa lebih berat dari biasanya.`);
     else if(company?.health<42) parts.push(`${company.name} sedang rentan, jadi prospek karier terasa lebih lambat.`);

@@ -124,3 +124,8 @@ Arc awal: `andi`, `bu_lestari`, `sari`, `dimas`. Masing-masing memiliki intro ev
 Layer ini sengaja berada setelah Character Storylines: sebuah stake baru terbuka ketika arc karakter terkait sudah selesai dan relationship cukup tinggi. Sistem membatasi satu komitmen besar aktif pada satu waktu dan memberi jarak minimal antar-stake supaya social content tidak mendominasi core loop.
 
 Stake awal: `andi_workshop`, `sari_closing`, `lestari_stock`, `dimas_audit`.
+
+
+## Build AE — Housing system
+
+Housing bukan content pack event; definisi hunian ada di `src/data/housing.js` dan runtime logic di `src/core/housing.js`. Sistem ini sengaja terpisah karena modifiers-nya dipakai lintas activity, city travel, economy, dan UI.

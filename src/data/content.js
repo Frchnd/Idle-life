@@ -116,7 +116,7 @@ defineFromTemplate('opportunities','asset_purchase',{
 });
 
 defineFromTemplate('opportunities','life_change',{
-  id:'rent_room',name:'Sewa Kamar Sendiri',
+  id:'rent_room',name:'Kost Pusat Kota',
   requirements:[{any:[
     {all:[{flag:'familySupport',value:true},{path:'player.money',op:'gte',value:1000000}]},
     {all:[{flag:'familySupport',value:false},{path:'player.money',op:'gte',value:1200000}]}
@@ -124,15 +124,15 @@ defineFromTemplate('opportunities','life_change',{
   lockedText:'Tabunganmu belum cukup untuk deposit dan biaya awal tempat tinggal.',
   effects:[
     {type:'money',value:{base:-1200000,rules:[{when:[{flag:'familySupport',value:true}],set:-1000000}]}},
-    {type:'housing',value:{id:'rented_room',label:'Kamar sewa sendiri',monthlyCost:1100000,movedAt:null}},
+    {type:'housing',value:{id:'rented_room',label:'Kost Pusat Kota',neighborhood:'Pusat Kota',monthlyCost:1100000,baseMonthlyCost:1100000,movedAt:null}},
     {type:'path_set',path:'housing.movedAt',fromPath:'time.totalHours'},
-    {type:'status_remove',status:'tinggal_bersama_keluarga'},{type:'status_add',status:'tinggal_sendiri'},
+    {type:'status_remove',status:'tinggal_bersama_keluarga'},{type:'status_remove',status:'tinggal_bersama_penghuni'},{type:'status_remove',status:'tinggal_tepi_kota'},{type:'status_add',status:'tinggal_sendiri'},
     {type:'flag',key:'movedOut',value:true},{type:'relationship',target:'family',value:-2},
     {type:'schedule',after:12,kind:'move_out_reflection'},
-    {type:'history',text:'Umur 18 · Pindah dari rumah keluarga ke kamar sewa sendiri.'},
+    {type:'history',text:'Umur 18 · Pindah ke Kost Pusat Kota.'},
     {type:'recent',text:'Kamu mulai tinggal sendiri. Biaya hidup naik, tetapi ruang dan ritmemu sekarang milikmu sendiri.'}
   ],
-  result:'Kamu pindah ke kamar sewa. Biaya hidup bulanan naik menjadi Rp1.100.000, tetapi belajar dan istirahat menjadi lebih efektif.'
+  result:'Kamu pindah ke Kost Pusat Kota. Biaya hidup naik, tapi akses kota, belajar, dan istirahat menjadi lebih efisien.'
 });
 
 // === Build S: lebih banyak event lama pindah ke event pools data-driven ===
