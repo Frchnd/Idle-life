@@ -87,3 +87,107 @@ defineFromTemplate('events','first_day',{
     {label:'Langsung coba sendiri',effects:[{type:'skill',skill:'social',value:18},{type:'relationship',target:'maya',value:1},{type:'store_progress',value:1},{type:'flag',key:'firstStoreDay',value:true}],result:'Kamu memilih belajar lewat pengalaman langsung.'}
   ]
 });
+
+// === Build S: migrasi opportunity sederhana ke framework data-driven ===
+defineFromTemplate('opportunities','learning_investment',{
+  id:'tech_course',name:'Kelas Komputer Dasar',
+  requirements:[{preset:'money_min',params:{amount:250000}}],
+  lockedText:'Kamu membutuhkan Rp250.000 untuk mengikuti kelas ini.',
+  effects:[
+    {type:'money',value:-250000},{type:'hours',value:8},{type:'fatigue',value:12},
+    {type:'skill',skill:'technology',value:80},{type:'skill',skill:'learning',value:25},
+    {type:'history',text:'Umur 18 · Mengikuti kelas komputer dasar.'},
+    {type:'recent',text:'Kelas terstruktur membuat kemampuan Teknologimu melonjak.'}
+  ],
+  result:'Kelas selesai. Teknologi meningkat pesat dan jalur baru mulai terbuka.'
+});
+
+defineFromTemplate('opportunities','asset_purchase',{
+  id:'buy_laptop',name:'Beli Laptop Bekas',
+  requirements:[{preset:'money_min',params:{amount:750000}},{preset:'asset_false',params:{asset:'laptop'}}],
+  lockedText:'Kamu membutuhkan Rp750.000 untuk membeli laptop itu.',
+  effects:[
+    {type:'money',value:-750000},{type:'asset',asset:'laptop',value:true},
+    {type:'skill',skill:'technology',value:15},
+    {type:'history',text:'Umur 18 · Membeli laptop bekas untuk belajar dan kerja sampingan.'},
+    {type:'recent',text:'Laptop membuka kemungkinan kerja teknologi dari rumah.'}
+  ],
+  result:'Kamu membeli laptop bekas. Tabungan turun, tetapi Teknologi sekarang bisa menghasilkan uang lebih fleksibel.'
+});
+
+defineFromTemplate('opportunities','life_change',{
+  id:'rent_room',name:'Sewa Kamar Sendiri',
+  requirements:[{any:[
+    {all:[{flag:'familySupport',value:true},{path:'player.money',op:'gte',value:1000000}]},
+    {all:[{flag:'familySupport',value:false},{path:'player.money',op:'gte',value:1200000}]}
+  ]}],
+  lockedText:'Tabunganmu belum cukup untuk deposit dan biaya awal tempat tinggal.',
+  effects:[
+    {type:'money',value:{base:-1200000,rules:[{when:[{flag:'familySupport',value:true}],set:-1000000}]}},
+    {type:'housing',value:{id:'rented_room',label:'Kamar sewa sendiri',monthlyCost:1100000,movedAt:null}},
+    {type:'path_set',path:'housing.movedAt',fromPath:'time.totalHours'},
+    {type:'status_remove',status:'tinggal_bersama_keluarga'},{type:'status_add',status:'tinggal_sendiri'},
+    {type:'flag',key:'movedOut',value:true},{type:'relationship',target:'family',value:-2},
+    {type:'schedule',after:12,kind:'move_out_reflection'},
+    {type:'history',text:'Umur 18 · Pindah dari rumah keluarga ke kamar sewa sendiri.'},
+    {type:'recent',text:'Kamu mulai tinggal sendiri. Biaya hidup naik, tetapi ruang dan ritmemu sekarang milikmu sendiri.'}
+  ],
+  result:'Kamu pindah ke kamar sewa. Biaya hidup bulanan naik menjadi Rp1.100.000, tetapi belajar dan istirahat menjadi lebih efektif.'
+});
+
+// === Build S: lebih banyak event lama pindah ke event pools data-driven ===
+defineFromTemplate('events','life_milestone',{
+  id:'family_milestone',name:'Keluarga Membutuhkan Kehadiranmu',priority:54,weight:4,
+  title:'Keluarga Membutuhkan Satu Hari yang Benar-benar Hadir',
+  text:'Ada urusan keluarga penting yang harus diselesaikan di jam kerja. Mereka tidak sekadar butuh uang—mereka butuh waktumu.',
+  requirements:[{preset:'career_work_min',params:{count:6}},{preset:'relationship_min',params:{target:'family',value:55}},{preset:'flag_false',params:{flag:'familyMilestoneSeen'}}],
+  choices:[
+    {label:'Luangkan waktu untuk keluarga',hint:'6j · mengorbankan waktu produktif',effects:[{type:'hours',value:6},{type:'fatigue',value:5},{type:'relationship',target:'family',value:12},{type:'flag',key:'familyMilestoneSeen',value:true},{type:'flag',key:'familySupport',value:true},{type:'history',text:'Umur 18 · Memilih hadir untuk keluarga saat mereka benar-benar membutuhkan waktu.'}],result:'Keluargamu tahu kamu bisa diandalkan ketika hal penting terjadi.'},
+    {label:'Prioritaskan pekerjaan',hint:'+Rp80rb · hubungan sedikit menjauh',effects:[{type:'hours',value:4},{type:'money',value:80000},{type:'relationship',target:'family',value:-4},{type:'flag',key:'familyMilestoneSeen',value:true}],result:'Kamu memilih pekerjaan. Keputusan itu masuk akal, tapi keluarga mengingat bahwa kali ini kamu tidak bisa hadir.'}
+  ]
+});
+
+defineFromTemplate('events','life_milestone',{
+  id:'rian_milestone',name:'Rian Meminta Bantuan Tanpa Imbalan',priority:52,weight:4,
+  title:'Rian Minta Bantuan yang Tidak Bisa Dibayar',
+  text:'Rian mendapat shift yang tidak bisa ditinggalkan dan perlu seseorang menangani urusan penting untuk keluarganya. Kali ini tidak ada uang atau pekerjaan sebagai gantinya.',
+  requirements:[{preset:'relationship_min',params:{target:'rian',value:50}},{preset:'flag_false',params:{flag:'rianMilestoneSeen'}}],
+  choices:[
+    {label:'Bantu Rian',hint:'4j · tidak ada bayaran',effects:[{type:'hours',value:4},{type:'fatigue',value:5},{type:'relationship',target:'rian',value:12},{type:'flag',key:'rianMilestoneSeen',value:true},{type:'flag',key:'rianTrusted',value:true},{type:'history',text:'Umur 18 · Membantu Rian ketika tidak ada keuntungan langsung.'}],result:'Rian sekarang melihatmu sebagai orang yang bisa dipercaya, bukan cuma teman atau koneksi kerja.'},
+    {label:'Tidak bisa kali ini',effects:[{type:'relationship',target:'rian',value:-1},{type:'flag',key:'rianMilestoneSeen',value:true}],result:'Rian memahami. Hubungan kalian tetap baik, tapi tidak berubah menjadi kepercayaan yang lebih dalam.'}
+  ]
+});
+
+defineFromTemplate('events','major_choice',{
+  id:'trajectory_choice',name:'Pilih Arah Utama Hidup',priority:66,weight:3,
+  title:'Dua Arah yang Sama-sama Masuk Akal',
+  text:'Pekerjaan utama mulai stabil, tapi pemasukan sampingan juga sudah terbukti nyata. Kamu tidak bisa memberi energi maksimal ke keduanya tanpa trade-off.',
+  requirements:[{preset:'employed'},{preset:'career_work_min',params:{count:8}},{path:'career.sideIncomeTotal',op:'gte',value:500000},{preset:'trajectory_is',params:{trajectory:'open'}},{preset:'flag_false',params:{flag:'trajectoryChoiceSeen'}}],
+  choices:[
+    {label:'Perkuat karier utama',hint:'Progres promosi lebih cepat saat bekerja',effects:[{type:'trajectory',value:'career'},{type:'flag',key:'trajectoryChoiceSeen',value:true},{type:'status_add',status:'fokus_karier'},{type:'history',text:'Umur 18 · Memilih memperkuat karier utama sebagai arah hidup.'}],result:'Kamu memilih stabilitas dan kedalaman di pekerjaan utama.'},
+    {label:'Bangun jalur mandiri juga',hint:'Kerja sampingan lebih kuat · kerja utama sedikit lebih melelahkan',effects:[{type:'trajectory',value:'independent'},{type:'flag',key:'trajectoryChoiceSeen',value:true},{type:'status_add',status:'jalur_mandiri'},{type:'history',text:'Umur 18 · Memilih membangun jalur mandiri di samping pekerjaan utama.'}],result:'Kamu menerima hidup yang lebih padat demi membangun sumber penghasilan di luar pekerjaan utama.'}
+  ]
+});
+
+defineFromTemplate('events','learning_lead',{
+  id:'tech_course_offer',name:'Kelas Komputer Malam',priority:47,weight:3,
+  title:'Kelas Komputer Malam',
+  text:'Kamu menemukan kelas komputer dasar yang lebih terstruktur daripada belajar sendiri. Biayanya cukup terasa untuk kondisi keuanganmu sekarang.',
+  requirements:[{path:'skills.technology',op:'gte',value:25},{preset:'flag_false',params:{flag:'techCourseSeen'}}],
+  choices:[
+    {label:'Simpan informasinya',hint:'Biaya Rp250rb · 8j',effects:[{type:'flag',key:'techCourseSeen',value:true},{type:'opportunity',opportunity:{id:'tech_course',name:'Kelas Komputer Dasar',summary:'8j · Rp250rb · peningkatan Teknologi besar'}}],result:'Kelas itu sekarang tersedia sebagai peluang.'},
+    {label:'Belajar sendiri dulu',effects:[{type:'flag',key:'techCourseSeen',value:true}],result:'Kamu memilih tidak mengeluarkan uang sekarang.'}
+  ]
+});
+
+defineFromTemplate('events','learning_lead',{
+  id:'laptop_offer_data',name:'Laptop Bekas yang Masih Layak',priority:43,weight:2,
+  type:'KEPUTUSAN FINANSIAL',tags:['learning','technology','finance','investment'],
+  title:'Laptop Bekas yang Masih Layak',
+  text:'Rian menemukan laptop bekas yang cukup untuk belajar dan mengambil pekerjaan teknologi ringan. Harganya Rp750rb—cukup besar dibanding tabunganmu sekarang.',
+  requirements:[{path:'skills.technology',op:'gte',value:60},{preset:'asset_false',params:{asset:'laptop'}},{preset:'flag_false',params:{flag:'laptopOfferSeen'}}],
+  choices:[
+    {label:'Simpan peluang pembelian',hint:'Rp750rb · investasi untuk kerja sampingan Teknologi',effects:[{type:'flag',key:'laptopOfferSeen',value:true},{type:'opportunity',opportunity:{id:'buy_laptop',name:'Beli Laptop Bekas',summary:'Rp750rb · membuka kerja lepas Teknologi'}}],result:'Laptop itu sekarang menjadi pilihan investasi, bukan kewajiban.'},
+    {label:'Jangan beli',effects:[{type:'flag',key:'laptopOfferSeen',value:true}],result:'Kamu menjaga tabunganmu. Teknologi tetap bisa dipelajari tanpa membeli aset sekarang.'}
+  ]
+});

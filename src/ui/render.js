@@ -51,9 +51,14 @@ function renderEvent(state){
   </div>`;
 }
 
+function visibleOpportunities(state){
+  return state.opportunities.filter(op=>!getContent('opportunities',op.id) || contentEnabled(state,'opportunities',op.id));
+}
+
 function renderOpportunities(state){
-  if(!state.opportunities.length) return '';
-  return `<div class="opp">${state.opportunities.map(op=>{
+  const opportunities=visibleOpportunities(state);
+  if(!opportunities.length) return '';
+  return `<div class="opp">${opportunities.map(op=>{
     const left=op.expireAt?Math.max(0,op.expireAt-state.time.totalHours):null;
     const expiry=left===null?'':`<span class="label">${left<=24?'Segera berakhir':Math.ceil(left/24)+' hari lagi'}</span>`;
     const claimLeft=op.contested&&op.claimAt?Math.max(0,op.claimAt-state.time.totalHours):null;
@@ -111,7 +116,7 @@ function renderWorld(state){
       <div class="section-title" style="margin-top:18px">Kondisi Tempat Kerja</div>
       <div class="list">${Object.values(world.workplaces||{}).map(c=>`<div class="item"><div class="row"><span>${esc(c.name)}</span><b>${esc(c.label)}</b></div><div class="muted small" style="margin-top:4px">Arus usaha: ${esc(companyCashflowLabel(c.margin||0))} · Tim: ${c.headcount||'-'} orang</div><div class="muted small" style="margin-top:3px">Tekanan: ${esc(pressureLabel(c.pressure))} · Risiko kerja: ${esc(employmentRiskLabel(c))}</div></div>`).join('')}</div>
       ${world.news.length?`<div class="section-title" style="margin-top:18px">Sinyal Dunia</div><div class="list">${world.news.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>`:''}
-      <div class="section-title" style="margin-top:22px">Peluang Aktif</div><div class="list">${state.opportunities.length?state.opportunities.map(o=>`<div class="item"><b>${esc(o.name)}</b><div class="muted small" style="margin-top:4px">${esc(o.summary)}</div></div>`).join(''):'<div class="empty">Belum ada peluang penting.</div>'}</div>
+      <div class="section-title" style="margin-top:22px">Peluang Aktif</div><div class="list">${visibleOpportunities(state).length?visibleOpportunities(state).map(o=>`<div class="item"><b>${esc(o.name)}</b><div class="muted small" style="margin-top:4px">${esc(o.summary)}</div></div>`).join(''):'<div class="empty">Belum ada peluang penting.</div>'}</div>
       <div class="section-title" style="margin-top:22px">Orang</div><div class="people">${people.map(p=>`<div class="person"><div class="row"><b>${esc(p.name)}</b><span class="small">${esc(p.relation)}</span></div><div class="muted small">${esc(p.desc)}</div></div>`).join('')}</div>
       <div class="section-title" style="margin-top:22px">Perubahan Terbaru</div><div class="list">${state.recent.length?state.recent.map(x=>`<div class="item small">${esc(x)}</div>`).join(''):'<div class="empty">Belum ada hal penting.</div>'}</div>
     </div>

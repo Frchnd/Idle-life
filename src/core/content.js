@@ -1,8 +1,76 @@
 const CONTENT_REGISTRY={activities:{},opportunities:{},events:{},jobs:{},eventPools:{}};
 const CONTENT_TEMPLATES={activities:{},opportunities:{},events:{},jobs:{}};
 const REQUIREMENT_PRESETS={};
+const CONTENT_PACKS={};
 
 function cloneContent(value){ return value==null?value:JSON.parse(JSON.stringify(value)); }
+
+function registerContentPack(id,definition){
+  if(!id) throw new Error('Content pack harus punya id');
+  if(CONTENT_PACKS[id]) throw new Error(`Content pack duplikat: ${id}`);
+  const def=cloneContent(definition||{});
+  def.id=id;
+  def.version=Number(def.version||1);
+  def.content=def.content||{};
+  CONTENT_PACKS[id]=def;
+  return def;
+}
+
+function getContentPack(id){ return CONTENT_PACKS[id]||null; }
+function listContentPacks(){ return Object.values(CONTENT_PACKS); }
+
+function contentPackOwner(type,id){
+  for(const pack of listContentPacks()){
+    if((pack.content?.[type]||[]).includes(id)) return pack.id;
+  }
+  return null;
+}
+
+function syncContentPackRuntime(state){
+  const runtime=ensureContentRuntime(state);
+  const packs=listContentPacks();
+  const known=packs.map(pack=>pack.id);
+  const hadPackRuntime=Object.keys(runtime.packVersions||{}).length>0;
+  if(!hadPackRuntime || !Array.isArray(runtime.enabledPacks) || !runtime.enabledPacks.length){
+    runtime.enabledPacks=packs.filter(pack=>pack.defaultEnabled!==false).map(pack=>pack.id);
+  }else{
+    runtime.enabledPacks=runtime.enabledPacks.filter(id=>known.includes(id));
+    for(const pack of packs){
+      if(runtime.packVersions[pack.id]===undefined && pack.defaultEnabled!==false && !runtime.enabledPacks.includes(pack.id)) runtime.enabledPacks.push(pack.id);
+    }
+  }
+  runtime.packVersions=runtime.packVersions||{};
+  for(const pack of packs) runtime.packVersions[pack.id]=pack.version;
+  return runtime;
+}
+
+function contentEnabled(state,type,id){
+  const owner=contentPackOwner(type,id);
+  if(!owner) return true;
+  const runtime=ensureContentRuntime(state);
+  return !Array.isArray(runtime.enabledPacks) || !runtime.enabledPacks.length || runtime.enabledPacks.includes(owner);
+}
+
+function buildContentCatalog(){
+  const byType={};
+  const byTag={};
+  const packs=listContentPacks().map(pack=>{
+    const counts={};
+    for(const [type,ids] of Object.entries(pack.content||{})) counts[type]=(ids||[]).length;
+    return {id:pack.id,name:pack.name||pack.id,version:pack.version,description:pack.description||'',counts};
+  });
+  for(const [type,items] of Object.entries(CONTENT_REGISTRY)){
+    byType[type]=Object.keys(items).length;
+    for(const item of Object.values(items)){
+      for(const tag of item.tags||[]){
+        byTag[tag]=byTag[tag]||{count:0,types:{}};
+        byTag[tag].count++;
+        byTag[tag].types[type]=(byTag[tag].types[type]||0)+1;
+      }
+    }
+  }
+  return {packs,byType,byTag};
+}
 
 function registerContent(type,definitions=[]){
   if(!CONTENT_REGISTRY[type]) throw new Error(`Tipe konten tidak dikenal: ${type}`);
@@ -140,7 +208,11 @@ function applyContentEffects(state,effects=[]){
     if(raw.when && !meetsRequirements(state,raw.when)) continue;
     const effect={...raw};
     delete effect.when;
-    if(Object.prototype.hasOwnProperty.call(effect,'value')) effect.value=resolveContentValue(state,effect.value);
+    if(Object.prototype.hasOwnProperty.call(effect,'value')){
+      const rawValue=effect.value;
+      const dynamicSpec=rawValue && typeof rawValue==='object' && !Array.isArray(rawValue) && ['base','rules','min','max','round'].some(key=>Object.prototype.hasOwnProperty.call(rawValue,key));
+      effect.value=dynamicSpec?resolveContentValue(state,rawValue):cloneContent(rawValue);
+    }
     if(effect.type==='path_increment'){
       const parts=effect.path.split('.');
       let cursor=state;
@@ -153,7 +225,7 @@ function applyContentEffects(state,effects=[]){
       const parts=effect.path.split('.');
       let cursor=state;
       for(let i=0;i<parts.length-1;i++) cursor=cursor[parts[i]]||(cursor[parts[i]]={});
-      cursor[parts[parts.length-1]]=effect.value;
+      cursor[parts[parts.length-1]]=effect.fromPath?cloneContent(getStatePath(state,effect.fromPath)):effect.value;
       continue;
     }
     if(effect.type==='relationship_clamped'){
@@ -168,6 +240,7 @@ function applyContentEffects(state,effects=[]){
 function runDataActivity(state,id){
   const def=getContent('activities',id);
   if(!def) return null;
+  if(!contentEnabled(state,'activities',id)) return {error:'Konten ini sedang tidak aktif.'};
   if(!meetsRequirements(state,def.requirements||[])) return {error:def.lockedText||'Aktivitas ini belum tersedia.'};
   applyContentEffects(state,def.effects||[]);
   return def.result||`${def.name} selesai.`;
@@ -176,6 +249,9 @@ function runDataActivity(state,id){
 function runDataOpportunity(state,id){
   const def=getContent('opportunities',id);
   if(!def) return null;
+  if(!contentEnabled(state,'opportunities',id)) return 'Konten ini sedang tidak aktif.';
+  const active=state.opportunities?.some(item=>item.id===id);
+  if(def.requiresActive!==false && !active) return 'Peluang itu sudah tidak tersedia.';
   if(!meetsRequirements(state,def.requirements||[])) return def.lockedText||'Syarat untuk peluang ini belum terpenuhi.';
   removeOpportunity(state,id);
   applyContentEffects(state,def.effects||[]);
@@ -217,6 +293,7 @@ function eligibleDataEvents(state,options={}){
   const tagsAll=options.tagsAll||[];
   const poolId=options.pool||null;
   return listContent('events').filter(def=>{
+    if(!contentEnabled(state,'events',def.id)) return false;
     if(poolId && def.pool!==poolId) return false;
     const tags=def.tags||[];
     if(tagsAny.length && !tagsAny.some(tag=>tags.includes(tag))) return false;
@@ -226,21 +303,71 @@ function eligibleDataEvents(state,options={}){
   }).sort((a,b)=>eventPoolScore(b)-eventPoolScore(a));
 }
 
+function ensureContentRuntime(state){
+  state.contentRuntime=state.contentRuntime||{};
+  state.contentRuntime.eventHistory=Array.isArray(state.contentRuntime.eventHistory)?state.contentRuntime.eventHistory:[];
+  state.contentRuntime.eventCooldowns=state.contentRuntime.eventCooldowns||{};
+  state.contentRuntime.poolHistory=state.contentRuntime.poolHistory||{};
+  state.contentRuntime.poolRecent=state.contentRuntime.poolRecent||{};
+  state.contentRuntime.packVersions=state.contentRuntime.packVersions||{};
+  state.contentRuntime.enabledPacks=Array.isArray(state.contentRuntime.enabledPacks)?state.contentRuntime.enabledPacks:[];
+  if(!Number.isFinite(Number(state.contentRuntime.rngSeed))) state.contentRuntime.rngSeed=137;
+  return state.contentRuntime;
+}
+
+function nextContentRandom(state){
+  const runtime=ensureContentRuntime(state);
+  let seed=(Number(runtime.rngSeed)||137)>>>0;
+  seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+  runtime.rngSeed=seed;
+  return seed/4294967296;
+}
+
+function weightedEventWeight(state,def){
+  const pool=def.pool?getContent('eventPools',def.pool):null;
+  let weight=Math.max(0.01,Number(def.weight||1))*Math.max(0.01,Number(pool?.weight||1));
+  const runtime=ensureContentRuntime(state);
+  const recent=runtime.poolRecent?.[def.pool]||[];
+  if(recent.includes(def.id)) weight*=recent[0]===def.id?0.15:0.45;
+  if(runtime.poolHistory?.[def.pool]===def.id) weight*=0.25;
+  return Math.max(0.001,weight);
+}
+
+function chooseWeightedEvent(state,candidates,options={}){
+  if(!candidates.length) return null;
+  const highestPoolPriority=Math.max(...candidates.map(def=>getContent('eventPools',def.pool)?.priority||0));
+  let shortlist=candidates.filter(def=>(getContent('eventPools',def.pool)?.priority||0)===highestPoolPriority);
+  const highestEventPriority=Math.max(...shortlist.map(def=>Number(def.priority||0)));
+  shortlist=shortlist.filter(def=>Number(def.priority||0)>=highestEventPriority-(options.priorityBand??10));
+  if(shortlist.length===1) return shortlist[0];
+  const weights=shortlist.map(def=>weightedEventWeight(state,def));
+  const total=weights.reduce((a,b)=>a+b,0);
+  const random=typeof options.random==='function'?options.random():nextContentRandom(state);
+  let cursor=random*total;
+  for(let i=0;i<shortlist.length;i++){
+    cursor-=weights[i];
+    if(cursor<=0) return shortlist[i];
+  }
+  return shortlist[shortlist.length-1];
+}
+
 function nextDataEvent(state,options={}){
   const candidates=eligibleDataEvents(state,options);
-  return candidates.length?contentEventToRuntime(candidates[0]):null;
+  const picked=chooseWeightedEvent(state,candidates,options);
+  return picked?contentEventToRuntime(picked):null;
 }
 
 function recordDataEventResolved(state,eventId){
   const def=getContent('events',eventId);
   if(!def) return;
-  state.contentRuntime=state.contentRuntime||{eventHistory:[],eventCooldowns:{},poolHistory:{}};
-  state.contentRuntime.eventHistory=Array.isArray(state.contentRuntime.eventHistory)?state.contentRuntime.eventHistory:[];
-  state.contentRuntime.eventCooldowns=state.contentRuntime.eventCooldowns||{};
-  state.contentRuntime.poolHistory=state.contentRuntime.poolHistory||{};
+  ensureContentRuntime(state);
   if(!state.contentRuntime.eventHistory.includes(eventId)) state.contentRuntime.eventHistory.push(eventId);
   if(def.cooldownHours) state.contentRuntime.eventCooldowns[eventId]=state.time.totalHours+Number(def.cooldownHours);
-  if(def.pool) state.contentRuntime.poolHistory[def.pool]=eventId;
+  if(def.pool){
+    state.contentRuntime.poolHistory[def.pool]=eventId;
+    const recent=Array.isArray(state.contentRuntime.poolRecent[def.pool])?state.contentRuntime.poolRecent[def.pool]:[];
+    state.contentRuntime.poolRecent[def.pool]=[eventId,...recent.filter(id=>id!==eventId)].slice(0,3);
+  }
 }
 
 function validateRequirement(req,path,errors,warnings){
@@ -302,10 +429,12 @@ function validateContentFramework(){
         if(!Array.isArray(def.choices) || def.choices.length<2) errors.push(`${label} harus punya minimal 2 pilihan`);
         if(def.pool && !getContent('eventPools',def.pool)) errors.push(`${label} memakai event pool tidak dikenal: ${def.pool}`);
         if(def.tags && !Array.isArray(def.tags)) errors.push(`${label}.tags harus array`);
+        if(def.weight!==undefined && (!Number.isFinite(Number(def.weight)) || Number(def.weight)<=0)) errors.push(`${label}.weight harus angka > 0`);
       }
       if(type==='eventPools'){
         if(!def.name) errors.push(`${label} tidak punya nama`);
         if(def.tags && !Array.isArray(def.tags)) errors.push(`${label}.tags harus array`);
+        if(def.weight!==undefined && (!Number.isFinite(Number(def.weight)) || Number(def.weight)<=0)) errors.push(`${label}.weight harus angka > 0`);
       }
 
       const effectGroups=[];
@@ -319,6 +448,35 @@ function validateContentFramework(){
     }
   }
 
+  const packOwners={};
+  for(const pack of listContentPacks()){
+    const label=`pack:${pack.id}`;
+    if(!/^[a-z0-9_]+$/.test(pack.id)) errors.push(`${label} memakai id yang tidak konsisten`);
+    if(!pack.name) errors.push(`${label} tidak punya nama`);
+    if(!Number.isInteger(pack.version) || pack.version<1) errors.push(`${label}.version harus integer >= 1`);
+    for(const [type,ids] of Object.entries(pack.content||{})){
+      if(!CONTENT_REGISTRY[type]){ errors.push(`${label} menunjuk tipe konten tidak dikenal: ${type}`); continue; }
+      if(!Array.isArray(ids)){ errors.push(`${label}.content.${type} harus array`); continue; }
+      for(const id of ids){
+        if(!getContent(type,id)) errors.push(`${label} menunjuk konten yang tidak ada: ${type}:${id}`);
+        const key=`${type}:${id}`;
+        if(packOwners[key] && packOwners[key]!==pack.id) errors.push(`${key} dimiliki lebih dari satu pack: ${packOwners[key]}, ${pack.id}`);
+        else packOwners[key]=pack.id;
+      }
+    }
+  }
+
+  for(const pack of listContentPacks()){
+    for(const dependency of pack.dependsOn||[]){
+      if(!getContentPack(dependency)) errors.push(`pack:${pack.id} bergantung pada pack yang tidak ada: ${dependency}`);
+    }
+  }
+  for(const type of ['activities','opportunities','events','jobs']){
+    for(const id of Object.keys(CONTENT_REGISTRY[type]||{})){
+      if(!packOwners[`${type}:${id}`]) errors.push(`${type}:${id} belum dimiliki content pack mana pun`);
+    }
+  }
+
   for(const [type,templates] of Object.entries(CONTENT_TEMPLATES)){
     for(const [id,def] of Object.entries(templates)) if(!def || typeof def!=='object') errors.push(`Template ${type}:${id} tidak valid`);
   }
@@ -328,6 +486,8 @@ function validateContentFramework(){
     errors,warnings,
     counts:Object.fromEntries(Object.entries(CONTENT_REGISTRY).map(([type,items])=>[type,Object.keys(items).length])),
     templates:Object.fromEntries(Object.entries(CONTENT_TEMPLATES).map(([type,items])=>[type,Object.keys(items).length])),
-    presets:Object.keys(REQUIREMENT_PRESETS).length
+    presets:Object.keys(REQUIREMENT_PRESETS).length,
+    packs:Object.keys(CONTENT_PACKS).length,
+    catalog:buildContentCatalog()
   };
 }

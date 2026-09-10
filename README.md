@@ -1,54 +1,59 @@
-# Hidup — Build R
+# Hidup — Build S
 
-Build R melanjutkan Fase 4 (Content Framework). Fokusnya adalah mengurangi copy-paste saat menambah konten dan membuat kesalahan referensi terdeteksi lebih awal.
+Build S menutup **Fase 4 — Content Framework**. Fokusnya adalah membuat konten bisa tumbuh dalam volume besar tanpa mengubah core engine untuk setiap pekerjaan, event, atau opportunity baru.
 
 ## Yang baru
 
-- Save Build Q otomatis dimigrasikan ke version 14.
-- Content Registry sekarang juga menyimpan `jobs` dan `eventPools`.
-- Ada **Content Template** reusable untuk pekerjaan, aktivitas, opportunity, dan event.
-- Semua job prototype sekarang dibuat dari template pekerjaan (`entry_job` / `advanced_job`) tanpa mengubah perilaku gameplay.
-- Ada **Requirement Preset** parameterized seperti `unemployed`, `employed`, `job_is`, `job_work_min`, `money_min`, `status_present`, `career_work_min`, dan `skill_min`.
-- Event data-driven sekarang punya `pool`, `tags`, `once`, dan dukungan cooldown.
-- Pool aktif saat ini: `urgent`, `early_career`, `first_days`, dan `life`.
-- Migrated events awal sekarang benar-benar memakai event pool + tags untuk prioritas selection.
-- Validator lebih ketat: schema activity/job/event, template reference, event-pool reference, requirement preset parameter, skill reference, choice label, dan effect reference.
-- Validator mengembalikan `errors` dan `warnings`, jadi referensi baru yang mungkin valid bisa diperingatkan tanpa selalu memblokir build.
+- Save Build R otomatis dimigrasikan ke **version 15**.
+- Ada **Content Packs** dengan ownership konten yang divalidasi.
+- Pack aktif saat ini: `core_life`, `career_core`, `learning_technology`, dan `life_finance`.
+- Runtime menyimpan `enabledPacks` + `packVersions`, sehingga ekspansi konten nanti bisa ditambah sebagai pack tanpa branching core.
+- Ada **Content Catalog** runtime (`window.__HIDUP_CONTENT_CATALOG__`) dan dokumentasi `CONTENT_CATALOG.md`.
+- Event data-driven sekarang memakai **weighted selection** di dalam kelas prioritasnya.
+- Randomness memakai **seeded RNG yang disimpan di save**, sehingga urutan bisa direproduksi untuk debugging.
+- Ada anti-repeat per event pool melalui `poolRecent` dan `poolHistory`.
+- Event urgent/major tetap didahulukan oleh pool priority; weight tidak bisa membuat event ringan menenggelamkan kondisi penting.
+- Validator sekarang memeriksa ownership pack, dependency pack, duplicate ownership, weight, template/preset/reference, dan coverage seluruh konten data-driven.
+- Requirement preset bertambah menjadi 13, termasuk `relationship_min`, `trajectory_is`, `asset_false`, dan `housing_is`.
 
-## Kenapa ini penting
+## Konten yang dimigrasikan di Build S
 
-Mulai titik ini, menambah pekerjaan baru tidak perlu menyalin struktur penuh:
+Selain konten Build R, sekarang framework data-driven juga menangani:
+
+- `tech_course` — Kelas Komputer Dasar
+- `buy_laptop` — pembelian laptop bekas
+- `rent_room` — pindah ke kamar sewa dengan deposit dinamis
+- `family_milestone` — keputusan hadir untuk keluarga
+- `rian_milestone` — trust milestone Rian
+- `trajectory_choice` — fokus karier vs jalur mandiri
+- `tech_course_offer` — discovery pendidikan Teknologi
+- `laptop_offer_data` — discovery investasi laptop
+
+Sistem bisnis/market yang sangat dinamis masih memakai logic khusus. Itu sengaja: abstraction hanya dibuat setelah polanya cukup stabil.
+
+## Struktur penting
+
+- `src/core/content.js` — registry, templates, presets, packs, weighted event picker, catalog, validator.
+- `src/data/content-foundation.js` — template/preset/event-pool reusable.
+- `src/data/content.js` — konten data-driven.
+- `src/data/content-packs.js` — manifest ownership dan dependency pack.
+- `CONTENT_CATALOG.md` — panduan authoring dan katalog pack saat ini.
+
+## Debug content
+
+Buka DevTools browser:
 
 ```js
-defineFromTemplate('jobs','entry_job',{
-  id:'barista',
-  name:'Barista',
-  workplace:'Kedai Pagi',
-  salary:110000,
-  skill:'social'
-});
+window.__HIDUP_CONTENT_REPORT__
+window.__HIDUP_CONTENT_CATALOG__
 ```
 
-Requirement juga bisa tetap terbaca:
-
-```js
-requirements:[
-  {preset:'job_is',params:{job:'mechanic_junior'}},
-  {preset:'job_work_min',params:{job:'mechanic_junior',count:1}}
-]
-```
-
-Tujuannya bukan sekadar file lebih rapi. Tujuannya supaya Fase 5 nanti bisa menambah banyak career/event tanpa setiap konten baru membutuhkan branching logic baru.
-
-## Struktur baru
-
-- `src/core/content.js` — registry, template engine, preset engine, event-pool selection, validator.
-- `src/data/content-foundation.js` — template, preset, dan pool reusable.
-- `src/data/jobs.js` — katalog job berbasis template.
-- `src/data/content.js` — konten yang sudah dimigrasikan ke framework.
-
-File legacy `events.js`, `opportunities.js`, dan `activities.js` tetap dipakai untuk sistem kompleks yang belum layak dipindahkan sekaligus.
+Build layak deploy bila `__HIDUP_CONTENT_REPORT__.ok === true`.
 
 ## Deploy
 
-Upload seluruh isi folder ini ke root GitHub Pages, termasuk `src/` dan `styles/`. Setelah deploy, refresh/tutup-buka PWA agar cache Build R mengganti Build Q.
+Replace seluruh isi repo GitHub Pages dengan isi folder Build S, termasuk `src/` dan `styles/`, lalu commit/push. Setelah Pages selesai update, refresh keras atau tutup-buka PWA agar cache `hidup-build-s-v1` menggantikan Build R.
+
+## Roadmap
+
+Fase 4 selesai setelah Build S. Langkah berikutnya adalah **Fase 4.5 — UI/UX Foundation + Main Menu** sebelum ekspansi konten besar di Fase 5.

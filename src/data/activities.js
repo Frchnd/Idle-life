@@ -8,6 +8,8 @@ function xpMod(state){
 function isLivingAlone(state){ return state.housing?.id==='rented_room'; }
 function careerFocus(state){ return state.life?.trajectory==='career'; }
 function independentFocus(state){ return state.life?.trajectory==='independent'; }
+function activityEnabledByPack(state,id){ return !getContent('activities',id) || contentEnabled(state,'activities',id); }
+function visibleActivities(state,list){ return list.filter(item=>activityEnabledByPack(state,item.id)); }
 
 function availableActivities(state){
   const list=[];
@@ -17,7 +19,7 @@ function availableActivities(state){
     list.push({id:'study',name:'Belajar',hint:isLivingAlone(state)?'4j · Rp20rb · lebih fokus':'4j · Rp20rb',duration:4});
     list.push({id:'family',name:'Bantu Keluarga',hint:'4j · jaga hubungan',duration:4});
     list.push({id:'rian',name:'Main dengan Rian',hint:'3j · sosial',duration:3});
-    return list;
+    return visibleActivities(state,list);
   }
   const job=JOBS[state.player.job];
   const salary=state.player.salary||job.salary;
@@ -27,7 +29,7 @@ function availableActivities(state){
   list.push({id:'rian',name:'Main dengan Rian',hint:'3j · sosial',duration:3});
   if(state.career.workCount>=4) list.push({id:'career_search',name:'Cari Peluang Lain',hint:'4j · lihat arah karier lain',duration:4});
   if(state.business?.active) list.push({id:'business_manage',name:'Urus Usaha',hint:state.business.helperActive?'4j · klien, kualitas & koordinasi Ari':'4j · jaga kapasitas & pelanggan',duration:4});
-  return list;
+  return visibleActivities(state,list);
 }
 
 function executeActivity(state,id){

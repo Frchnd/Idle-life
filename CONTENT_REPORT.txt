@@ -1,0 +1,45 @@
+HIDUP BUILD S — CONTENT REPORT
+================================
+Status: OK
+Errors: 0
+Warnings: 0
+Presets: 13
+Packs: 4
+
+Counts:
+- activities: 4
+- opportunities: 5
+- events: 10
+- jobs: 5
+- eventPools: 6
+
+Content Packs:
+- core_life v1: Core Life
+    activities: 2
+    events: 3
+- career_core v1: Career Core
+    jobs: 5
+    activities: 2
+    events: 5
+- learning_technology v1: Learning & Technology
+    opportunities: 2
+    events: 2
+- life_finance v1: Life & Finance
+    opportunities: 3
+
+Top Tags:
+- career: 8
+- life: 8
+- relationship: 5
+- opportunity: 5
+- employment: 5
+- full_time: 5
+- finance: 4
+- learning: 4
+- investment: 3
+- major_decision: 3
+- first_day: 3
+- entry: 3
+- search: 2
+- debt: 2
+- condition: 2

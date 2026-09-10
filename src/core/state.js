@@ -1,4 +1,4 @@
-const SAVE_VERSION = 14;
+const SAVE_VERSION = 15;
 
 function createInitialState(){
   return {
@@ -19,7 +19,7 @@ function createInitialState(){
     life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null},
     pacing:{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8},
     playtest:{actions:0,opportunitiesTaken:0,careerChanges:0,offlineBatches:0},
-    contentRuntime:{eventHistory:[],eventCooldowns:{},poolHistory:{}},
+    contentRuntime:{eventHistory:[],eventCooldowns:{},poolHistory:{},poolRecent:{},rngSeed:137,enabledPacks:[],packVersions:{}},
     skills:{mechanics:0,learning:25,social:40,technology:0},
     discoveredSkills:['mechanics','learning','social'],
     relationships:{family:60,rian:35,pak_arman:0,dika:0,maya:0,nadia:0,ari:0},

@@ -1,9 +1,13 @@
 const root=document.getElementById('app');
 const contentValidation=validateContentFramework();
-if(typeof window!=='undefined') window.__HIDUP_CONTENT_REPORT__=contentValidation;
+if(typeof window!=='undefined'){
+  window.__HIDUP_CONTENT_REPORT__=contentValidation;
+  window.__HIDUP_CONTENT_CATALOG__=buildContentCatalog();
+}
 if(!contentValidation.ok) console.error('[Hidup] Content validation gagal',contentValidation.errors);
 if(contentValidation.warnings.length) console.warn('[Hidup] Content warnings',contentValidation.warnings);
 let state=loadState();
+syncContentPackRuntime(state);
 let deferredPrompt=null;
 const ui={tab:'life',result:'Pilihanmu akan menentukan jalur yang mulai terbuka.',offlineSummary:'',milestone:false,chapterProfile:null,installAvailable:false};
 
