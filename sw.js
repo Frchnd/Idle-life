@@ -1,4 +1,4 @@
-const CACHE='hidup-build-w-v1';
+const CACHE='hidup-build-x-v1';
 const ASSETS=[
   './','./index.html','./manifest.webmanifest','./styles/main.css',
   './icon-192.png','./icon-512.png',

@@ -1,24 +1,20 @@
-# Hidup — Build W
+# Hidup — Build X
 
-Build W adalah **Anime UI Overhaul**. Simulation Engine dan Content Framework tetap dipertahankan, tetapi presentation layer sekarang menggunakan image-based anime art, palette colorful/playful, workplace thumbnails, portrait character, dan viewport app yang dikunci dari pinch zoom.
+Build X adalah **UI Stabilization & Responsive Audit** setelah Anime UI Overhaul Build W. Simulation Engine, Content Framework, save, dan seluruh anime image asset dipertahankan.
 
-## Perubahan utama
-
-- Scene SVG lama tidak lagi dipakai oleh runtime.
-- Scene utama menggunakan WebP anime art: rumah/lingkungan, bengkel, toko, teknologi, dan usaha.
-- Tempat kerja di layar DUNIA memakai image thumbnail, bukan inisial huruf.
-- Profile utama memakai portrait image.
-- Event overlay memakai image scene aktif.
-- Opportunity card memakai thumbnail visual berdasarkan jenis peluang.
-- Karakter utama sekarang bernama **Raka**, nama fiksi. Save lama yang masih memakai nama prototipe otomatis dimigrasikan.
-- Tampilan lebih colorful/playful: sky blue, mint, coral, warm yellow, violet, dan cream dengan kontras lembut.
-- Viewport dikunci untuk pengalaman aplikasi: pinch zoom, ctrl+wheel zoom, dan shortcut zoom diblokir saat game aktif.
-- Bottom navigation tetap HIDUP / DUNIA / KAMU.
+## Fokus revisi
+- CSS Build W yang bertumpuk dibersihkan menjadi satu layout system.
+- Kontras dark/light theme diperbaiki; tidak ada lagi panel putih yang mewarisi teks putih dari dark theme.
+- Header mobile tidak lagi menyembunyikan nama dan pekerjaan Raka.
+- Subtitle action tidak lagi sengaja disembunyikan pada breakpoint mobile.
+- Action dock menjadi 2x2 di HP supaya label/hint tetap terbaca; 4 kolom tetap dipakai di layar lebih lebar.
+- Opportunity card tidak lagi bergantung pada horizontal clipping; menjadi grid responsif penuh.
+- Company/NPC cards, profile cards, metrics, event sheet, menu, settings, dan prologue diberi aturan wrapping/min-width yang aman.
+- Hero caption dan HUD diberi ruang terpisah untuk mengurangi overlap.
+- Tidak ada reset gameplay.
 
 ## Save
-
-Build V -> Build W otomatis migrasi ke Save Version 19 dengan SAVE_KEY lama tetap dipertahankan. Progress pemain tidak direset.
+Build W -> Build X otomatis migrasi ke Save Version 20. SAVE_KEY lama tetap dipertahankan.
 
 ## Deploy
-
-Upload/replace seluruh isi folder ke root GitHub Pages, termasuk `assets/`, `src/`, dan `styles/`. Setelah deploy, lakukan hard refresh atau tutup-buka PWA agar cache Build W terpasang.
+Replace seluruh isi project di GitHub Pages dengan isi folder Build X, termasuk `assets/`, `src/`, dan `styles/`. Lalu hard refresh / tutup-buka PWA supaya cache `hidup-build-x-v1` aktif.
