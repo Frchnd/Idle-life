@@ -1,7 +1,7 @@
 {
   "name": "Hidup — Idle Life Simulation",
   "short_name": "Hidup",
-  "description": "Idle life simulation dalam Bahasa Indonesia.",
+  "description": "Idle life simulation sistemik dalam Bahasa Indonesia.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
