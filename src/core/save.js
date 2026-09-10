@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya save Build F–N tetap ikut naik ke Build O.
+// Pertahankan key lama supaya seluruh save Build F–Q tetap ikut naik ke Build R.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function loadState(){
@@ -33,6 +33,10 @@ function mergeState(base,saved){
   out.life={...base.life,...(saved.life||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
   out.playtest={...base.playtest,...(saved.playtest||{})};
+  out.contentRuntime={...base.contentRuntime,...(saved.contentRuntime||{})};
+  if(!Array.isArray(out.contentRuntime.eventHistory)) out.contentRuntime.eventHistory=[];
+  out.contentRuntime.eventCooldowns={...base.contentRuntime.eventCooldowns,...(saved.contentRuntime?.eventCooldowns||{})};
+  out.contentRuntime.poolHistory={...base.contentRuntime.poolHistory,...(saved.contentRuntime?.poolHistory||{})};
   out.skills={...base.skills,...(saved.skills||{})};
   out.relationships={...base.relationships,...(saved.relationships||{})};
   out.assets={...base.assets,...(saved.assets||{})};

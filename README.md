@@ -1,27 +1,54 @@
-# Hidup — Build Q
+# Hidup — Build R
 
-Build Q memulai Fase 4 (Content Framework). Fokus build ini adalah membuat konten baru bisa ditambahkan lewat data, bukan menambah percabangan `if/else` baru ke core game.
+Build R melanjutkan Fase 4 (Content Framework). Fokusnya adalah mengurangi copy-paste saat menambah konten dan membuat kesalahan referensi terdeteksi lebih awal.
 
 ## Yang baru
 
-- Save Build P otomatis dimigrasikan ke version 13.
-- `src/core/content.js` menambahkan Content Registry terpusat.
-- Requirement Engine generik mendukung path state, flag, status, relationship, skill tier, `all`, `any`, dan `not`.
-- Effect data bisa memakai effect engine lama plus `path_increment`, `path_set`, dan `relationship_clamped`.
-- Aktivitas dasar `Cari Kerja`, `Bantu Keluarga`, `Main dengan Rian`, dan `Cari Peluang Lain` sekarang didefinisikan sebagai data.
-- Pelunasan utang keluarga/Rian sekarang memakai definisi opportunity data-driven.
-- Event awal `Sudah Terlalu Dipaksakan`, pencarian lowongan, serta hari pertama bengkel/toko dipindahkan ke content catalog.
-- Ada validator content registry untuk mendeteksi ID duplikat dan effect type yang tidak dikenal.
-- Sistem lama tetap berjalan berdampingan, sehingga migrasi ke framework baru bisa dilakukan bertahap tanpa mematahkan save atau Fase 3.
+- Save Build Q otomatis dimigrasikan ke version 14.
+- Content Registry sekarang juga menyimpan `jobs` dan `eventPools`.
+- Ada **Content Template** reusable untuk pekerjaan, aktivitas, opportunity, dan event.
+- Semua job prototype sekarang dibuat dari template pekerjaan (`entry_job` / `advanced_job`) tanpa mengubah perilaku gameplay.
+- Ada **Requirement Preset** parameterized seperti `unemployed`, `employed`, `job_is`, `job_work_min`, `money_min`, `status_present`, `career_work_min`, dan `skill_min`.
+- Event data-driven sekarang punya `pool`, `tags`, `once`, dan dukungan cooldown.
+- Pool aktif saat ini: `urgent`, `early_career`, `first_days`, dan `life`.
+- Migrated events awal sekarang benar-benar memakai event pool + tags untuk prioritas selection.
+- Validator lebih ketat: schema activity/job/event, template reference, event-pool reference, requirement preset parameter, skill reference, choice label, dan effect reference.
+- Validator mengembalikan `errors` dan `warnings`, jadi referensi baru yang mungkin valid bisa diperingatkan tanpa selalu memblokir build.
 
-## Struktur penting
+## Kenapa ini penting
 
-- `src/core/content.js` — registry, requirement engine, content effect executor, validator.
-- `src/data/content.js` — contoh konten data-driven yang sudah aktif di gameplay.
-- File lama seperti `events.js`, `opportunities.js`, dan `activities.js` masih dipakai untuk konten kompleks yang belum dimigrasikan.
+Mulai titik ini, menambah pekerjaan baru tidak perlu menyalin struktur penuh:
 
-Ini sengaja transisi bertahap. Memaksa seluruh Build P menjadi data-driven dalam satu update akan meningkatkan risiko regresi tanpa manfaat gameplay langsung.
+```js
+defineFromTemplate('jobs','entry_job',{
+  id:'barista',
+  name:'Barista',
+  workplace:'Kedai Pagi',
+  salary:110000,
+  skill:'social'
+});
+```
+
+Requirement juga bisa tetap terbaca:
+
+```js
+requirements:[
+  {preset:'job_is',params:{job:'mechanic_junior'}},
+  {preset:'job_work_min',params:{job:'mechanic_junior',count:1}}
+]
+```
+
+Tujuannya bukan sekadar file lebih rapi. Tujuannya supaya Fase 5 nanti bisa menambah banyak career/event tanpa setiap konten baru membutuhkan branching logic baru.
+
+## Struktur baru
+
+- `src/core/content.js` — registry, template engine, preset engine, event-pool selection, validator.
+- `src/data/content-foundation.js` — template, preset, dan pool reusable.
+- `src/data/jobs.js` — katalog job berbasis template.
+- `src/data/content.js` — konten yang sudah dimigrasikan ke framework.
+
+File legacy `events.js`, `opportunities.js`, dan `activities.js` tetap dipakai untuk sistem kompleks yang belum layak dipindahkan sekaligus.
 
 ## Deploy
 
-Upload seluruh isi folder ini ke root GitHub Pages, termasuk `src/` dan `styles/`. Setelah deploy, refresh/tutup-buka PWA agar service worker Build Q mengganti cache lama.
+Upload seluruh isi folder ini ke root GitHub Pages, termasuk `src/` dan `styles/`. Setelah deploy, refresh/tutup-buka PWA agar cache Build R mengganti Build Q.

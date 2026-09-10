@@ -432,7 +432,9 @@ function getNextEvent(state){
 }
 
 function applyEventChoice(state,choice){
+  const resolvedEventId=state.pendingEvent?.id||null;
   resolveEffects(state,choice.effects||[]);
+  if(resolvedEventId) recordDataEventResolved(state,resolvedEventId);
   state.pendingEvent=null;
   state.pacing=state.pacing||{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8};
   state.pacing.lastResolvedEventAt=state.time.totalHours;
