@@ -76,8 +76,13 @@ function resolveEffects(state,effects=[]){
         if(state.player.job && !state.career.salaryNegotiatedJobs.includes(state.player.job)) state.career.salaryNegotiatedJobs.push(state.player.job);
         break;
       case 'business_close':
-        if(state.business){ state.business.active=false; state.business.lastWeeklyProfit=0; state.business.lossStreak=0; }
-        state.player.statuses=state.player.statuses.filter(x=>x!=='punya_usaha_kecil');
+        if(state.business){
+          state.business.active=false; state.business.lastWeeklyProfit=0; state.business.lossStreak=0;
+          state.business.helperActive=false; state.business.delegated=false; state.business.ownerFullTime=false; state.business.scale='solo';
+        }
+        if(state.npc?.ari?.known) state.npc.ari.life='mantan_helper';
+        state.flags.businessPathSeen=false;
+        state.player.statuses=state.player.statuses.filter(x=>!['punya_usaha_kecil','pemilik_usaha_penuh'].includes(x));
         break;
       case 'business_recover':
         if(state.business){ state.business.reputation=Math.min(100,(state.business.reputation||0)+6); state.business.lossStreak=0; state.business.lastManagedAt=state.time.totalHours; }
@@ -96,6 +101,18 @@ function resolveEffects(state,effects=[]){
         break;
       case 'business_stamp':
         if(state.business) state.business[effect.key]=state.time.totalHours;
+        break;
+      case 'business_hire_helper':
+        hireBusinessHelper(state);
+        break;
+      case 'business_delegate':
+        setBusinessDelegation(state,!!effect.value);
+        break;
+      case 'business_owner_fulltime':
+        focusBusinessFullTime(state);
+        break;
+      case 'business_helper_issue':
+        handleHelperIssue(state,effect.backHelper!==false);
         break;
     }
   }

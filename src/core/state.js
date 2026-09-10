@@ -1,4 +1,4 @@
-const SAVE_VERSION = 10;
+const SAVE_VERSION = 11;
 
 function createInitialState(){
   return {
@@ -21,16 +21,17 @@ function createInitialState(){
     playtest:{actions:0,opportunitiesTaken:0,careerChanges:0,offlineBatches:0},
     skills:{mechanics:0,learning:25,social:40,technology:0},
     discoveredSkills:['mechanics','learning','social'],
-    relationships:{family:60,rian:35,pak_arman:0,dika:0,maya:0,nadia:0},
+    relationships:{family:60,rian:35,pak_arman:0,dika:0,maya:0,nadia:0,ari:0},
     npc:{
       rian:{known:true,life:'serabutan',progress:0},
       pak_arman:{known:false,life:'pemilik_bengkel',progress:0},
       dika:{known:false,rivalry:10,life:'sinar_jaya',progress:0},
       maya:{known:false,life:'supervisor',progress:0},
-      nadia:{known:false,life:'teknisi_senior',progress:0}
+      nadia:{known:false,life:'teknisi_senior',progress:0},
+      ari:{known:false,life:'belum_terlibat',progress:0}
     },
     assets:{laptop:false},
-    business:{active:false,sector:null,name:null,level:0,reputation:0,clients:0,lastManagedAt:0,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:null,equipmentLevel:0,retainedClients:0,capacity:2,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999},
+    business:{active:false,sector:null,name:null,level:0,reputation:0,clients:0,lastManagedAt:0,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:null,equipmentLevel:0,retainedClients:0,capacity:2,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999,scale:'solo',helperActive:false,helperName:'Ari',helperTrust:40,helperSkill:35,helperWage:220000,helperWeeks:0,delegated:false,ownerFullTime:false,lastScaleDecisionAt:-999,lastDelegationDecisionAt:-999,lastOwnerChoiceAt:-999,lastHelperIssueAt:-999,helperIssuePending:false},
     career:{
       workCount:0,
       jobSearchCount:0,
@@ -100,7 +101,11 @@ function createInitialState(){
       firstBusinessCycleSeen:false,
       businessRetainerSeen:false,
       businessCapacitySeen:false,
-      businessConflictSeen:false
+      businessConflictSeen:false,
+      businessScaleSeen:false,
+      businessDelegationSeen:false,
+      businessOwnerChoiceSeen:false,
+      businessHelperIssueSeen:false
     },
     opportunities:[],
     scheduled:[],

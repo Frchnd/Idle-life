@@ -12,11 +12,11 @@ function independentFocus(state){ return state.life?.trajectory==='independent';
 function availableActivities(state){
   const list=[];
   if(!state.player.job){
-    list.push({id:'job_search',name:'Cari Kerja',hint:'6j · cari peluang kerja',duration:6});
+    if(state.business?.active) list.push({id:'business_manage',name:state.business.ownerFullTime?'Jalankan Usaha':'Urus Usaha',hint:state.business.helperActive?'4j · klien, kualitas & koordinasi Ari':'4j · jaga kapasitas & pelanggan',duration:4});
+    list.push({id:'job_search',name:state.business?.ownerFullTime?'Lihat Lowongan Kerja':'Cari Kerja',hint:'6j · cari peluang kerja',duration:6});
     list.push({id:'study',name:'Belajar',hint:isLivingAlone(state)?'4j · Rp20rb · lebih fokus':'4j · Rp20rb',duration:4});
     list.push({id:'family',name:'Bantu Keluarga',hint:'4j · jaga hubungan',duration:4});
     list.push({id:'rian',name:'Main dengan Rian',hint:'3j · sosial',duration:3});
-    if(state.business?.active) list.push({id:'business_manage',name:'Urus Usaha',hint:'4j · jaga kapasitas & pelanggan',duration:4});
     return list;
   }
   const job=JOBS[state.player.job];
@@ -26,7 +26,7 @@ function availableActivities(state){
   list.push({id:'rest',name:'Istirahat',hint:isLivingAlone(state)?'8j · pulih lebih tenang':'8j · pulihkan kondisi',duration:8});
   list.push({id:'rian',name:'Main dengan Rian',hint:'3j · sosial',duration:3});
   if(state.career.workCount>=4) list.push({id:'career_search',name:'Cari Peluang Lain',hint:'4j · lihat arah karier lain',duration:4});
-  if(state.business?.active) list.push({id:'business_manage',name:'Urus Usaha',hint:'4j · jaga kapasitas & pelanggan',duration:4});
+  if(state.business?.active) list.push({id:'business_manage',name:'Urus Usaha',hint:state.business.helperActive?'4j · klien, kualitas & koordinasi Ari':'4j · jaga kapasitas & pelanggan',duration:4});
   return list;
 }
 

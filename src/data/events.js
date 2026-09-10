@@ -158,6 +158,35 @@ function getNextEvent(state){
   if(state.business?.active){
     const b=ensureBusinessState(state);
     const meta=businessMeta(state);
+
+    if(b.helperIssuePending){
+      return event('business_helper_issue','USAHA KECIL','Ari Mengambil Keputusan Tanpa Menunggumu',`Saat kamu tidak ada, Ari menangani masalah pelanggan sendiri. Masalahnya selesai, tapi caranya tidak sepenuhnya sesuai standar yang biasa kamu pakai di ${b.name||'usahamu'}.`,[
+        {label:'Dukung Ari dan evaluasi bersama',hint:'Kepercayaan naik · reputasi sedikit turun',effects:[{type:'business_helper_issue',backHelper:true},{type:'hours',value:2},{type:'history',text:'Umur 18 · Memilih membina helper setelah keputusan usaha yang kurang rapi.'}],result:'Kamu tidak mengambil alih semuanya. Ari tahu dia dipercaya, tapi juga paham standar yang harus dijaga.'},
+        {label:'Ambil kembali kontrol',hint:'Reputasi lebih aman · kepercayaan Ari turun',effects:[{type:'business_helper_issue',backHelper:false},{type:'hours',value:3},{type:'fatigue',value:4}],result:'Kamu menyelesaikan masalah sendiri. Pelanggan tenang, tapi Ari jadi lebih berhati-hati mengambil keputusan tanpa izin.'}
+      ]);
+    }
+
+    if(!b.helperActive && state.player.money>=350000 && (b.lossStreak||0)<2 && (b.reputation||0)>=42 && (b.growthStreak||0)>=2 && ((b.missedDemand||0)>=2 || (b.inquiries||0)>=Math.max(4,b.capacity||2)) && state.time.totalHours-(b.lastScaleDecisionAt||-999)>=12*24){
+      return event('business_first_helper','KEPUTUSAN BESAR','Usahamu Mulai Melebihi Kapasitas Satu Orang',`${b.name||'Usahamu'} sudah punya cukup permintaan sehingga masalah utamanya bukan mencari pelanggan lagi, tapi siapa yang mengerjakan semuanya. Ari, kenalan dari jaringan lokal, bersedia membantu paruh waktu.`,[
+        {label:'Ajak Ari bergabung',hint:'Rp350rb awal · upah Rp220rb/minggu · kapasitas naik',effects:[{type:'business_hire_helper'},{type:'flag',key:'businessScaleSeen',value:true}],result:'Usaha ini sekarang bukan lagi pekerjaan solo. Kapasitas naik, tapi setiap minggu ada orang lain yang harus dibayar dan dipercaya.'},
+        {label:'Tetap kerja sendiri',hint:'Tidak ada biaya pegawai · kapasitas tetap terbatas',effects:[{type:'business_stamp',key:'lastScaleDecisionAt'},{type:'flag',key:'businessScaleSeen',value:true}],result:'Kamu mempertahankan usaha sebagai operasi satu orang. Margin lebih sederhana, tapi sebagian permintaan mungkin tetap harus dilepas.'}
+      ]);
+    }
+
+    if(b.helperActive && !b.delegated && (b.helperWeeks||0)>=2 && state.time.totalHours-(b.lastDelegationDecisionAt||-999)>=14*24){
+      return event('business_delegation','ARAH USAHA','Berapa Banyak yang Mau Kamu Serahkan ke Ari?',`Ari sudah beberapa minggu bekerja bersamamu. Kalau dia hanya membantu saat kamu hadir, kontrol tetap kuat tapi waktumu tetap tersedot. Kalau pekerjaan rutin mulai didelegasikan, kapasitas dan waktu membaik—namun kualitas tidak lagi sepenuhnya berada di tanganmu.`,[
+        {label:'Delegasikan pekerjaan rutin',hint:'Kapasitas bisa naik · risiko kualitas bergantung ke Ari',effects:[{type:'business_delegate',value:true},{type:'flag',key:'businessDelegationSeen',value:true},{type:'history',text:'Umur 18 · Mulai mendelegasikan pekerjaan rutin usaha kepada Ari.'}],result:'Kamu mulai membangun sistem yang tidak selalu membutuhkan kehadiranmu. Sekarang kualitas usaha juga bergantung pada perkembangan Ari.'},
+        {label:'Tetap awasi langsung',hint:'Kontrol lebih tinggi · waktumu tetap jadi bottleneck',effects:[{type:'business_delegate',value:false}],result:'Ari tetap membantu, tapi keputusan dan kualitas utama masih bergantung langsung padamu. Pilihan delegasi bisa kamu pertimbangkan lagi setelah beberapa minggu.'}
+      ]);
+    }
+
+    if(b.helperActive && state.player.job && !state.flags.businessOwnerChoiceSeen && state.time.totalHours-(b.lastOwnerChoiceAt||-999)>=30*24 && (b.reputation||0)>=55 && (b.totalProfit||0)>=1500000 && (b.growthStreak||0)>=3 && (b.lastWeeklyProfit||0)>0){
+      const salary=state.player.salary||JOBS[state.player.job]?.salary||0;
+      return event('business_owner_choice','KEPUTUSAN BESAR','Usahamu Sudah Cukup Besar untuk Menuntut Pilihan',`${b.name||'Usahamu'} sekarang punya pelanggan, helper, dan beberapa minggu pertumbuhan. Untuk pertama kalinya masuk akal mempertimbangkan meninggalkan gaji tetap Rp${salary.toLocaleString('id-ID')}/hari dan menjadikan usaha sebagai pekerjaan utama.`,[
+        {label:'Fokus penuh pada usaha',hint:'Lepas gaji tetap · kapasitas & reputasi usaha naik',effects:[{type:'business_owner_fulltime'},{type:'flag',key:'businessOwnerChoiceSeen',value:true}],result:'Kamu melepas keamanan gaji tetap. Mulai sekarang kalau usaha melemah, tidak ada perusahaan lain yang otomatis menutup lubangnya.'},
+        {label:'Tetap jalankan keduanya',hint:'Pertahankan gaji · waktu dan energi tetap terbagi',effects:[{type:'business_stamp',key:'lastOwnerChoiceAt'}],result:'Kamu memilih model hybrid. Lebih aman secara pendapatan, tapi waktu tetap menjadi batas terbesar. Keputusan fokus penuh bisa muncul lagi nanti jika usaha terus tumbuh.'}
+      ]);
+    }
     if((b.lossStreak||0)<2 && (b.reputation||0)>=28 && (b.servedClients||b.clients||0)>=3 && (b.retainedClients||0)<3 && state.time.totalHours-(b.lastRetainerAt||-999)>=7*24){
       return event('business_retainer','USAHA KECIL','Pelanggan Meminta Jadwal Tetap',`Salah satu pelanggan ${b.name||'usahamu'} tidak ingin terus berebut slot. Mereka menawarkan pekerjaan rutin setiap minggu selama kualitas dan komunikasimu tetap terjaga.`,[
         {label:'Terima pelanggan tetap',hint:'Permintaan lebih stabil · tanggung jawab mingguan bertambah',effects:[{type:'business_retainer'},{type:'business_stamp',key:'lastRetainerAt'},{type:'history',text:`Umur 18 · ${b.name||'Usaha kecil'} mendapat pelanggan tetap.`}],result:'Usahamu sekarang punya permintaan yang lebih pasti. Tapi pelanggan rutin akan cepat terasa kalau jadwal dan kualitas mulai berantakan.'},
@@ -431,7 +460,8 @@ function urgentStateNeedsAttention(state){
   const moneyCrisis=state.player.money<0 && !state.flags.moneyPressureSeen;
   const exhaustion=getCondition(state.player.fatigue).id==='exhausted' && !state.flags.exhaustedWarningSeen;
   const restructure=state.scheduled.some(item=>item.kind==='job_restructure' && item.at<=state.time.totalHours);
-  return rentPressure||moneyCrisis||exhaustion||restructure;
+  const helperIssue=!!state.business?.helperIssuePending;
+  return rentPressure||moneyCrisis||exhaustion||restructure||helperIssue;
 }
 
 function refreshEvent(state){
