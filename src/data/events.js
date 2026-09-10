@@ -166,6 +166,22 @@ function getNextEvent(state){
       ]);
     }
 
+    if(b.marketEventPending){
+      const pressure=b.marketEventPending;
+      const rival=pressure.competitor||'kompetitor lokal';
+      const actionText={harga:'menurunkan harga untuk mengejar volume',kualitas:'menonjolkan kualitas dan testimoni',ekspansi:'menambah kapasitas dan mengejar lebih banyak pelanggan'}[pressure.action]||'mengubah strateginya';
+      const choices=[
+        {label:'Menang lewat kualitas',hint:'2j · reputasi naik · kapasitas sedikit lebih ketat sementara',effects:[{type:'hours',value:2},{type:'fatigue',value:3},{type:'business_market_strategy',strategy:'quality'},{type:'business_market_reputation',value:2}],result:'Kamu memilih tidak ikut perang harga. Fokusmu dua minggu ke depan adalah kualitas dan alasan pelanggan untuk tetap percaya.'},
+        {label:'Turunkan harga sementara',hint:'Lebih mudah menarik permintaan · margin per pekerjaan turun',effects:[{type:'business_market_strategy',strategy:'price'}],result:'Kamu menerima margin lebih tipis untuk menjaga arus pelanggan selama tekanan kompetitor tinggi.'}
+      ];
+      if((b.retainedClients||0)>0){
+        choices.push({label:'Lindungi pelanggan tetap',hint:'Pertumbuhan baru lebih lambat · pelanggan rutin lebih sulit direbut',effects:[{type:'business_market_strategy',strategy:'retention'},{type:'business_market_reputation',value:1}],result:'Kamu memilih melindungi basis pelanggan yang sudah percaya daripada mengejar semua permintaan baru.'});
+      }else{
+        choices.push({label:'Jangan bereaksi berlebihan',hint:'Tetap seimbang · tidak keluar waktu atau margin ekstra',effects:[{type:'business_market_strategy',strategy:'balanced'}],result:'Kamu memilih menjaga ritme usaha dan membiarkan pasar membuktikan apakah gerakan kompetitor benar-benar bertahan.'});
+      }
+      return event('business_market_move','PASAR LOKAL','Kompetitor Mengubah Permainan',`${rival} sedang ${actionText}. Permintaan pasar yang sama sekarang harus dibagi lebih keras; keputusanmu akan memengaruhi beberapa minggu usaha berikutnya.`,choices);
+    }
+
     if(!b.helperActive && state.player.money>=350000 && (b.lossStreak||0)<2 && (b.reputation||0)>=42 && (b.growthStreak||0)>=2 && ((b.missedDemand||0)>=2 || (b.inquiries||0)>=Math.max(4,b.capacity||2)) && state.time.totalHours-(b.lastScaleDecisionAt||-999)>=12*24){
       return event('business_first_helper','KEPUTUSAN BESAR','Usahamu Mulai Melebihi Kapasitas Satu Orang',`${b.name||'Usahamu'} sudah punya cukup permintaan sehingga masalah utamanya bukan mencari pelanggan lagi, tapi siapa yang mengerjakan semuanya. Ari, kenalan dari jaringan lokal, bersedia membantu paruh waktu.`,[
         {label:'Ajak Ari bergabung',hint:'Rp350rb awal · upah Rp220rb/minggu · kapasitas naik',effects:[{type:'business_hire_helper'},{type:'flag',key:'businessScaleSeen',value:true}],result:'Usaha ini sekarang bukan lagi pekerjaan solo. Kapasitas naik, tapi setiap minggu ada orang lain yang harus dibayar dan dipercaya.'},

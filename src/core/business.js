@@ -7,7 +7,7 @@ const BUSINESS_META={
 function ensureBusinessState(state){
   const defaults={
     active:false,sector:null,name:null,level:0,reputation:0,clients:0,lastManagedAt:0,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:null,
-    equipmentLevel:0,retainedClients:0,capacity:2,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999,scale:'solo',helperActive:false,helperName:'Ari',helperTrust:40,helperSkill:35,helperWage:220000,helperWeeks:0,delegated:false,ownerFullTime:false,lastScaleDecisionAt:-999,lastDelegationDecisionAt:-999,lastOwnerChoiceAt:-999,lastHelperIssueAt:-999,helperIssuePending:false
+    equipmentLevel:0,retainedClients:0,capacity:2,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999,scale:'solo',helperActive:false,helperName:'Ari',helperTrust:40,helperSkill:35,helperWage:220000,helperWeeks:0,delegated:false,ownerFullTime:false,lastScaleDecisionAt:-999,lastDelegationDecisionAt:-999,lastOwnerChoiceAt:-999,lastHelperIssueAt:-999,helperIssuePending:false,marketReputation:0,competitorPressure:50,marketStrategy:'balanced',strategyUntilWeek:0,lastMarketEventWeek:-99,marketEventPending:null,clientsWon:0,clientsLost:0,marketWinStreak:0,marketLossStreak:0
   };
   state.business=state.business||{};
   for(const [key,value] of Object.entries(defaults)){
@@ -89,7 +89,7 @@ function startBusiness(state,sector){
   const cost=850000;
   if(state.player.money<cost) return {error:`Kamu membutuhkan Rp${cost.toLocaleString('id-ID')} sebagai modal awal.`};
   state.player.money-=cost;
-  state.business={active:true,sector,name:meta.name,level:1,reputation:8,clients:1,lastManagedAt:state.time.totalHours,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:state.time.totalHours,equipmentLevel:0,retainedClients:0,capacity:3,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999,scale:'solo',helperActive:false,helperName:'Ari',helperTrust:40,helperSkill:35,helperWage:220000,helperWeeks:0,delegated:false,ownerFullTime:false,lastScaleDecisionAt:-999,lastDelegationDecisionAt:-999,lastOwnerChoiceAt:-999,lastHelperIssueAt:-999,helperIssuePending:false};
+  state.business={active:true,sector,name:meta.name,level:1,reputation:8,marketReputation:8,clients:1,lastManagedAt:state.time.totalHours,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:state.time.totalHours,equipmentLevel:0,retainedClients:0,capacity:3,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999,scale:'solo',helperActive:false,helperName:'Ari',helperTrust:40,helperSkill:35,helperWage:220000,helperWeeks:0,delegated:false,ownerFullTime:false,lastScaleDecisionAt:-999,lastDelegationDecisionAt:-999,lastOwnerChoiceAt:-999,lastHelperIssueAt:-999,helperIssuePending:false,competitorPressure:50,marketStrategy:'balanced',strategyUntilWeek:0,lastMarketEventWeek:-99,marketEventPending:null,clientsWon:0,clientsLost:0,marketWinStreak:0,marketLossStreak:0};
   state.flags.businessStarted=true;
   if(!state.player.statuses.includes('punya_usaha_kecil')) state.player.statuses.push('punya_usaha_kecil');
   addHistory(state,`Umur 18 · Memulai ${meta.label.toLowerCase()} sebagai usaha kecil.`);
@@ -235,6 +235,76 @@ function handleHelperIssue(state,backHelper=true){
   refreshBusinessCapacity(state);
 }
 
+
+function businessMarketReputationLabel(state){
+  const value=ensureBusinessState(state).marketReputation||0;
+  if(value<15) return 'Belum dikenal';
+  if(value<32) return 'Mulai terdengar';
+  if(value<52) return 'Dikenal lokal';
+  if(value<72) return 'Dipercaya pasar';
+  return 'Nama kuat';
+}
+
+function businessMarketPosition(state){
+  const b=ensureBusinessState(state);
+  if(!b.active) return {label:'Belum masuk pasar',delta:0};
+  const rival=typeof competitorSnapshot==='function'?competitorSnapshot(state,b.sector):null;
+  const rivalStrength=rival?.strength??50;
+  const score=(b.marketReputation||0)*.72+(b.reputation||0)*.28+(b.equipmentLevel||0)*4+(b.helperActive?3:0);
+  const delta=Math.round(score-rivalStrength);
+  if(delta<=-16) return {label:'Tertinggal',delta};
+  if(delta<=-6) return {label:'Menantang dari bawah',delta};
+  if(delta<8) return {label:'Bersaing ketat',delta};
+  if(delta<18) return {label:'Mulai unggul',delta};
+  return {label:'Unggul lokal',delta};
+}
+
+function businessCompetitorPressureLabel(state){
+  const value=ensureBusinessState(state).competitorPressure??50;
+  if(value<35) return 'Rendah';
+  if(value<55) return 'Normal';
+  if(value<72) return 'Tinggi';
+  return 'Sangat tinggi';
+}
+
+function businessStrategyLabel(state){
+  const b=ensureBusinessState(state);
+  const labels={balanced:'Seimbang',quality:'Menang lewat kualitas',price:'Harga agresif',retention:'Jaga pelanggan tetap'};
+  return labels[b.marketStrategy]||labels.balanced;
+}
+
+function currentBusinessStrategy(state){
+  const b=ensureBusinessState(state);
+  const week=state.world?.week||0;
+  if(b.marketStrategy!=='balanced' && (b.strategyUntilWeek||0)<week){
+    b.marketStrategy='balanced';
+    b.strategyUntilWeek=0;
+  }
+  return b.marketStrategy||'balanced';
+}
+
+function setBusinessMarketStrategy(state,strategy){
+  const b=ensureBusinessState(state);
+  if(!b.active) return false;
+  const allowed=['balanced','quality','price','retention'];
+  b.marketStrategy=allowed.includes(strategy)?strategy:'balanced';
+  b.strategyUntilWeek=(state.world?.week||0)+(b.marketStrategy==='balanced'?0:2);
+  b.marketEventPending=null;
+  state.flags.businessMarketSeen=true;
+  if(b.marketStrategy==='quality'){
+    b.reputation=Math.min(100,b.reputation+3);
+    b.marketReputation=Math.min(100,(b.marketReputation||0)+2);
+  }
+  if(b.marketStrategy==='retention' && b.retainedClients>0) b.reputation=Math.min(100,b.reputation+1);
+  addRecent(state,`${b.name} mengubah respons pasar: ${businessStrategyLabel(state).toLowerCase()}.`);
+  return true;
+}
+
+function changeBusinessMarketReputation(state,value){
+  const b=ensureBusinessState(state);
+  b.marketReputation=Math.max(0,Math.min(100,(b.marketReputation||0)+value));
+}
+
 function simulateBusinessWeek(state){
   const b=ensureBusinessState(state);
   const meta=businessMeta(state);
@@ -250,11 +320,26 @@ function simulateBusinessWeek(state){
 
   const ownerPresence=managedRecently||b.ownerFullTime;
   const delegatedCoverage=b.helperActive&&b.delegated&&b.helperTrust>=45;
-  const organic=Math.max(1,Math.round(1+(demand-40)/18+(b.reputation||0)/28+(b.ownerFullTime?1:0)));
+  const rival=typeof competitorSnapshot==='function'?competitorSnapshot(state,b.sector):null;
+  const rivalStrength=rival?.strength??50;
+  const playerMarketScore=(b.marketReputation||0)*.72+(b.reputation||0)*.28+(b.equipmentLevel||0)*4+(b.helperActive?3:0);
+  b.competitorPressure=Math.round(Math.max(0,Math.min(100,50+(rivalStrength-playerMarketScore))));
+  const strategy=currentBusinessStrategy(state);
+  let competitionFactor=Math.max(.72,Math.min(1.28,1+(playerMarketScore-rivalStrength)/120));
+  let inquiryBonus=0,ticketMultiplier=1,effectiveCapacity=capacity;
+  if(rival?.action==='harga') competitionFactor-=.06;
+  if(rival?.action==='kualitas') competitionFactor-=.04;
+  if(rival?.action==='ekspansi') competitionFactor-=.05;
+  if(strategy==='price'){ inquiryBonus=1; ticketMultiplier=.86; competitionFactor+=.08; }
+  if(strategy==='quality'){ ticketMultiplier=1.06; effectiveCapacity=Math.max(1,capacity-1); competitionFactor+=.04; }
+  if(strategy==='retention'){ inquiryBonus=-1; competitionFactor+=.02; }
+  competitionFactor=Math.max(.68,Math.min(1.32,competitionFactor));
+  const baseOrganic=Math.max(1,Math.round(1+(demand-40)/18+(b.reputation||0)/28+(b.ownerFullTime?1:0)));
+  const organic=Math.max(1,Math.round(baseOrganic*competitionFactor)+inquiryBonus);
   const inquiries=Math.max(b.retainedClients||0,organic+(b.retainedClients||0));
-  const served=Math.max(0,Math.min(inquiries,capacity));
+  const served=Math.max(0,Math.min(inquiries,effectiveCapacity));
   const missed=Math.max(0,inquiries-served);
-  const gross=Math.round(meta.baseTicket*served*demandFactor*(1+skillFactor+repFactor)*(b.helperActive?helperReliability:1));
+  const gross=Math.round(meta.baseTicket*served*demandFactor*(1+skillFactor+repFactor)*(b.helperActive?helperReliability:1)*ticketMultiplier);
   const helperCost=b.helperActive?(b.helperWage||220000):0;
   const costs=Math.round(meta.fixedCost+served*26000+(b.equipmentLevel||0)*18000+(b.retainedClients||0)*8000+helperCost);
   const profit=gross-costs;
@@ -278,10 +363,12 @@ function simulateBusinessWeek(state){
     b.lossStreak=0;
     b.growthStreak=(b.growthStreak||0)+1;
     b.reputation=Math.min(100,b.reputation+(ownerPresence?2:1)+(missed===0?1:0));
+    b.marketReputation=Math.min(100,(b.marketReputation||0)+(served>=2?1:0)+(missed===0?1:0));
   }else{
     b.lossStreak=(b.lossStreak||0)+1;
     b.growthStreak=0;
     b.reputation=Math.max(0,b.reputation-2);
+    b.marketReputation=Math.max(0,(b.marketReputation||0)-1);
   }
 
   if(!ownerPresence && !delegatedCoverage){
@@ -296,12 +383,38 @@ function simulateBusinessWeek(state){
     if(issueCycle && b.helperTrust<62 && state.time.totalHours-(b.lastHelperIssueAt||-999)>=10*24){
       b.helperIssuePending=true;
       b.reputation=Math.max(0,b.reputation-2);
+    b.marketReputation=Math.max(0,(b.marketReputation||0)-1);
       addRecent(state,`Ari menangani masalah pelanggan tanpa menunggumu. Hasilnya belum sepenuhnya rapi.`);
     }
   }
 
   if(missed>=2){
     addRecent(state,`${b.name} menerima ${inquiries} permintaan, tapi hanya mampu menangani ${served}. Kapasitas mulai menjadi masalah.`);
+  }
+
+
+  const marketDelta=playerMarketScore-rivalStrength;
+  if(marketDelta>=9 && served>0){
+    b.marketWinStreak=(b.marketWinStreak||0)+1;
+    b.marketLossStreak=0;
+    if((state.world?.week||0)%2===0){
+      b.clientsWon=(b.clientsWon||0)+1;
+      b.marketReputation=Math.min(100,(b.marketReputation||0)+2);
+      addRecent(state,`${b.name} memenangkan satu pelanggan yang sebelumnya membandingkan beberapa penyedia.`);
+    }
+  }else if(marketDelta<=-10){
+    b.marketLossStreak=(b.marketLossStreak||0)+1;
+    b.marketWinStreak=0;
+    const vulnerable=(b.retainedClients||0)>0 && strategy!=='retention' && !ownerPresence && !delegatedCoverage;
+    if(vulnerable && ((state.world?.week||0)+(b.retainedClients||0))%2===0){
+      loseBusinessClient(state,1);
+      b.clientsLost=(b.clientsLost||0)+1;
+      b.marketReputation=Math.max(0,(b.marketReputation||0)-3);
+      addRecent(state,`Kompetitor menarik satu pelanggan tetap ${b.name} saat perhatianmu terbagi.`);
+    }
+  }else{
+    b.marketWinStreak=0;
+    b.marketLossStreak=0;
   }
 
   if(!state.flags.firstBusinessCycleSeen){

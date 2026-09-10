@@ -114,6 +114,12 @@ function resolveEffects(state,effects=[]){
       case 'business_helper_issue':
         handleHelperIssue(state,effect.backHelper!==false);
         break;
+      case 'business_market_strategy':
+        setBusinessMarketStrategy(state,effect.strategy);
+        break;
+      case 'business_market_reputation':
+        changeBusinessMarketReputation(state,effect.value||0);
+        break;
     }
   }
 }

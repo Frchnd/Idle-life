@@ -24,6 +24,8 @@ function mergeState(base,saved){
   out.world={...base.world,...(saved.world||{})};
   out.world.sectors={...base.world.sectors,...(saved.world?.sectors||{})};
   out.world.lastOpportunityWeek={...base.world.lastOpportunityWeek,...(saved.world?.lastOpportunityWeek||{})};
+  out.world.competitors={...base.world.competitors,...(saved.world?.competitors||{})};
+  for(const key of Object.keys(base.world.competitors||{})) out.world.competitors[key]={...base.world.competitors[key],...(saved.world?.competitors?.[key]||{})};
   out.world.workplaces={...base.world.workplaces,...(saved.world?.workplaces||{})};
   for(const key of Object.keys(base.world.workplaces)) out.world.workplaces[key]={...base.world.workplaces[key],...(saved.world?.workplaces?.[key]||{})};
   if(!Array.isArray(out.world.news)) out.world.news=[];
@@ -75,12 +77,15 @@ function mergeState(base,saved){
     out.playtest.opportunitiesTaken=Math.max(0,Math.floor((out.career.sideIncomeTotal||0)/200000));
   }
 
-  // Build M menambah ekonomi perusahaan; Build N memperdalam kapasitas dan pelanggan tetap; Build O menambah helper, delegasi, dan fokus penuh pemilik.
+  // Build M menambah ekonomi perusahaan; Build N memperdalam kapasitas dan pelanggan tetap; Build O menambah helper/delegasi; Build P menambah kompetisi pasar lokal.
   for(const [id,baseCompany] of Object.entries(base.world.workplaces)){
     out.world.workplaces[id]={...baseCompany,...(out.world.workplaces[id]||{})};
   }
   if(!saved.business) out.business={...base.business};
   ensureBusinessState(out);
+  if(saved.business?.marketReputation===undefined && out.business.active){
+    out.business.marketReputation=Math.max(8,out.business.reputation||0);
+  }
   if(saved.player?.job && (!Number.isFinite(out.player.salary) || out.player.salary<=0)){
     out.player.salary=JOBS[out.player.job]?.salary||0;
   }

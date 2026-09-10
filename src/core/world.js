@@ -19,6 +19,13 @@ function ensureWorldState(state){
   state.world.phase=state.world.phase||phaseFromEconomy(state.world.economy).id;
   state.world.news=Array.isArray(state.world.news)?state.world.news:[];
   state.world.lastOpportunityWeek=state.world.lastOpportunityWeek||{};
+  const competitorDefaults={
+    mechanics:{name:'Servis Prima',strength:52,reputation:50,action:'stabil',lastActionWeek:0},
+    retail:{name:'PromoKita Lokal',strength:50,reputation:48,action:'stabil',lastActionWeek:0},
+    technology:{name:'Klik Cepat Digital',strength:55,reputation:54,action:'stabil',lastActionWeek:0}
+  };
+  state.world.competitors=state.world.competitors||{};
+  for(const [sector,base] of Object.entries(competitorDefaults)) state.world.competitors[sector]={...base,...(state.world.competitors[sector]||{})};
   const workplaceDefaults={
     sinar_jaya:{health:58,staffing:52,pressure:52,status:'stabil',revenueIndex:56,margin:6,cashReserve:58,headcount:8,lastStaffActionWeek:-99},
     serba_ada:{health:56,staffing:54,pressure:48,status:'stabil',revenueIndex:52,margin:4,cashReserve:55,headcount:16,lastStaffActionWeek:-99},
@@ -156,6 +163,51 @@ function maybeWorldOpportunity(state,sector,demand){
     addOpportunity(state,{id:'market_tech',name:'Permintaan Setup Digital',summary:'4j · kerja Teknologi · bayaran mengikuti pasar · diperebutkan',expireAt:state.time.totalHours+72,...contestedMeta(state,'technology')});
     pushWorldNews(state,'Usaha kecil di sekitar kota sedang ramai melakukan setup digital.');
     state.world.lastOpportunityWeek[sector]=state.world.week;
+  }
+}
+
+
+function competitorActionLabel(action){
+  return {stabil:'Menjaga posisi',harga:'Harga agresif',kualitas:'Fokus kualitas',ekspansi:'Sedang ekspansi'}[action]||'Menjaga posisi';
+}
+
+function competitorSnapshot(state,sector){
+  ensureWorldState(state);
+  const c=state.world.competitors?.[sector];
+  if(!c) return null;
+  return {...c,actionLabel:competitorActionLabel(c.action)};
+}
+
+function simulateCompetitors(state){
+  const w=ensureWorldState(state);
+  for(const sector of ['mechanics','retail','technology']){
+    const c=w.competitors[sector];
+    const demand=w.sectors[sector]??50;
+    const roll=noise(w.week,sector.length+21);
+    const oldAction=c.action||'stabil';
+    let action='stabil';
+    if(roll<.24) action='harga';
+    else if(roll<.49) action='kualitas';
+    else if(roll<.70) action='ekspansi';
+    c.action=action;
+    c.lastActionWeek=w.week;
+    let npcBoost=0;
+    if(sector==='mechanics' && state.npc?.dika?.life==='kepala_mekanik') npcBoost=4;
+    if(sector==='retail' && state.npc?.maya?.life==='manajer_cabang') npcBoost=2;
+    if(sector==='technology' && state.npc?.nadia?.life==='lead_teknisi') npcBoost=4;
+    const actionBoost=action==='ekspansi'?5:action==='kualitas'?3:action==='harga'?2:0;
+    const target=Math.max(30,Math.min(86,43+demand*.24+w.economy*.10+npcBoost+actionBoost+(noise(w.week,sector.length+31)-.5)*8));
+    c.strength=Math.round(move(c.strength,target,6));
+    c.reputation=Math.round(move(c.reputation,Math.max(30,Math.min(88,c.strength+(action==='kualitas'?5:0)-(action==='harga'?2:0))),4));
+
+    const b=state.business;
+    if(b?.active && b.sector===sector && action!=='stabil' && w.week-(b.lastMarketEventWeek??-99)>=2 && !b.marketEventPending){
+      b.marketEventPending={action,competitor:c.name,week:w.week};
+      b.lastMarketEventWeek=w.week;
+    }
+    if(oldAction!==action && b?.active && b.sector===sector){
+      pushWorldNews(state,`${c.name} mengubah gerak pasar: ${competitorActionLabel(action).toLowerCase()}.`);
+    }
   }
 }
 
@@ -335,6 +387,7 @@ function simulateWeek(state){
   }
 
   simulateWorkplaces(state);
+  simulateCompetitors(state);
   maybeWorldOpportunity(state,'mechanics',w.sectors.mechanics);
   maybeWorldOpportunity(state,'retail',w.sectors.retail);
   maybeWorldOpportunity(state,'technology',w.sectors.technology);
@@ -371,6 +424,11 @@ function worldSnapshot(state){
       sinar_jaya:workplaceSnapshot(state,'sinar_jaya'),
       serba_ada:workplaceSnapshot(state,'serba_ada'),
       nusa_komputer:workplaceSnapshot(state,'nusa_komputer')
+    },
+    competitors:{
+      mechanics:competitorSnapshot(state,'mechanics'),
+      retail:competitorSnapshot(state,'retail'),
+      technology:competitorSnapshot(state,'technology')
     },
     news:[...w.news]
   };

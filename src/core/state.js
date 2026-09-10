@@ -1,4 +1,4 @@
-const SAVE_VERSION = 11;
+const SAVE_VERSION = 12;
 
 function createInitialState(){
   return {
@@ -14,7 +14,7 @@ function createInitialState(){
     },
     time:{totalHours:0},
     economy:{lastLivingCostAt:0,livingCost:600000,baseLivingCost:600000},
-    world:{lastSimulatedAt:0,week:0,economy:52,costIndex:100,jobMarket:50,sectors:{mechanics:54,retail:50,technology:56},phase:'stabil',news:[],lastOpportunityWeek:{},workplaces:{sinar_jaya:{health:58,staffing:52,pressure:52,status:'stabil',revenueIndex:56,margin:6,cashReserve:58,headcount:8,lastStaffActionWeek:-99},serba_ada:{health:56,staffing:54,pressure:48,status:'stabil',revenueIndex:52,margin:4,cashReserve:55,headcount:16,lastStaffActionWeek:-99},nusa_komputer:{health:60,staffing:50,pressure:56,status:'stabil',revenueIndex:60,margin:8,cashReserve:62,headcount:7,lastStaffActionWeek:-99}}},
+    world:{lastSimulatedAt:0,week:0,economy:52,costIndex:100,jobMarket:50,sectors:{mechanics:54,retail:50,technology:56},phase:'stabil',news:[],lastOpportunityWeek:{},workplaces:{sinar_jaya:{health:58,staffing:52,pressure:52,status:'stabil',revenueIndex:56,margin:6,cashReserve:58,headcount:8,lastStaffActionWeek:-99},serba_ada:{health:56,staffing:54,pressure:48,status:'stabil',revenueIndex:52,margin:4,cashReserve:55,headcount:16,lastStaffActionWeek:-99},nusa_komputer:{health:60,staffing:50,pressure:56,status:'stabil',revenueIndex:60,margin:8,cashReserve:62,headcount:7,lastStaffActionWeek:-99}},competitors:{mechanics:{name:'Servis Prima',strength:52,reputation:50,action:'stabil',lastActionWeek:0},retail:{name:'PromoKita Lokal',strength:50,reputation:48,action:'stabil',lastActionWeek:0},technology:{name:'Klik Cepat Digital',strength:55,reputation:54,action:'stabil',lastActionWeek:0}}},
     housing:{id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null},
     life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null},
     pacing:{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8},
@@ -31,7 +31,7 @@ function createInitialState(){
       ari:{known:false,life:'belum_terlibat',progress:0}
     },
     assets:{laptop:false},
-    business:{active:false,sector:null,name:null,level:0,reputation:0,clients:0,lastManagedAt:0,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:null,equipmentLevel:0,retainedClients:0,capacity:2,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999,scale:'solo',helperActive:false,helperName:'Ari',helperTrust:40,helperSkill:35,helperWage:220000,helperWeeks:0,delegated:false,ownerFullTime:false,lastScaleDecisionAt:-999,lastDelegationDecisionAt:-999,lastOwnerChoiceAt:-999,lastHelperIssueAt:-999,helperIssuePending:false},
+    business:{active:false,sector:null,name:null,level:0,reputation:0,marketReputation:0,clients:0,lastManagedAt:0,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:null,equipmentLevel:0,retainedClients:0,capacity:2,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999,scale:'solo',helperActive:false,helperName:'Ari',helperTrust:40,helperSkill:35,helperWage:220000,helperWeeks:0,delegated:false,ownerFullTime:false,lastScaleDecisionAt:-999,lastDelegationDecisionAt:-999,lastOwnerChoiceAt:-999,lastHelperIssueAt:-999,helperIssuePending:false,competitorPressure:50,marketStrategy:'balanced',strategyUntilWeek:0,lastMarketEventWeek:-99,marketEventPending:null,clientsWon:0,clientsLost:0,marketWinStreak:0,marketLossStreak:0},
     career:{
       workCount:0,
       jobSearchCount:0,
@@ -105,7 +105,8 @@ function createInitialState(){
       businessScaleSeen:false,
       businessDelegationSeen:false,
       businessOwnerChoiceSeen:false,
-      businessHelperIssueSeen:false
+      businessHelperIssueSeen:false,
+      businessMarketSeen:false
     },
     opportunities:[],
     scheduled:[],

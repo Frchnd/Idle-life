@@ -36,7 +36,7 @@ function getOutcomeProfile(state){
     return {
       id:'owner',title:'Pemilik Usaha',
       summary:'Kamu sudah melewati titik ketika usaha hanya menjadi tambahan. Penghasilan, reputasi, dan risiko hidupmu sekarang bergantung langsung pada sistem yang kamu bangun dan orang yang kamu percaya.',
-      traits:[state.business.helperActive?`Tim kecil bersama ${state.business.helperName||'helper'}`:'Masih menjalankan usaha sendiri',`Profit usaha terakhir Rp${Math.round(state.business.lastWeeklyProfit||0).toLocaleString('id-ID')}`,state.business.delegated?'Sebagian pekerjaan sudah bisa berjalan tanpa kehadiranmu':'Kualitas masih sangat bergantung pada kehadiranmu']
+      traits:[state.business.helperActive?`Tim kecil bersama ${state.business.helperName||'helper'}`:'Masih menjalankan usaha sendiri',`Profit usaha terakhir Rp${Math.round(state.business.lastWeeklyProfit||0).toLocaleString('id-ID')}`,state.business.delegated?'Sebagian pekerjaan sudah bisa berjalan tanpa kehadiranmu':'Kualitas masih sangat bergantung pada kehadiranmu',`Posisi pasar: ${businessMarketPosition(state).label}`]
     };
   }
 
