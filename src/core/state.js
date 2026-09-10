@@ -1,10 +1,10 @@
-const SAVE_VERSION = 18;
+const SAVE_VERSION = 19;
 
 function createInitialState(){
   return {
     version:SAVE_VERSION,
     player:{
-      name:'Fernando',
+      name:'Raka',
       money:500000,
       fatigue:10,
       job:null,

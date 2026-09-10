@@ -1,3 +1,12 @@
+
+function installZoomLock(){
+  if(typeof document==='undefined'||typeof document.addEventListener!=='function') return;
+  document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+  document.addEventListener('touchmove',e=>{if(e.touches&&e.touches.length>1)e.preventDefault();},{passive:false});
+  document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
+  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['+','-','=','0'].includes(e.key))e.preventDefault();});
+}
+installZoomLock();
 const root=document.getElementById('app');
 const contentValidation=validateContentFramework();
 if(typeof window!=='undefined'){
@@ -175,7 +184,7 @@ function runActivity(id){
 
 function requestStartNewLife(){
   if(ui.hasSave){
-    ui.confirm={type:'new-life',title:'Mulai hidup baru?',text:'Hidup Fernando yang sekarang akan diganti setelah prolog selesai. Pengaturan tampilan tetap tersimpan.'};
+    ui.confirm={type:'new-life',title:'Mulai hidup baru?',text:`Hidup ${state.player.name||'Raka'} yang sekarang akan diganti setelah prolog selesai. Pengaturan tampilan tetap tersimpan.`};
     draw();
     return;
   }

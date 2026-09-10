@@ -41,6 +41,6 @@ function applyPrefs(prefs){
   root.dataset.motion=safe.motion?'on':'off';
   root.style.colorScheme=theme;
   const themeMeta=document.querySelector('meta[name="theme-color"]');
-  if(themeMeta) themeMeta.setAttribute('content',theme==='dark'?'#10100f':'#f4f3ef');
+  if(themeMeta) themeMeta.setAttribute('content',theme==='dark'?'#171b33':'#78cfff');
   return safe;
 }

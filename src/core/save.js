@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save Build F–U tetap ikut naik ke Build V.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build W.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -30,6 +30,8 @@ function mergeState(base,saved){
   Object.assign(out,saved);
   out.version=SAVE_VERSION;
   out.player={...base.player,...(saved.player||{})};
+  // Build W mengganti nama prototipe lama dengan karakter fiksi tetap.
+  if(!out.player.name || out.player.name==='Fernando') out.player.name='Raka';
   out.time={...base.time,...(saved.time||{})};
   out.economy={...base.economy,...(saved.economy||{})};
   out.world={...base.world,...(saved.world||{})};

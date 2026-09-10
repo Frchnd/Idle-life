@@ -36,8 +36,8 @@ function dueScheduledEvent(state){
   }
 
   if(item.kind==='store_customer_returns'){
-    return event('store_customer_returns','KONSEKUENSI','Pelanggan Itu Kembali','Pelanggan yang dulu kamu tangani kembali ke toko dan langsung mencarimu. Maya memperhatikan itu.',[
-      {label:'Layani sendiri',effects:[{type:'skill',skill:'social',value:15},{type:'relationship',target:'maya',value:4},{type:'store_progress',value:2},{type:'recent',text:'Seorang pelanggan mulai mengenalmu secara pribadi.'}],result:'Kamu menyelesaikan urusannya dengan lebih lancar. Maya mulai melihatmu sebagai orang yang bisa diandalkan.'},
+    return event('store_customer_returns','KONSEKUENSI','Pelanggan Itu Kembali','Pelanggan yang dulu kamu tangani kembali ke toko dan langsung mencarimu. Mira memperhatikan itu.',[
+      {label:'Layani sendiri',effects:[{type:'skill',skill:'social',value:15},{type:'relationship',target:'maya',value:4},{type:'store_progress',value:2},{type:'recent',text:'Seorang pelanggan mulai mengenalmu secara pribadi.'}],result:'Kamu menyelesaikan urusannya dengan lebih lancar. Mira mulai melihatmu sebagai orang yang bisa diandalkan.'},
       {label:'Serahkan ke rekan lain',effects:[{type:'skill',skill:'learning',value:4}],result:'Kamu memilih tidak mengambil semua perhatian. Pelanggan tetap terlayani.'}
     ]);
   }
@@ -58,8 +58,8 @@ function dueScheduledEvent(state){
 
   if(item.kind==='mechanic_complaint'){
     return event('mechanic_complaint','KONSEKUENSI','Mobil Itu Kembali','Perbaikan sulit yang kamu kerjakan ternyata belum sepenuhnya menyelesaikan masalah. Pelanggan kembali ke bengkel.',[
-      {label:'Perbaiki lagi tanpa biaya',hint:'2j · lebih melelahkan',effects:[{type:'hours',value:2},{type:'fatigue',value:5},{type:'skill',skill:'mechanics',value:12},{type:'relationship',target:'pak_arman',value:3},{type:'promotion',value:1},{type:'recent',text:'Kamu memperbaiki ulang pekerjaanmu tanpa melempar tanggung jawab.'}],result:'Kesalahan itu memakan waktu, tapi cara kamu menanganinya justru menambah kepercayaan Pak Arman.'},
-      {label:'Minta Pak Arman mengambil alih',effects:[{type:'relationship',target:'pak_arman',value:-2}],result:'Masalah selesai, tetapi Pak Arman tahu kamu belum siap menangani semuanya sendiri.'}
+      {label:'Perbaiki lagi tanpa biaya',hint:'2j · lebih melelahkan',effects:[{type:'hours',value:2},{type:'fatigue',value:5},{type:'skill',skill:'mechanics',value:12},{type:'relationship',target:'pak_arman',value:3},{type:'promotion',value:1},{type:'recent',text:'Kamu memperbaiki ulang pekerjaanmu tanpa melempar tanggung jawab.'}],result:'Kesalahan itu memakan waktu, tapi cara kamu menanganinya justru menambah kepercayaan Pak Surya.'},
+      {label:'Minta Pak Surya mengambil alih',effects:[{type:'relationship',target:'pak_arman',value:-2}],result:'Masalah selesai, tetapi Pak Surya tahu kamu belum siap menangani semuanya sendiri.'}
     ]);
   }
 
@@ -305,7 +305,7 @@ function getNextEvent(state){
   }
 
   if(getSkillTier(state.skills.social).id!=='novice' && !state.flags.firstPromoSideSeen){
-    return event('promo_side_intro','PELUANG SAMPINGAN','Maya Menyebut Shift Promosi Lepas','Ada event promosi akhir pekan yang mencari orang untuk menghadapi pengunjung. Ini bukan pekerjaan tetap dan bisa diambil meski karier utamamu ada di bidang lain.',[
+    return event('promo_side_intro','PELUANG SAMPINGAN','Mira Menyebut Shift Promosi Lepas','Ada event promosi akhir pekan yang mencari orang untuk menghadapi pengunjung. Ini bukan pekerjaan tetap dan bisa diambil meski karier utamamu ada di bidang lain.',[
       {label:'Minta kontaknya',effects:[{type:'flag',key:'firstPromoSideSeen',value:true},{type:'opportunity',opportunity:{id:'promo_side_job',name:'Shift Promosi',summary:'4j · Rp180rb · kerja sampingan Sosial',expireAt:state.time.totalHours+72}}],result:'Kerja sampingan Sosial sekarang tersedia.'},
       {label:'Tidak tertarik',effects:[{type:'flag',key:'firstPromoSideSeen',value:true}],result:'Kamu memilih tidak memenuhi semua peluang dengan kerja tambahan.'}
     ]);
@@ -335,23 +335,23 @@ function getNextEvent(state){
 
   if(state.player.job==='mechanic_junior' && workCount(state,'mechanic_junior')>=5 && !state.flags.difficultRepairSeen){
     const canHandle=(state.skills.mechanics||0)>=70 && getCondition(state.player.fatigue).id!=='exhausted';
-    return event('difficult_repair','PEKERJAAN','Perbaikan Sulit','Pak Arman memberimu pekerjaan yang sedikit di atas kemampuanmu sekarang. Ini kesempatan belajar, tapi kesalahan akan terlihat.',[
-      {label:'Coba tangani sendiri',hint:canHandle?'Risiko masih masuk akal.':'Risikonya tinggi dengan kondisi/skill sekarang.',effects:canHandle?[{type:'skill',skill:'mechanics',value:25},{type:'relationship',target:'pak_arman',value:5},{type:'promotion',value:4},{type:'flag',key:'difficultRepairSeen',value:true},{type:'recent',text:'Kamu menangani perbaikan sulit sendiri.'}]:[{type:'skill',skill:'mechanics',value:16},{type:'relationship',target:'pak_arman',value:-1},{type:'schedule',after:24,kind:'mechanic_complaint'},{type:'flag',key:'difficultRepairSeen',value:true},{type:'recent',text:'Kamu mengambil perbaikan sulit meski belum benar-benar siap.'}],result:canHandle?'Kamu menyelesaikannya sendiri. Pak Arman mulai melihatmu berbeda.':'Kamu menyelesaikannya, tapi belum yakin hasilnya benar-benar beres.'},
-      {label:'Minta arahan Pak Arman',effects:[{type:'skill',skill:'mechanics',value:12},{type:'relationship',target:'pak_arman',value:4},{type:'promotion',value:2},{type:'flag',key:'difficultRepairSeen',value:true}],result:'Kamu mengurangi risiko dan belajar langsung dari pengalaman Pak Arman.'},
+    return event('difficult_repair','PEKERJAAN','Perbaikan Sulit','Pak Surya memberimu pekerjaan yang sedikit di atas kemampuanmu sekarang. Ini kesempatan belajar, tapi kesalahan akan terlihat.',[
+      {label:'Coba tangani sendiri',hint:canHandle?'Risiko masih masuk akal.':'Risikonya tinggi dengan kondisi/skill sekarang.',effects:canHandle?[{type:'skill',skill:'mechanics',value:25},{type:'relationship',target:'pak_arman',value:5},{type:'promotion',value:4},{type:'flag',key:'difficultRepairSeen',value:true},{type:'recent',text:'Kamu menangani perbaikan sulit sendiri.'}]:[{type:'skill',skill:'mechanics',value:16},{type:'relationship',target:'pak_arman',value:-1},{type:'schedule',after:24,kind:'mechanic_complaint'},{type:'flag',key:'difficultRepairSeen',value:true},{type:'recent',text:'Kamu mengambil perbaikan sulit meski belum benar-benar siap.'}],result:canHandle?'Kamu menyelesaikannya sendiri. Pak Surya mulai melihatmu berbeda.':'Kamu menyelesaikannya, tapi belum yakin hasilnya benar-benar beres.'},
+      {label:'Minta arahan Pak Surya',effects:[{type:'skill',skill:'mechanics',value:12},{type:'relationship',target:'pak_arman',value:4},{type:'promotion',value:2},{type:'flag',key:'difficultRepairSeen',value:true}],result:'Kamu mengurangi risiko dan belajar langsung dari pengalaman Pak Surya.'},
       {label:'Minta bantuan Dika',effects:[{type:'skill',skill:'mechanics',value:14},{type:'relationship',target:'dika',value:state.flags.helpedDika?4:0},{type:'flag',key:'difficultRepairSeen',value:true}],result:state.flags.helpedDika?'Dika membalas bantuanmu tanpa banyak komentar.':'Dika membantu, tapi hubungan kalian belum cukup dekat untuk terasa seperti kerja sama.'}
     ]);
   }
 
   if(state.player.job==='store_clerk' && workCount(state,'store_clerk')>=3 && !state.flags.storeCustomerSeen){
-    return event('store_customer','PEKERJAAN','Pelanggan yang Sulit','Seorang pelanggan marah karena harga di rak berbeda dengan harga di kasir. Maya sedang sibuk di belakang.',[
-      {label:'Tangani sendiri',hint:'Kemampuan Sosial membantu.',effects:[{type:'skill',skill:'social',value:18},{type:'relationship',target:'maya',value:3},{type:'store_progress',value:2},{type:'flag',key:'storeCustomerSeen',value:true},{type:'schedule',after:48,kind:'store_customer_returns'},{type:'recent',text:'Kamu menyelesaikan masalah pelanggan tanpa memanggil Maya.'}],result:'Percakapannya tidak nyaman, tapi kamu berhasil menenangkan situasi.'},
-      {label:'Panggil Maya',effects:[{type:'skill',skill:'learning',value:6},{type:'relationship',target:'maya',value:1},{type:'store_progress',value:1},{type:'flag',key:'storeCustomerSeen',value:true}],result:'Maya mengambil alih dan kamu memperhatikan bagaimana dia menyelesaikannya.'}
+    return event('store_customer','PEKERJAAN','Pelanggan yang Sulit','Seorang pelanggan marah karena harga di rak berbeda dengan harga di kasir. Mira sedang sibuk di belakang.',[
+      {label:'Tangani sendiri',hint:'Kemampuan Sosial membantu.',effects:[{type:'skill',skill:'social',value:18},{type:'relationship',target:'maya',value:3},{type:'store_progress',value:2},{type:'flag',key:'storeCustomerSeen',value:true},{type:'schedule',after:48,kind:'store_customer_returns'},{type:'recent',text:'Kamu menyelesaikan masalah pelanggan tanpa memanggil Mira.'}],result:'Percakapannya tidak nyaman, tapi kamu berhasil menenangkan situasi.'},
+      {label:'Panggil Mira',effects:[{type:'skill',skill:'learning',value:6},{type:'relationship',target:'maya',value:1},{type:'store_progress',value:1},{type:'flag',key:'storeCustomerSeen',value:true}],result:'Mira mengambil alih dan kamu memperhatikan bagaimana dia menyelesaikannya.'}
     ]);
   }
 
   if(state.player.job==='store_clerk' && workCount(state,'store_clerk')>=6 && !state.flags.storeRushSeen){
-    return event('store_rush','PEKERJAAN','Toko Mendadak Penuh','Dua rekan kerja tidak masuk dan antrean mulai panjang. Maya harus memilih siapa yang memegang lantai toko.',[
-      {label:'Ambil kendali di depan',hint:'Lebih melelahkan · progres karier tinggi',effects:[{type:'hours',value:2},{type:'fatigue',value:8},{type:'skill',skill:'social',value:20},{type:'relationship',target:'maya',value:5},{type:'store_progress',value:4},{type:'flag',key:'storeRushSeen',value:true}],result:'Kamu menjaga situasi tetap terkendali. Maya melihatmu bukan lagi sekadar pegawai baru.'},
+    return event('store_rush','PEKERJAAN','Toko Mendadak Penuh','Dua rekan kerja tidak masuk dan antrean mulai panjang. Mira harus memilih siapa yang memegang lantai toko.',[
+      {label:'Ambil kendali di depan',hint:'Lebih melelahkan · progres karier tinggi',effects:[{type:'hours',value:2},{type:'fatigue',value:8},{type:'skill',skill:'social',value:20},{type:'relationship',target:'maya',value:5},{type:'store_progress',value:4},{type:'flag',key:'storeRushSeen',value:true}],result:'Kamu menjaga situasi tetap terkendali. Mira melihatmu bukan lagi sekadar pegawai baru.'},
       {label:'Tetap di tugas biasa',effects:[{type:'skill',skill:'social',value:8},{type:'store_progress',value:1},{type:'flag',key:'storeRushSeen',value:true}],result:'Kamu membantu sebisanya tanpa mengambil tanggung jawab ekstra.'}
     ]);
   }
@@ -364,9 +364,9 @@ function getNextEvent(state){
   }
 
   if(state.player.job==='mechanic_junior' && state.skills.social>=100 && !state.flags.crossMechanicSocialSeen){
-    return event('mechanic_social_cross','KOMBINASI SKILL','Pelanggan Tidak Percaya','Seorang pelanggan tidak yakin dengan penjelasan biaya perbaikan. Pak Arman sedang menangani mobil lain.',[
-      {label:'Jelaskan masalahnya sendiri',hint:'Sosial Dasar membuka pilihan ini.',effects:[{type:'skill',skill:'social',value:12},{type:'relationship',target:'pak_arman',value:4},{type:'promotion',value:3},{type:'flag',key:'crossMechanicSocialSeen',value:true},{type:'recent',text:'Kamu menangani pelanggan sulit tanpa bantuan Pak Arman.'}],result:'Kemampuan sosialmu membuat skill mekanikmu lebih berguna. Pelanggan akhirnya memahami keputusan perbaikan.'},
-      {label:'Tunggu Pak Arman',effects:[{type:'flag',key:'crossMechanicSocialSeen',value:true}],result:'Kamu menunggu Pak Arman. Masalah selesai, tapi kamu tidak mengambil peran lebih jauh.'}
+    return event('mechanic_social_cross','KOMBINASI SKILL','Pelanggan Tidak Percaya','Seorang pelanggan tidak yakin dengan penjelasan biaya perbaikan. Pak Surya sedang menangani mobil lain.',[
+      {label:'Jelaskan masalahnya sendiri',hint:'Sosial Dasar membuka pilihan ini.',effects:[{type:'skill',skill:'social',value:12},{type:'relationship',target:'pak_arman',value:4},{type:'promotion',value:3},{type:'flag',key:'crossMechanicSocialSeen',value:true},{type:'recent',text:'Kamu menangani pelanggan sulit tanpa bantuan Pak Surya.'}],result:'Kemampuan sosialmu membuat skill mekanikmu lebih berguna. Pelanggan akhirnya memahami keputusan perbaikan.'},
+      {label:'Tunggu Pak Surya',effects:[{type:'flag',key:'crossMechanicSocialSeen',value:true}],result:'Kamu menunggu Pak Surya. Masalah selesai, tapi kamu tidak mengambil peran lebih jauh.'}
     ]);
   }
 
@@ -400,14 +400,14 @@ function getNextEvent(state){
 
   if(state.player.job==='mechanic_junior' && state.career.promotionProgress>=12 && getSkillTier(state.skills.mechanics).id!=='novice' && !companyCanPromote(state,'sinar_jaya') && !state.flags.mechanicPromotionFrozenSeen){
     const company=workplaceSnapshot(state,'sinar_jaya');
-    return event('mechanic_promotion_frozen','KONDISI TEMPAT KERJA','Promosi Belum Bisa Dibuka',`Pak Arman sebenarnya mulai percaya padamu, tapi ${company?.name||'bengkel'} sedang dalam kondisi ${company?.label?.toLowerCase()||'rentan'}. Pemasukan dan ruang untuk menaikkan posisi sedang sempit.`,[
+    return event('mechanic_promotion_frozen','KONDISI TEMPAT KERJA','Promosi Belum Bisa Dibuka',`Pak Surya sebenarnya mulai percaya padamu, tapi ${company?.name||'bengkel'} sedang dalam kondisi ${company?.label?.toLowerCase()||'rentan'}. Pemasukan dan ruang untuk menaikkan posisi sedang sempit.`,[
       {label:'Tetap bangun reputasi',hint:'Promosi bisa muncul saat kondisi bengkel pulih.',effects:[{type:'flag',key:'mechanicPromotionFrozenSeen',value:true},{type:'relationship',target:'pak_arman',value:2}],result:'Skillmu tidak hilang. Hambatannya sekarang datang dari kondisi tempat kerja, bukan kemampuanmu.'},
       {label:'Mulai lihat peluang lain',effects:[{type:'flag',key:'mechanicPromotionFrozenSeen',value:true},{type:'recent',text:'Kamu mulai memperhatikan lowongan di tempat yang kondisi usahanya lebih sehat.'}],result:'Kamu mulai lebih terbuka pada kemungkinan bahwa tempat kerja yang sehat juga bagian dari strategi karier.'}
     ]);
   }
 
   if(state.player.job==='mechanic_junior' && state.career.promotionProgress>=12 && getSkillTier(state.skills.mechanics).id!=='novice' && companyCanPromote(state,'sinar_jaya') && !state.flags.promotionTalkSeen){
-    return event('promotion_talk','PELUANG KARIER','Pak Arman Ingin Bicara','Pak Arman merasa kamu mulai bisa diberi tanggung jawab lebih besar.',[
+    return event('promotion_talk','PELUANG KARIER','Pak Surya Ingin Bicara','Pak Surya merasa kamu mulai bisa diberi tanggung jawab lebih besar.',[
       {label:'Pertimbangkan promosi',effects:[{type:'flag',key:'promotionTalkSeen',value:true},{type:'opportunity',opportunity:{id:'promotion',name:'Promosi Mekanik Senior',summary:'Gaji Rp170rb/hari · tanggung jawab lebih besar'}}],result:'Promosi sekarang tersedia sebagai pilihan.'},
       {label:'Belum sekarang',effects:[{type:'flag',key:'promotionTalkSeen',value:true}],result:'Kamu memilih tidak terburu-buru.'}
     ]);
@@ -415,14 +415,14 @@ function getNextEvent(state){
 
   if(state.player.job==='store_clerk' && state.career.storeProgress>=10 && getSkillTier(state.skills.social).id!=='novice' && state.relationships.maya>=10 && !companyCanPromote(state,'serba_ada') && !state.flags.storePromotionFrozenSeen){
     const company=workplaceSnapshot(state,'serba_ada');
-    return event('store_promotion_frozen','KONDISI TEMPAT KERJA','Tanggung Jawab Naik, Jabatan Belum',`Maya mulai mengandalkanmu, tapi ${company?.name||'toko'} sedang dalam kondisi ${company?.label?.toLowerCase()||'rentan'}. Cabang belum punya ruang untuk membuka posisi supervisor baru.`,[
+    return event('store_promotion_frozen','KONDISI TEMPAT KERJA','Tanggung Jawab Naik, Jabatan Belum',`Mira mulai mengandalkanmu, tapi ${company?.name||'toko'} sedang dalam kondisi ${company?.label?.toLowerCase()||'rentan'}. Cabang belum punya ruang untuk membuka posisi supervisor baru.`,[
       {label:'Tetap tunjukkan kemampuan',effects:[{type:'flag',key:'storePromotionFrozenSeen',value:true},{type:'relationship',target:'maya',value:2}],result:'Kamu tetap membangun posisi. Saat bisnis pulih, progres itu masih ada.'},
       {label:'Cari tempat yang sedang tumbuh',effects:[{type:'flag',key:'storePromotionFrozenSeen',value:true},{type:'recent',text:'Kamu mulai membandingkan cabang dan perusahaan yang sedang tumbuh.'}],result:'Kamu mulai melihat kondisi perusahaan sebagai bagian dari keputusan karier.'}
     ]);
   }
 
   if(state.player.job==='store_clerk' && state.career.storeProgress>=10 && getSkillTier(state.skills.social).id!=='novice' && state.relationships.maya>=10 && companyCanPromote(state,'serba_ada') && !state.flags.storePromotionTalkSeen){
-    return event('store_promotion_talk','PELUANG KARIER','Maya Menawarkan Tanggung Jawab Baru','Maya ingin kamu mulai memegang shift ketika dia tidak ada. Gajinya lebih tinggi, tapi masalah orang lain juga akan ikut menjadi masalahmu.',[
+    return event('store_promotion_talk','PELUANG KARIER','Mira Menawarkan Tanggung Jawab Baru','Mira ingin kamu mulai memegang shift ketika dia tidak ada. Gajinya lebih tinggi, tapi masalah orang lain juga akan ikut menjadi masalahmu.',[
       {label:'Pertimbangkan posisi supervisor',effects:[{type:'flag',key:'storePromotionTalkSeen',value:true},{type:'opportunity',opportunity:{id:'store_promotion',name:'Supervisor Toko',summary:'Gaji Rp145rb/hari · tanggung jawab tim'}}],result:'Posisi Supervisor Toko sekarang tersedia.'},
       {label:'Tetap sebagai pramuniaga',effects:[{type:'flag',key:'storePromotionTalkSeen',value:true}],result:'Kamu belum ingin membawa pekerjaan lebih jauh.'}
     ]);

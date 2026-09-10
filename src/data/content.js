@@ -70,20 +70,20 @@ defineFromTemplate('events','career_lead',{
 
 defineFromTemplate('events','first_day',{
   id:'first_workshop',name:'Hari Pertama di Bengkel',
-  title:'Hari Pertama di Bengkel',text:'Pak Arman memasangkanmu dengan Dika. Bengkel lebih sibuk dari yang terlihat dari luar.',
+  title:'Hari Pertama di Bengkel',text:'Pak Surya memasangkanmu dengan Dika. Bengkel lebih sibuk dari yang terlihat dari luar.',
   requirements:[{preset:'job_is',params:{job:'mechanic_junior'}},{preset:'job_work_min',params:{job:'mechanic_junior',count:1}},{preset:'flag_false',params:{flag:'firstWorkshopDay'}}],
   choices:[
-    {label:'Dengarkan baik-baik',effects:[{type:'skill',skill:'mechanics',value:10},{type:'skill',skill:'learning',value:6},{type:'relationship',target:'pak_arman',value:4},{type:'flag',key:'firstWorkshopDay',value:true},{type:'recent',text:'Pak Arman melihat kamu serius belajar.'}],result:'Kamu fokus memahami ritme bengkel.'},
+    {label:'Dengarkan baik-baik',effects:[{type:'skill',skill:'mechanics',value:10},{type:'skill',skill:'learning',value:6},{type:'relationship',target:'pak_arman',value:4},{type:'flag',key:'firstWorkshopDay',value:true},{type:'recent',text:'Pak Surya melihat kamu serius belajar.'}],result:'Kamu fokus memahami ritme bengkel.'},
     {label:'Coba menonjol sejak awal',effects:[{type:'skill',skill:'mechanics',value:16},{type:'relationship',target:'dika',value:-2},{type:'flag',key:'firstWorkshopDay',value:true},{type:'recent',text:'Dika mulai menganggapmu sebagai pesaing.'}],result:'Kamu belajar cepat, tapi persaingan dengan Dika mulai terasa.'}
   ]
 });
 
 defineFromTemplate('events','first_day',{
   id:'first_store',name:'Hari Pertama di Toko',
-  title:'Hari Pertama di Toko',text:'Maya langsung menaruhmu di depan pelanggan. Pekerjaan ini lebih banyak soal membaca orang daripada mengangkat barang.',
+  title:'Hari Pertama di Toko',text:'Mira langsung menaruhmu di depan pelanggan. Pekerjaan ini lebih banyak soal membaca orang daripada mengangkat barang.',
   requirements:[{preset:'job_is',params:{job:'store_clerk'}},{preset:'job_work_min',params:{job:'store_clerk',count:1}},{preset:'flag_false',params:{flag:'firstStoreDay'}}],
   choices:[
-    {label:'Amati cara Maya melayani',effects:[{type:'skill',skill:'social',value:12},{type:'skill',skill:'learning',value:5},{type:'relationship',target:'maya',value:4},{type:'store_progress',value:1},{type:'flag',key:'firstStoreDay',value:true},{type:'recent',text:'Maya melihat kamu cepat menangkap cara menghadapi pelanggan.'}],result:'Kamu belajar dari cara Maya berbicara dan menyelesaikan masalah.'},
+    {label:'Amati cara Mira melayani',effects:[{type:'skill',skill:'social',value:12},{type:'skill',skill:'learning',value:5},{type:'relationship',target:'maya',value:4},{type:'store_progress',value:1},{type:'flag',key:'firstStoreDay',value:true},{type:'recent',text:'Mira melihat kamu cepat menangkap cara menghadapi pelanggan.'}],result:'Kamu belajar dari cara Mira berbicara dan menyelesaikan masalah.'},
     {label:'Langsung coba sendiri',effects:[{type:'skill',skill:'social',value:18},{type:'relationship',target:'maya',value:1},{type:'store_progress',value:1},{type:'flag',key:'firstStoreDay',value:true}],result:'Kamu memilih belajar lewat pengalaman langsung.'}
   ]
 });

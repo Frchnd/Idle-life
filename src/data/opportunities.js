@@ -35,7 +35,7 @@ function runOpportunity(state,id){
     state.relationships.pak_arman=Math.max(5,state.relationships.pak_arman);
     addHistory(state,previous?'Umur 18 · Beralih menjadi Mekanik Junior di Bengkel Sinar Jaya.':'Umur 18 · Mulai bekerja sebagai Mekanik Junior di Bengkel Sinar Jaya.');
     addRecent(state,'Kamu diterima bekerja di Bengkel Sinar Jaya.');
-    return `Pak Arman menerimamu sebagai ${job.name}.`;
+    return `Pak Surya menerimamu sebagai ${job.name}.`;
   }
 
   if(id==='store_job'){
@@ -44,7 +44,7 @@ function runOpportunity(state,id){
     state.relationships.maya=Math.max(5,state.relationships.maya);
     addHistory(state,previous?'Umur 18 · Beralih menjadi Pramuniaga di Toko Serba Ada.':'Umur 18 · Mulai bekerja sebagai Pramuniaga di Toko Serba Ada.');
     addRecent(state,'Kamu diterima bekerja di Toko Serba Ada.');
-    return `Maya menerimamu sebagai ${job.name}.`;
+    return `Mira menerimamu sebagai ${job.name}.`;
   }
 
   if(id==='tech_course'){
@@ -118,7 +118,7 @@ function runOpportunity(state,id){
     state.flags.promoted=true;
     state.relationships.pak_arman+=6;
     addHistory(state,'Umur 18 · Dipromosikan menjadi Mekanik Senior.');
-    addRecent(state,'Pak Arman mempromosikanmu menjadi Mekanik Senior.');
+    addRecent(state,'Pak Surya mempromosikanmu menjadi Mekanik Senior.');
     return `Kamu sekarang ${job.name}. Tanggung jawab dan gajimu meningkat.`;
   }
 
@@ -128,7 +128,7 @@ function runOpportunity(state,id){
     state.flags.storePromoted=true;
     state.relationships.maya+=6;
     addHistory(state,'Umur 18 · Dipromosikan menjadi Supervisor Toko.');
-    addRecent(state,'Maya mempercayakan satu shift toko kepadamu.');
+    addRecent(state,'Mira mempercayakan satu shift toko kepadamu.');
     return `Kamu sekarang ${job.name}. Mengelola orang mulai menjadi bagian dari pekerjaanmu.`;
   }
 

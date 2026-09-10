@@ -346,7 +346,7 @@ function simulateNpcLives(state){
     if(state.npc.maya.life==='supervisor' && maya>=9.5 && w.sectors.retail>=54){
       state.npc.maya.life='manajer_cabang';
       state.flags.mayaProgressSeen=true;
-      addRecent(state,'Maya dipindahkan untuk membantu mengelola cabang yang lebih sibuk.');
+      addRecent(state,'Mira dipindahkan untuk membantu mengelola cabang yang lebih sibuk.');
     }
   }
 
