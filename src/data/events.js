@@ -287,9 +287,9 @@ function getNextEvent(state){
 
   if(state.career.changeSearchCount>state.career.changeHandledCount){
     const choices=[];
-    const isMechanic=state.player.job==='mechanic_junior'||state.player.job==='mechanic_senior';
-    const isStore=state.player.job==='store_clerk'||state.player.job==='store_supervisor';
-    const isTech=state.player.job==='it_assistant';
+    const isMechanic=['mechanic_junior','mechanic_senior','mechanic_diagnostic'].includes(state.player.job);
+    const isStore=['store_clerk','store_supervisor','operations_coordinator'].includes(state.player.job);
+    const isTech=['it_assistant','network_technician'].includes(state.player.job);
     if(!isMechanic && getSkillTier(state.skills.mechanics).id!=='novice') choices.push({label:'Lihat jalur bengkel',hint:'Skill Mekanikmu sudah cukup untuk kembali masuk.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_mechanic',name:'Beralih ke Jalur Bengkel',summary:'Pakai skill Mekanik yang sudah kamu bangun'}}],result:'Jalur bengkel masuk ke peluang aktifmu.'});
     if(!isStore && getSkillTier(state.skills.social).id!=='novice') choices.push({label:'Lihat jalur toko',hint:'Skill Sosialmu sudah cukup untuk pindah.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_store',name:'Beralih ke Jalur Pelayanan',summary:'Pakai kemampuan Sosial sebagai karier utama'}}],result:'Jalur pelayanan masuk ke peluang aktifmu.'});
     if(!isTech && getSkillTier(state.skills.technology).id!=='novice') choices.push({label:'Lihat jalur teknologi',hint:'Teknologi sudah cukup kuat untuk dicoba sebagai pekerjaan utama.',effects:[{type:'career_search_handled'},{type:'opportunity',opportunity:{id:'career_it',name:'Beralih ke Jalur Teknologi',summary:'Jadikan Teknologi pekerjaan utama'}}],result:'Jalur Teknologi masuk ke peluang aktifmu.'});

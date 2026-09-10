@@ -1,4 +1,4 @@
-const CONTENT_REGISTRY={activities:{},opportunities:{},events:{},jobs:{},eventPools:{}};
+const CONTENT_REGISTRY={activities:{},opportunities:{},events:{},jobs:{},certifications:{},eventPools:{}};
 const CONTENT_TEMPLATES={activities:{},opportunities:{},events:{},jobs:{}};
 const REQUIREMENT_PRESETS={};
 const CONTENT_PACKS={};
@@ -395,13 +395,14 @@ function validateEffect(effect,path,errors,warnings,knownEffectTypes){
   if((effect.type==='relationship'||effect.type==='relationship_clamped') && !effect.target) errors.push(`${path} tidak punya target relationship`);
   if((effect.type==='path_increment'||effect.type==='path_set') && !effect.path) errors.push(`${path} tidak punya path`);
   if(effect.type==='opportunity' && !effect.opportunity?.id) errors.push(`${path} membuat opportunity tanpa id`);
+  if(effect.type==='certification' && (!effect.certification || !getContent('certifications',effect.certification))) errors.push(`${path} memakai certification tidak dikenal: ${effect.certification||'-'}`);
   if(effect.when) (effect.when||[]).forEach((req,i)=>validateRequirement(req,`${path}.when[${i}]`,errors,warnings));
 }
 
 function validateContentFramework(){
   const errors=[],warnings=[];
   const knownEffectTypes=new Set([
-    'money','fatigue','hours','skill','relationship','flag','promotion','store_progress','tech_progress','career_search_handled','side_income','asset','npc_state','job','npc_known','recent','history','opportunity','schedule','status_add','status_remove','trajectory','housing','salary_delta','salary_scale','job_clear','career_restructure','salary_negotiated','business_close','business_recover','business_reinvest','business_retainer','business_reputation','business_client_loss','business_stamp','business_hire_helper','business_delegate','business_owner_fulltime','business_helper_issue','business_market_strategy','business_market_reputation','path_increment','path_set','relationship_clamped'
+    'money','fatigue','hours','skill','relationship','flag','promotion','store_progress','tech_progress','career_search_handled','side_income','asset','npc_state','job','npc_known','recent','history','opportunity','schedule','status_add','status_remove','trajectory','housing','salary_delta','salary_scale','job_clear','career_restructure','salary_negotiated','business_close','business_recover','business_reinvest','business_retainer','business_reputation','business_client_loss','business_stamp','business_hire_helper','business_delegate','business_owner_fulltime','business_helper_issue','business_market_strategy','business_market_reputation','path_increment','path_set','relationship_clamped','certification'
   ]);
   const idPattern=/^[a-z0-9_]+$/;
 
@@ -423,6 +424,16 @@ function validateContentFramework(){
         if(!Number.isFinite(Number(def.salary)) || Number(def.salary)<0) errors.push(`${label} punya salary tidak valid`);
         if(!Number.isFinite(Number(def.duration)) || Number(def.duration)<=0) errors.push(`${label} punya duration tidak valid`);
         if(!['mechanics','social','technology'].includes(def.skill)) errors.push(`${label} memakai skill pekerjaan tidak dikenal: ${def.skill}`);
+      }
+      if(type==='certifications'){
+        if(!['mechanics','social','technology'].includes(def.skill)) errors.push(`${label} memakai skill sertifikasi tidak dikenal: ${def.skill}`);
+        if(!Number.isFinite(Number(def.cost)) || Number(def.cost)<0) errors.push(`${label} punya cost tidak valid`);
+        if(!Number.isFinite(Number(def.duration)) || Number(def.duration)<=0) errors.push(`${label} punya duration tidak valid`);
+        if(!def.opportunityId || !getContent('opportunities',def.opportunityId)) errors.push(`${label} tidak punya opportunityId valid`);
+        if(!def.jobId || !getContent('jobs',def.jobId)) errors.push(`${label} tidak punya jobId valid`);
+        if(!def.jobOpportunityId || !getContent('opportunities',def.jobOpportunityId)) errors.push(`${label} tidak punya jobOpportunityId valid`);
+        (def.unlockRequirements||[]).forEach((req,i)=>validateRequirement(req,`${label}.unlockRequirements[${i}]`,errors,warnings));
+        (def.jobUnlockRequirements||[]).forEach((req,i)=>validateRequirement(req,`${label}.jobUnlockRequirements[${i}]`,errors,warnings));
       }
       if(type==='events'){
         if(!def.title || !def.text) errors.push(`${label} harus punya title dan text`);
@@ -471,7 +482,7 @@ function validateContentFramework(){
       if(!getContentPack(dependency)) errors.push(`pack:${pack.id} bergantung pada pack yang tidak ada: ${dependency}`);
     }
   }
-  for(const type of ['activities','opportunities','events','jobs']){
+  for(const type of ['activities','opportunities','events','jobs','certifications']){
     for(const id of Object.keys(CONTENT_REGISTRY[type]||{})){
       if(!packOwners[`${type}:${id}`]) errors.push(`${type}:${id} belum dimiliki content pack mana pun`);
     }

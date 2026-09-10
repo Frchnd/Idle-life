@@ -5,9 +5,9 @@ function basicCount(state){
 function workedPathCount(state){
   const counts=state.career?.jobWorkCounts||{};
   const paths=[
-    (counts.mechanic_junior||0)+(counts.mechanic_senior||0),
-    (counts.store_clerk||0)+(counts.store_supervisor||0),
-    counts.it_assistant||0
+    (counts.mechanic_junior||0)+(counts.mechanic_senior||0)+(counts.mechanic_diagnostic||0),
+    (counts.store_clerk||0)+(counts.store_supervisor||0)+(counts.operations_coordinator||0),
+    (counts.it_assistant||0)+(counts.network_technician||0)
   ];
   return paths.filter(x=>x>0).length;
 }
@@ -17,7 +17,7 @@ function hasDebt(state){
 }
 
 function getOutcomeProfile(state){
-  const advancedJob=['mechanic_senior','store_supervisor'].includes(state.player.job) || (state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=5);
+  const advancedJob=['mechanic_senior','store_supervisor','mechanic_diagnostic','operations_coordinator','network_technician'].includes(state.player.job) || (state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=5);
   const basics=basicCount(state);
   const paths=workedPathCount(state);
   const finance=financialState(state).id;
@@ -84,7 +84,7 @@ function isVerticalSliceReady(state){
   const enoughChoices=(state.pacing?.eventCount||0)>=7;
   const enoughWork=(state.career?.workCount||0)>=8;
   const meaningfulState=state.player.job && (
-    state.flags.promoted || state.flags.storePromoted ||
+    state.flags.promoted || state.flags.storePromoted || ['mechanic_diagnostic','operations_coordinator','network_technician'].includes(state.player.job) ||
     (state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=3) ||
     (state.career.sideIncomeTotal||0)>=500000 ||
     state.life?.trajectory!=='open' ||

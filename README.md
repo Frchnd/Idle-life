@@ -1,20 +1,16 @@
-# Hidup — Build X
+# Hidup — Build Y
 
-Build X adalah **UI Stabilization & Responsive Audit** setelah Anime UI Overhaul Build W. Simulation Engine, Content Framework, save, dan seluruh anime image asset dipertahankan.
+Fase 5 Expansion dimulai dengan Career & Education Expansion.
 
-## Fokus revisi
-- CSS Build W yang bertumpuk dibersihkan menjadi satu layout system.
-- Kontras dark/light theme diperbaiki; tidak ada lagi panel putih yang mewarisi teks putih dari dark theme.
-- Header mobile tidak lagi menyembunyikan nama dan pekerjaan Raka.
-- Subtitle action tidak lagi sengaja disembunyikan pada breakpoint mobile.
-- Action dock menjadi 2x2 di HP supaya label/hint tetap terbaca; 4 kolom tetap dipakai di layar lebih lebar.
-- Opportunity card tidak lagi bergantung pada horizontal clipping; menjadi grid responsif penuh.
-- Company/NPC cards, profile cards, metrics, event sheet, menu, settings, dan prologue diberi aturan wrapping/min-width yang aman.
-- Hero caption dan HUD diberi ruang terpisah untuk mengurangi overlap.
-- Tidak ada reset gameplay.
-
-## Save
-Build W -> Build X otomatis migrasi ke Save Version 20. SAVE_KEY lama tetap dipertahankan.
+## Baru di Build Y
+- Save version 21; save Build X tetap bermigrasi lewat key lama.
+- Sistem pendidikan/sertifikasi formal (`education.certifications`).
+- 3 sertifikasi: Diagnostik Mesin, Operasional Retail, Jaringan Dasar.
+- 3 posisi spesialis baru: Teknisi Diagnostik, Koordinator Operasional, Teknisi Jaringan.
+- Sertifikasi membutuhkan skill, waktu, dan uang; posisi spesialis juga bergantung pada kesehatan tempat kerja.
+- Opportunity sertifikasi dan posisi spesialis disinkronkan dari data, bukan hardcode tombol UI.
+- Tab KAMU menampilkan sertifikasi yang sudah dimiliki atau sudah eligible.
+- UI anime/colorful Build X dipertahankan.
 
 ## Deploy
-Replace seluruh isi project di GitHub Pages dengan isi folder Build X, termasuk `assets/`, `src/`, dan `styles/`. Lalu hard refresh / tutup-buka PWA supaya cache `hidup-build-x-v1` aktif.
+Upload seluruh isi folder ini ke root GitHub Pages. Jangan hapus localStorage jika ingin meneruskan save lama.

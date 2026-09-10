@@ -230,3 +230,17 @@ svg{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.8;st
   .resume-top{display:grid}.resume-top>b{white-space:normal}
   .segments.three{grid-template-columns:1fr}
 }
+
+
+/* Build Y — education / certification cards */
+.credential-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.credential-card{min-width:0;display:grid;grid-template-columns:46px minmax(0,1fr);gap:10px 12px;align-items:center;padding:14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow-soft)}
+.credential-card.earned{background:linear-gradient(145deg,var(--positive-bg),var(--surface))}
+.credential-card.available{background:linear-gradient(145deg,var(--warning-bg),var(--surface))}
+.credential-icon{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;background:var(--surface-2);color:var(--accent);box-shadow:inset 0 0 0 1px var(--border)}
+.credential-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.credential-card div{min-width:0;display:flex;flex-direction:column;gap:3px}
+.credential-card b,.credential-card span,.credential-card small{overflow-wrap:anywhere}
+.credential-card span{color:var(--muted);font-size:.82rem}
+.credential-card small{grid-column:2;color:var(--muted);font-size:.72rem;font-weight:800}
+@media(max-width:760px){.credential-grid{grid-template-columns:1fr}.credential-card{grid-template-columns:44px minmax(0,1fr)}.credential-card small{grid-column:2}}

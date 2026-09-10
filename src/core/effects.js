@@ -71,6 +71,13 @@ function resolveEffects(state,effects=[]){
       case 'career_restructure':
         state.career.restructureCount=(state.career.restructureCount||0)+1;
         break;
+      case 'certification':
+        state.education=state.education||{certifications:[],completedAt:{}};
+        state.education.certifications=Array.isArray(state.education.certifications)?state.education.certifications:[];
+        state.education.completedAt=state.education.completedAt||{};
+        if(effect.certification && !state.education.certifications.includes(effect.certification)) state.education.certifications.push(effect.certification);
+        if(effect.certification) state.education.completedAt[effect.certification]=state.time.totalHours;
+        break;
       case 'salary_negotiated':
         state.career.salaryNegotiatedJobs=Array.isArray(state.career.salaryNegotiatedJobs)?state.career.salaryNegotiatedJobs:[];
         if(state.player.job && !state.career.salaryNegotiatedJobs.includes(state.player.job)) state.career.salaryNegotiatedJobs.push(state.player.job);

@@ -1,4 +1,4 @@
-# Hidup — Content Catalog (Build X)
+# Hidup — Content Catalog (Build Y)
 
 Fase 4 memisahkan **engine** dari **content**. Konten data-driven dimiliki oleh satu content pack, memakai template/preset bila cocok, dan harus lolos validator sebelum game boot.
 
@@ -27,6 +27,13 @@ Investasi belajar dan aset Teknologi.
 Utang dan perubahan tempat tinggal.
 
 - Opportunities: `repay_family`, `repay_rian`, `rent_room`
+
+### `career_specialization` — Career Specialization v1
+Pendidikan formal ringan yang mengubah skill matang menjadi akses ke posisi spesialis.
+
+- Certifications: `engine_diagnostics`, `retail_operations`, `network_foundations`
+- Jobs: `mechanic_diagnostic`, `operations_coordinator`, `network_technician`
+- Opportunities: 3 jalur sertifikasi + 3 lowongan spesialis
 
 ## Event pools
 
@@ -76,3 +83,7 @@ window.__HIDUP_CONTENT_CATALOG__
 ```
 
 Report berisi hasil validasi; catalog berisi pack, jumlah konten per tipe, dan indeks tag.
+
+
+## Build Y — Career Specialization
+Pack `career_specialization` menambahkan tipe konten `certifications`, tiga pendidikan lanjutan, dan tiga pekerjaan spesialis. Opportunity pendidikan muncul ketika skill mencapai tier Terampil; lowongan spesialis baru disinkronkan setelah sertifikasi selesai dan kondisi perusahaan memungkinkan.

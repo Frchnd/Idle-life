@@ -1,4 +1,4 @@
-const SAVE_VERSION = 20;
+const SAVE_VERSION = 21;
 
 function createInitialState(){
   return {
@@ -19,6 +19,7 @@ function createInitialState(){
     life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null},
     pacing:{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8},
     playtest:{actions:0,opportunitiesTaken:0,careerChanges:0,offlineBatches:0},
+    education:{certifications:[],completedAt:{}},
     contentRuntime:{eventHistory:[],eventCooldowns:{},poolHistory:{},poolRecent:{},rngSeed:137,enabledPacks:[],packVersions:{}},
     skills:{mechanics:0,learning:25,social:40,technology:0},
     discoveredSkills:['mechanics','learning','social'],
@@ -45,7 +46,7 @@ function createInitialState(){
       salaryNegotiated:false,
       salaryNegotiatedJobs:[],
       restructureCount:0,
-      jobWorkCounts:{mechanic_junior:0,mechanic_senior:0,store_clerk:0,store_supervisor:0,it_assistant:0}
+      jobWorkCounts:{mechanic_junior:0,mechanic_senior:0,mechanic_diagnostic:0,store_clerk:0,store_supervisor:0,operations_coordinator:0,it_assistant:0,network_technician:0}
     },
     flags:{
       workshopOfferSeen:false,

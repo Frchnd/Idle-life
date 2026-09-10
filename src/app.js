@@ -41,6 +41,7 @@ function persist(){
 
 function postStep(){
   simulateWorld(state);
+  syncEducationOpportunities(state);
   resolveContestedOpportunities(state);
   expireOpportunities(state);
   processLivingCosts(state);
@@ -56,7 +57,7 @@ function checkMilestone(){
   if(state.flags.milestoneShown) return;
   const mechanicDepth=state.flags.promoted;
   const storeDepth=state.flags.storePromoted;
-  const techDepth=state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=3;
+  const techDepth=(state.player.job==='it_assistant' && (state.career.jobWorkCounts.it_assistant||0)>=3)||state.player.job==='network_technician';
   const mixedDepth=(getSkillTier(state.skills.technology).id!=='novice' && getSkillTier(state.skills.social).id!=='novice') ||
     (getSkillTier(state.skills.mechanics).id!=='novice' && getSkillTier(state.skills.social).id!=='novice');
   if(mechanicDepth||storeDepth||techDepth||mixedDepth){
@@ -87,6 +88,7 @@ function prepareGame({allowOffline=true}={}){
     }
   }
   simulateWorld(state);
+  syncEducationOpportunities(state);
   resolveContestedOpportunities(state);
   expireOpportunities(state);
   processLivingCosts(state);
@@ -322,6 +324,7 @@ function processOffline(realMs){
     state.playtest.actions=(state.playtest.actions||0)+1;
     consumed+=state.time.totalHours-before;
     simulateWorld(state);
+    syncEducationOpportunities(state);
     resolveContestedOpportunities(state);
     expireOpportunities(state);
     processLivingCosts(state);

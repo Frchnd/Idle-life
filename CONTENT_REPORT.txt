@@ -1,3 +1,11 @@
-Hidup Build X — Content Validation
+Hidup Build Y — Content Validation
 Errors: 0
 Warnings: 0
+Activities: 4
+Opportunities: 11
+Events: 10
+Jobs: 8
+Certifications: 3
+Event Pools: 6
+Content Packs: 5
+Requirement Presets: 15

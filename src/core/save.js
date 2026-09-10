@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build X.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build Y.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -46,6 +46,9 @@ function mergeState(base,saved){
   out.life={...base.life,...(saved.life||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
   out.playtest={...base.playtest,...(saved.playtest||{})};
+  out.education={...base.education,...(saved.education||{})};
+  out.education.certifications=Array.isArray(saved.education?.certifications)?[...saved.education.certifications]:[];
+  out.education.completedAt={...base.education.completedAt,...(saved.education?.completedAt||{})};
   out.contentRuntime={...base.contentRuntime,...(saved.contentRuntime||{})};
   if(!Array.isArray(out.contentRuntime.eventHistory)) out.contentRuntime.eventHistory=[];
   out.contentRuntime.eventCooldowns={...base.contentRuntime.eventCooldowns,...(saved.contentRuntime?.eventCooldowns||{})};
@@ -63,6 +66,7 @@ function mergeState(base,saved){
   out.career={...base.career,...(saved.career||{})};
   out.career.jobWorkCounts={...base.career.jobWorkCounts,...(saved.career?.jobWorkCounts||{})};
   if(!Array.isArray(out.career.salaryNegotiatedJobs)) out.career.salaryNegotiatedJobs=[];
+  ensureEducationState(out);
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];

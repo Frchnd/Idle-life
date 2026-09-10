@@ -19,5 +19,21 @@ defineFromTemplate('jobs','entry_job',{
   skill:'technology',skillXp:15,fatigue:15,tags:['employment','full_time','entry','technology']
 });
 
+
+
+// Build Y — posisi spesialis yang dibuka lewat pendidikan/sertifikasi.
+defineFromTemplate('jobs','advanced_job',{
+  id:'mechanic_diagnostic',name:'Teknisi Diagnostik',workplace:'Bengkel Sinar Jaya',workplaceId:'sinar_jaya',salary:230000,
+  skill:'mechanics',skillXp:18,fatigue:19,tags:['employment','full_time','specialist','mechanics','certified']
+});
+defineFromTemplate('jobs','advanced_job',{
+  id:'operations_coordinator',name:'Koordinator Operasional',workplace:'Toko Serba Ada',workplaceId:'serba_ada',salary:195000,
+  skill:'social',skillXp:17,fatigue:16,tags:['employment','full_time','specialist','retail','certified']
+});
+defineFromTemplate('jobs','advanced_job',{
+  id:'network_technician',name:'Teknisi Jaringan',workplace:'Nusa Komputer',workplaceId:'nusa_komputer',salary:225000,
+  skill:'technology',skillXp:18,fatigue:17,tags:['employment','full_time','specialist','technology','certified']
+});
+
 const JOBS=Object.fromEntries(listContent('jobs').map(job=>[job.id,job]));
 function jobLabel(jobId){ return JOBS[jobId]?.name||'Belum bekerja'; }

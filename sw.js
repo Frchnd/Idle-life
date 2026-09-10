@@ -1,12 +1,12 @@
-const CACHE='hidup-build-x-v1';
+const CACHE='hidup-build-y-v1';
 const ASSETS=[
   './','./index.html','./manifest.webmanifest','./styles/main.css',
   './icon-192.png','./icon-512.png',
   './assets/scenes/home.webp','./assets/scenes/workshop.webp','./assets/scenes/store.webp','./assets/scenes/tech.webp','./assets/scenes/business.webp',
   './assets/ui/sinar_jaya.webp','./assets/ui/serba_ada.webp','./assets/ui/nusa_komputer.webp',
   './assets/portraits/raka.webp','./assets/portraits/pak_surya.webp','./assets/portraits/mira.webp',
-  './src/core/prefs.js','./src/core/time.js','./src/core/state.js','./src/core/effects.js','./src/core/content.js','./src/core/business.js','./src/core/world.js','./src/core/economy.js','./src/core/save.js','./src/core/outcome.js',
-  './src/data/content-foundation.js','./src/data/jobs.js','./src/data/content.js','./src/data/content-packs.js','./src/data/activities.js','./src/data/opportunities.js','./src/data/events.js',
+  './src/core/prefs.js','./src/core/time.js','./src/core/state.js','./src/core/effects.js','./src/core/content.js','./src/core/business.js','./src/core/world.js','./src/core/economy.js','./src/core/education.js','./src/core/save.js','./src/core/outcome.js',
+  './src/data/content-foundation.js','./src/data/jobs.js','./src/data/education.js','./src/data/content.js','./src/data/content-packs.js','./src/data/activities.js','./src/data/opportunities.js','./src/data/events.js',
   './src/ui/render.js','./src/app.js'
 ];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS))));

@@ -12,6 +12,8 @@ registerRequirementPreset('relationship_min',{relationship:'{{target}}',min:'{{v
 registerRequirementPreset('trajectory_is',{path:'life.trajectory',op:'eq',value:'{{trajectory}}'},['trajectory']);
 registerRequirementPreset('asset_false',{path:'assets.{{asset}}',op:'eq',value:false},['asset']);
 registerRequirementPreset('housing_is',{path:'housing.id',op:'eq',value:'{{housing}}'},['housing']);
+registerRequirementPreset('certification_has',{path:'education.certifications',op:'includes',value:'{{certification}}'},['certification']);
+registerRequirementPreset('certification_missing',{path:'education.certifications',op:'not_includes',value:'{{certification}}'},['certification']);
 
 registerContentTemplate('jobs','standard_job',{
   duration:8,

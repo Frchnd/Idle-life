@@ -35,3 +35,14 @@ registerContentPack('life_finance',{
     opportunities:['repay_family','repay_rian','rent_room']
   }
 });
+
+
+registerContentPack('career_specialization',{
+  name:'Career Specialization',version:1,dependsOn:['career_core','learning_technology'],
+  description:'Sertifikasi lanjutan dan posisi spesialis untuk tiga jalur karier utama.',
+  content:{
+    jobs:['mechanic_diagnostic','operations_coordinator','network_technician'],
+    certifications:['engine_diagnostics','retail_operations','network_foundations'],
+    opportunities:['cert_engine_diagnostics','cert_retail_operations','cert_network_foundations','job_mechanic_diagnostic','job_operations_coordinator','job_network_technician']
+  }
+});
