@@ -1,8 +1,8 @@
-const CACHE='hidup-build-s-v1';
+const CACHE='hidup-build-t-v1';
 const ASSETS=[
   './','./index.html','./manifest.webmanifest','./styles/main.css',
   './icon-192.png','./icon-512.png',
-  './src/core/time.js','./src/core/state.js','./src/core/effects.js','./src/core/content.js','./src/core/business.js','./src/core/world.js','./src/core/economy.js','./src/core/save.js','./src/core/outcome.js',
+  './src/core/prefs.js','./src/core/time.js','./src/core/state.js','./src/core/effects.js','./src/core/content.js','./src/core/business.js','./src/core/world.js','./src/core/economy.js','./src/core/save.js','./src/core/outcome.js',
   './src/data/content-foundation.js','./src/data/jobs.js','./src/data/content.js','./src/data/content-packs.js','./src/data/activities.js','./src/data/opportunities.js','./src/data/events.js',
   './src/ui/render.js','./src/app.js'
 ];

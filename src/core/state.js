@@ -1,4 +1,4 @@
-const SAVE_VERSION = 15;
+const SAVE_VERSION = 16;
 
 function createInitialState(){
   return {

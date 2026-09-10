@@ -6,12 +6,18 @@ if(typeof window!=='undefined'){
 }
 if(!contentValidation.ok) console.error('[Hidup] Content validation gagal',contentValidation.errors);
 if(contentValidation.warnings.length) console.warn('[Hidup] Content warnings',contentValidation.warnings);
-let state=loadState();
-syncContentPackRuntime(state);
-let deferredPrompt=null;
-const ui={tab:'life',result:'Pilihanmu akan menentukan jalur yang mulai terbuka.',offlineSummary:'',milestone:false,chapterProfile:null,installAvailable:false};
 
-function persist(){ saveState(state); }
+let prefs=applyPrefs(loadPrefs());
+let state=loadState();
+let deferredPrompt=null;
+let hadSaveAtLaunch=hasSavedState();
+let gamePrepared=false;
+const ui={screen:'menu',tab:'life',result:'Pilihanmu akan menentukan jalur yang mulai terbuka.',offlineSummary:'',milestone:false,chapterProfile:null,installAvailable:false,hasSave:hadSaveAtLaunch,prefs};
+
+function persist(){
+  saveState(state);
+  ui.hasSave=true;
+}
 
 function postStep(){
   simulateWorld(state);
@@ -50,13 +56,33 @@ function checkVerticalSliceOutcome(){
   ui.chapterProfile=profile;
 }
 
+function prepareGame({allowOffline=true}={}){
+  if(gamePrepared) return;
+  syncContentPackRuntime(state);
+  if(allowOffline && ui.hasSave){
+    const elapsed=Date.now()-(state.lastSeen||Date.now());
+    if(state.routine.enabled && elapsed>45*60*1000){
+      const report=processOffline(elapsed);
+      if(report.gameHours>0) ui.offlineSummary=`<b>${report.gameHours} jam waktu game berlalu.</b><br>Perubahan uang: ${formatSignedMoney(report.moneyDelta)}${report.stopped?'<br>Ada keputusan penting yang menghentikan rutinitas.':''}`;
+    }
+  }
+  simulateWorld(state);
+  resolveContestedOpportunities(state);
+  expireOpportunities(state);
+  processLivingCosts(state);
+  refreshEvent(state);
+  checkVerticalSliceOutcome();
+  if(ui.hasSave) persist();
+  gamePrepared=true;
+}
+
 function draw(){
   render(root,state,ui);
   bind();
 }
 
 function bind(){
-  root.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{ui.tab=btn.dataset.tab;draw()}));
+  root.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{ui.tab=btn.dataset.tab;draw();}));
   root.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>runActivity(btn.dataset.action)));
   root.querySelectorAll('[data-opportunity]').forEach(btn=>btn.addEventListener('click',()=>{
     if(state.pendingEvent) return;
@@ -78,6 +104,8 @@ function bind(){
     postStep();
   }));
   root.querySelectorAll('[data-ui]').forEach(btn=>btn.addEventListener('click',()=>handleUi(btn.dataset.ui)));
+  root.querySelectorAll('[data-pref-theme]').forEach(btn=>btn.addEventListener('click',()=>updatePrefs({theme:btn.dataset.prefTheme})));
+  root.querySelectorAll('[data-pref-text]').forEach(btn=>btn.addEventListener('click',()=>updatePrefs({textSize:btn.dataset.prefText})));
 }
 
 function runActivity(id){
@@ -91,7 +119,47 @@ function runActivity(id){
   postStep();
 }
 
+function startNewLife(){
+  if(ui.hasSave && !confirm('Mulai hidup baru? Save hidup sekarang akan diganti.')) return;
+  clearState();
+  state=createInitialState();
+  syncContentPackRuntime(state);
+  ui.tab='life';
+  ui.result='Hidup baru dimulai.';
+  ui.offlineSummary='';
+  ui.milestone=false;
+  ui.chapterProfile=null;
+  gamePrepared=false;
+  persist();
+  prepareGame({allowOffline:false});
+  ui.screen='game';
+  draw();
+}
+
+function updatePrefs(patch){
+  prefs=savePrefs({...prefs,...patch});
+  prefs=applyPrefs(prefs);
+  ui.prefs=prefs;
+  draw();
+}
+
 function handleUi(action){
+  if(action==='continue-game'){
+    prepareGame({allowOffline:true});
+    ui.screen='game';
+    draw();
+    return;
+  }
+  if(action==='start-new'){ startNewLife(); return; }
+  if(action==='open-menu'){
+    persist();
+    ui.screen='menu';
+    draw();
+    return;
+  }
+  if(action==='open-settings'){ ui.screen='settings'; draw(); return; }
+  if(action==='settings-back'){ ui.screen='menu'; draw(); return; }
+  if(action==='toggle-motion'){ updatePrefs({motion:!prefs.motion}); return; }
   if(action==='toggle-routine'){
     if(!state.flags.routineUnlocked) return;
     state.routine.enabled=!state.routine.enabled;
@@ -107,14 +175,9 @@ function handleUi(action){
   if(action==='close-offline'){ ui.offlineSummary=''; draw(); return; }
   if(action==='close-milestone'){ ui.milestone=false; draw(); return; }
   if(action==='close-chapter'){ ui.chapterProfile=null; draw(); return; }
-  if(action==='reset'){
-    if(confirm('Mulai ulang seluruh save Vertical Slice?')){
-      clearState(); state=createInitialState(); ui.tab='life'; ui.result='Hidup baru dimulai.'; ui.offlineSummary=''; ui.milestone=false; ui.chapterProfile=null; postStep();
-    }
-    return;
-  }
   if(action==='install' && deferredPrompt){
-    deferredPrompt.prompt(); deferredPrompt.userChoice.finally(()=>{deferredPrompt=null;ui.installAvailable=false;draw()});
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.finally(()=>{deferredPrompt=null;ui.installAvailable=false;draw();});
   }
 }
 
@@ -166,21 +229,17 @@ window.addEventListener('beforeinstallprompt',event=>{
   event.preventDefault(); deferredPrompt=event; ui.installAvailable=true; draw();
 });
 window.addEventListener('appinstalled',()=>{
-  deferredPrompt=null; ui.installAvailable=false; addRecent(state,'Aplikasi berhasil di-install di perangkat ini.'); persist(); draw();
+  deferredPrompt=null; ui.installAvailable=false;
+  if(ui.hasSave){addRecent(state,'Aplikasi berhasil di-install di perangkat ini.');persist();}
+  draw();
 });
 
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
-
-const elapsed=Date.now()-(state.lastSeen||Date.now());
-if(state.routine.enabled && elapsed>45*60*1000){
-  const report=processOffline(elapsed);
-  if(report.gameHours>0) ui.offlineSummary=`<b>${report.gameHours} jam waktu game berlalu.</b><br>Perubahan uang: ${formatSignedMoney(report.moneyDelta)}${report.stopped?'<br>Ada keputusan penting yang menghentikan rutinitas.':''}`;
+if(window.matchMedia){
+  const mq=window.matchMedia('(prefers-color-scheme: dark)');
+  const listener=()=>{if(prefs.theme==='system'){prefs=applyPrefs(prefs);draw();}};
+  if(mq.addEventListener) mq.addEventListener('change',listener); else if(mq.addListener) mq.addListener(listener);
 }
-simulateWorld(state);
-resolveContestedOpportunities(state);
-expireOpportunities(state);
-processLivingCosts(state);
-refreshEvent(state);
-checkVerticalSliceOutcome();
-persist();
+
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
+if(ui.hasSave) prepareGame({allowOffline:true});
 draw();
