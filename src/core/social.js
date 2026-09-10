@@ -130,7 +130,7 @@ function maybeStartSocialEncounter(state,locationId,presentPeople=[]){
     addHistory(state,`Umur 18 · Mulai mengenal ${person.name} lewat rutinitas di kota.`);
     addRecent(state,`${person.name} ternyata punya rutinitas sendiri di ${CITY_LOCATIONS[locationId]?.name||'kota'}.`);
   }
-  const ev=socialEncounterEvent(state,person.id,locationId);
+  const ev=relationshipRepairEvent(state,person.id)||socialEncounterEvent(state,person.id,locationId);
   if(ev) state.pendingEvent=ev;
   return person;
 }

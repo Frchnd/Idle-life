@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AC.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AD.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -51,6 +51,13 @@ function mergeState(base,saved){
   out.social.lastLocationByNpc={...base.social.lastLocationByNpc,...(saved.social?.lastLocationByNpc||{})};
   out.characterStories={...base.characterStories,...(saved.characterStories||{})};
   for(const key of Object.keys(base.characterStories||{})) out.characterStories[key]={...base.characterStories[key],...(saved.characterStories?.[key]||{})};
+  out.relationshipStakes={...base.relationshipStakes,...(saved.relationshipStakes||{})};
+  out.relationshipStakes.records={...base.relationshipStakes.records,...(saved.relationshipStakes?.records||{})};
+  out.relationshipStakes.strain={...base.relationshipStakes.strain,...(saved.relationshipStakes?.strain||{})};
+  out.relationshipStakes.fulfilled={...base.relationshipStakes.fulfilled,...(saved.relationshipStakes?.fulfilled||{})};
+  out.relationshipStakes.missed={...base.relationshipStakes.missed,...(saved.relationshipStakes?.missed||{})};
+  out.relationshipStakes.lastRepairAt={...base.relationshipStakes.lastRepairAt,...(saved.relationshipStakes?.lastRepairAt||{})};
+  out.relationshipStakes.lastStakeAt=Number.isFinite(saved.relationshipStakes?.lastStakeAt)?saved.relationshipStakes.lastStakeAt:base.relationshipStakes.lastStakeAt;
   out.life={...base.life,...(saved.life||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
   out.playtest={...base.playtest,...(saved.playtest||{})};
@@ -78,6 +85,7 @@ function mergeState(base,saved){
   ensureCityState(out);
   ensureSocialState(out);
   ensureCharacterStories(out);
+  ensureRelationshipStakes(out);
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];

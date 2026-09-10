@@ -116,3 +116,11 @@ Build AB menambahkan `src/data/social.js` + `src/core/social.js` sebagai simulat
 `src/data/storylines.js` mendefinisikan arc karakter, sedangkan `src/core/storylines.js` menangani state, deadline, outcome, dan task runtime. Layer ini sengaja berada di atas Content Registry karena cerita karakter membutuhkan stateful multi-stage progression dan consequence yang berubah mengikuti waktu.
 
 Arc awal: `andi`, `bu_lestari`, `sari`, `dimas`. Masing-masing memiliki intro event, optional story opportunity, missed path, dan follow-up. NPC tidak berhenti berkembang ketika player tidak ikut campur.
+
+## Build AD — Relationship Stakes
+
+`src/data/relationship-stakes.js` mendefinisikan komitmen hubungan, sedangkan `src/core/relationship-stakes.js` menangani eligibility, deadline, fulfillment, missed promise, strain, follow-up, dan repair interaction.
+
+Layer ini sengaja berada setelah Character Storylines: sebuah stake baru terbuka ketika arc karakter terkait sudah selesai dan relationship cukup tinggi. Sistem membatasi satu komitmen besar aktif pada satu waktu dan memberi jarak minimal antar-stake supaya social content tidak mendominasi core loop.
+
+Stake awal: `andi_workshop`, `sari_closing`, `lestari_stock`, `dimas_audit`.

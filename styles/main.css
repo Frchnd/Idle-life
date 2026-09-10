@@ -271,3 +271,14 @@ svg{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.8;st
 
 /* Build AC — character story status */
 .person-story{display:inline-flex!important;width:max-content;max-width:100%;padding:4px 8px;border-radius:999px;background:linear-gradient(135deg,var(--warning-bg),var(--info-bg));color:var(--text)!important;font-size:.56rem!important;font-weight:850;line-height:1.2!important;border:1px solid var(--border);overflow-wrap:anywhere}
+
+
+/* Build AD — relationship stakes */
+.relationship-commitment{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 14px;border-radius:20px;background:linear-gradient(135deg,rgba(255,235,150,.82),rgba(255,214,225,.82));border:1px solid rgba(236,170,83,.32);box-shadow:0 10px 26px rgba(70,91,120,.09)}
+.relationship-commitment img{width:58px;height:58px;border-radius:17px;object-fit:cover;border:3px solid rgba(255,255,255,.85)}
+.relationship-commitment div{min-width:0;display:grid;gap:2px}.relationship-commitment b{font-size:.98rem;color:var(--text)}.relationship-commitment span:not(.eyebrow){font-size:.78rem;color:var(--muted);line-height:1.3}.commitment-clock{display:grid;place-items:center;min-width:48px;height:38px;padding:0 10px;border-radius:14px;background:rgba(255,255,255,.78);font-weight:900!important;color:#b76538!important}
+.person-stake{display:block;margin-top:4px;padding:4px 7px;border-radius:9px;background:rgba(255,193,119,.18);color:#a65e2e!important;font-size:.7rem!important;font-weight:800;line-height:1.25}
+[data-theme='dark'] .relationship-commitment{background:linear-gradient(135deg,rgba(112,88,40,.48),rgba(104,58,77,.5));border-color:rgba(255,214,142,.22)}
+[data-theme='dark'] .commitment-clock{background:rgba(255,255,255,.1);color:#ffd894!important}
+[data-theme='dark'] .person-stake{background:rgba(255,190,104,.14);color:#ffd08a!important}
+@media(max-width:520px){.relationship-commitment{grid-template-columns:50px minmax(0,1fr) auto;padding:10px 11px;gap:9px}.relationship-commitment img{width:50px;height:50px}.commitment-clock{min-width:42px;height:34px;padding:0 8px}}

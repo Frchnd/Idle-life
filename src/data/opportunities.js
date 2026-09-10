@@ -24,6 +24,8 @@ function takeJob(state,jobId,npc){
 function runOpportunity(state,id){
   const dataResult=runDataOpportunity(state,id);
   if(dataResult!==null) return dataResult;
+  const commitmentResult=runRelationshipCommitment(state,id);
+  if(commitmentResult!==null) return commitmentResult;
   const storyResult=runCharacterStoryOpportunity(state,id);
   if(storyResult!==null) return storyResult;
   const opp=state.opportunities.find(item=>item.id===id);

@@ -48,6 +48,10 @@ function resolveEffects(state,effects=[]){
         break;
       case 'npc_known': if(state.npc[effect.npc]) state.npc[effect.npc].known=true; break;
       case 'story': patchCharacterStory(state,effect.npc,effect.patch||{}); break;
+      case 'relationship_commitment_start': startRelationshipCommitment(state,effect.stake); break;
+      case 'relationship_stake_decline': declineRelationshipStake(state,effect.stake); break;
+      case 'relationship_stake_finish': finishRelationshipStake(state,effect.stake); break;
+      case 'relationship_strain': changeRelationshipStrain(state,effect.npc,effect.value||0); break;
       case 'recent': addRecent(state,effect.text); break;
       case 'history': addHistory(state,effect.text); break;
       case 'opportunity': addOpportunity(state,effect.opportunity); break;

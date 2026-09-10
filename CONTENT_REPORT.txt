@@ -1,4 +1,4 @@
-Hidup Build AC — Content Validation
+Hidup Build AD — Content Validation
 Errors: 0
 Warnings: 0
 Activities: 4
@@ -13,3 +13,4 @@ City Locations: 4
 Scheduled City NPCs: 4
 Runtime Social Event Families: 4
 Runtime Character Story Arcs: 4
+Runtime Relationship Stakes: 4

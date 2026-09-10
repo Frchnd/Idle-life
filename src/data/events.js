@@ -30,6 +30,13 @@ function dueScheduledEvent(state){
   if(idx<0) return null;
   const item=state.scheduled.splice(idx,1)[0];
 
+  if(item.kind==='lestari_commitment_repay'){
+    return event('lestari_commitment_repay','HUBUNGAN','Bu Lestari Mengembalikan Uangmu','Satu putaran dagangan selesai. Bu Lestari datang dengan catatan yang sama seperti saat meminjam dan mengembalikan uangmu, ditambah sedikit bagian dari hasil putaran itu.',[
+      {label:'Terima Rp280.000',effects:[{type:'money',value:280000},{type:'relationship',target:'bu_lestari',value:2},{type:'recent',text:'Bu Lestari mengembalikan talangan tepat seperti yang dijanjikan.'}],result:'Urusan uang selesai dengan jelas. Kepercayaan kalian justru terasa lebih kuat karena nggak ada yang dibuat samar.'},
+      {label:'Ambil pokoknya saja',hint:'Rp250rb kembali · sisanya untuk kios',effects:[{type:'money',value:250000},{type:'relationship',target:'bu_lestari',value:4},{type:'recent',text:'Kamu mengambil kembali modal pokok dan membiarkan sisanya tetap berputar di kios.'}],result:'Bu Lestari tidak banyak bicara, tapi ekspresinya cukup jelas menunjukkan dia akan mengingat pilihanmu.'}
+    ]);
+  }
+
   if(item.kind==='dika_return_favor'){
     return event('dika_return_favor','KONSEKUENSI','Dika Membalas Bantuanmu','Beberapa hari setelah kamu membantunya pulang terlambat, Dika menawarkan menutup satu shift supaya kamu bisa beristirahat.',[
       {label:'Terima bantuannya',hint:'8j · pulihkan kondisi',effects:[{type:'hours',value:8},{type:'fatigue',value:-35},{type:'relationship',target:'dika',value:4},{type:'recent',text:'Dika menutup satu shift untukmu.'}],result:'Kamu menerima bantuan Dika. Hubungan kalian mulai terasa seperti kerja sama, bukan sekadar persaingan.'},
@@ -478,7 +485,7 @@ function refreshEvent(state){
   if(!urgentStateNeedsAttention(state) && elapsed<gap) return;
   let next;
   if(urgentStateNeedsAttention(state)) next=getNextEvent(state);
-  else next=getNextCharacterStoryEvent(state)||getNextEvent(state);
+  else next=getNextRelationshipStakeEvent(state)||getNextCharacterStoryEvent(state)||getNextEvent(state);
   if(next){
     state.pendingEvent=next;
     state.pacing.lastSurfacedEventAt=state.time.totalHours;
