@@ -1,17 +1,9 @@
 const SKILL_NAMES={mechanics:'Mekanik',learning:'Belajar',social:'Sosial',technology:'Teknologi'};
 const STATUS_NAMES={tinggal_bersama_keluarga:'Tinggal bersama keluarga',tinggal_sendiri:'Tinggal sendiri',utang_keluarga:'Berutang pada keluarga',utang_rian:'Berutang pada Rian',punya_laptop:'Punya laptop sendiri',fokus_karier:'Memprioritaskan karier utama',jalur_mandiri:'Membangun jalur mandiri',jam_lebih_fleksibel:'Punya jadwal kerja lebih fleksibel',peran_ganda:'Memegang peran ganda di tempat kerja',gaji_ditekan:'Kompensasi tertekan setelah restrukturisasi',punya_usaha_kecil:'Punya usaha kecil sendiri',pemilik_usaha_penuh:'Fokus penuh sebagai pemilik usaha'};
 
-function money(value){
-  const sign=value<0?'-':'';
-  return sign+'Rp'+Math.abs(Math.round(value)).toLocaleString('id-ID');
-}
-function compactMoney(value){
-  const sign=value<0?'-':'';
-  return sign+'Rp'+Math.abs(Math.round(value/1000)).toLocaleString('id-ID')+'rb';
-}
+function money(value){const sign=value<0?'-':'';return sign+'Rp'+Math.abs(Math.round(value)).toLocaleString('id-ID');}
+function compactMoney(value){const sign=value<0?'-':'';return sign+'Rp'+Math.abs(Math.round(value/1000)).toLocaleString('id-ID')+'rb';}
 function esc(value=''){return String(value).replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));}
-
-
 function toneClass(tone='neutral'){return `tone-${['positive','warning','danger','info','neutral'].includes(tone)?tone:'neutral'}`;}
 function conditionTone(id){return id==='good'?'positive':id==='exhausted'?'danger':'warning';}
 function financeTone(id){return id==='comfortable'?'positive':id==='debt'?'danger':id==='tight'?'warning':'neutral';}
@@ -22,286 +14,109 @@ function riskTone(label){const v=String(label||'').toLowerCase();return v==='tin
 function workplaceTone(label){const v=String(label||'').toLowerCase();return v==='tertekan'?'danger':v==='rentan'?'warning':(v==='tumbuh'||v==='ekspansi')?'positive':'neutral';}
 function businessHealthTone(label){const v=String(label||'').toLowerCase();return v==='terdesak'?'danger':v==='kewalahan'?'warning':(v==='stabil'||v==='punya nama')?'positive':'neutral';}
 
+function iconSvg(name){
+  const paths={
+    work:'<path d="M5 8h14v10H5zM9 8V5h6v3M4 12h16"/>',
+    study:'<path d="M4 5.5c3-1.2 5.5-.8 8 1.3v12c-2.5-2.1-5-2.5-8-1.3zM20 5.5c-3-1.2-5.5-.8-8 1.3v12c2.5-2.1 5-2.5 8-1.3z"/>',
+    rest:'<path d="M18.5 15.5A7.7 7.7 0 0 1 8.5 5a8 8 0 1 0 10 10.5z"/>',
+    people:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3.5 19c.5-4 3-6 5.5-6s5 2 5.5 6M14 14c3-.8 5.5 1 6 5"/>',
+    search:'<circle cx="10" cy="10" r="6"/><path d="m14.5 14.5 5 5"/>',
+    home:'<path d="m3 11 9-7 9 7M6 10v10h12V10M10 20v-6h4v6"/>',
+    business:'<path d="M4 9h16l-1 11H5zM7 9V5h10v4M4 13c3 2 5 2 8 0 3 2 5 2 8 0"/>',
+    spark:'<path d="m12 3 1.4 4.1L18 9l-4.6 1.9L12 15l-1.4-4.1L6 9l4.6-1.9zM5 16l.8 2.2L8 19l-2.2.8L5 22l-.8-2.2L2 19l2.2-.8z"/>',
+    world:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 4 6 4 9s-1 6-4 9c-3-3-4-6-4-9s1-6 4-9z"/>',
+    user:'<circle cx="12" cy="8" r="4"/><path d="M5 21c.6-5 3.4-8 7-8s6.4 3 7 8"/>'
+  };
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name]||paths.spark}</svg>`;
+}
+
 function renderSystemNotice(ui){
   const notices=[];
-  if(ui.updateAvailable) notices.push(`<div class="system-banner tone-info"><div><b>Pembaruan siap</b><span>Versi baru sudah tersedia dan bisa dipakai tanpa menghapus save.</span></div><button class="btn mini center" data-ui="apply-update">Muat ulang</button></div>`);
-  if(ui.networkOnline===false) notices.push(`<div class="system-banner tone-warning"><div><b>Mode offline</b><span>Game tetap bisa dimainkan. Perubahan disimpan di perangkat ini.</span></div></div>`);
+  if(ui.updateAvailable) notices.push(`<div class="system-banner tone-info"><div><b>Pembaruan siap</b><span>Versi baru tersedia tanpa menghapus save.</span></div><button class="btn mini" data-ui="apply-update">Muat ulang</button></div>`);
+  if(ui.networkOnline===false) notices.push(`<div class="system-banner tone-warning"><div><b>Mode offline</b><span>Perubahan tetap disimpan di perangkat.</span></div></div>`);
   return notices.join('');
 }
-
-function renderEmptyState(title,text){
-  return `<div class="empty-state"><div class="empty-dot" aria-hidden="true"></div><div><b>${esc(title)}</b><div>${esc(text)}</div></div></div>`;
-}
-
+function renderEmptyState(title,text){return `<div class="empty-state"><span class="empty-icon">${iconSvg('spark')}</span><div><b>${esc(title)}</b><span>${esc(text)}</span></div></div>`;}
 function renderActionFeedback(ui){
-  const f=ui.feedback;
-  if(!f) return '';
+  const f=ui.feedback;if(!f)return '';
   const details=(f.details||[]).length?`<div class="feedback-details">${f.details.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:'';
-  return `<div class="feedback-card ${toneClass(f.tone)}" role="status"><div class="feedback-copy"><div class="eyebrow">HASIL TERBARU</div><b>${esc(f.title||'Perubahan tersimpan')}</b><div>${esc(f.message||'')}</div>${details}</div><button class="feedback-close" data-ui="close-feedback" aria-label="Tutup hasil">×</button></div>`;
+  return `<div class="feedback-card ${toneClass(f.tone)}" role="status"><span class="feedback-icon">${iconSvg(f.tone==='positive'?'spark':f.tone==='danger'?'world':'spark')}</span><div class="feedback-copy"><b>${esc(f.title||'Perubahan tersimpan')}</b><span>${esc(f.message||'')}</span>${details}</div><button class="feedback-close" data-ui="close-feedback" aria-label="Tutup">×</button></div>`;
 }
-
 function renderConfirm(ui){
-  if(!ui.confirm) return '';
-  if(ui.confirm.type!=='new-life') return '';
-  return `<div class="modal-backdrop" role="presentation"><div class="confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirm-title"><div class="eyebrow">KONFIRMASI</div><div class="confirm-title" id="confirm-title">${esc(ui.confirm.title)}</div><div class="confirm-text">${esc(ui.confirm.text)}</div><div class="confirm-actions"><button class="btn quiet center" data-ui="cancel-confirm">Batal</button><button class="btn danger center" data-ui="confirm-new-life">Mulai hidup baru</button></div></div></div>`;
+  if(!ui.confirm||ui.confirm.type!=='new-life')return '';
+  return `<div class="modal-backdrop"><div class="confirm-card" role="dialog" aria-modal="true"><div class="eyebrow">KONFIRMASI</div><h2>${esc(ui.confirm.title)}</h2><p>${esc(ui.confirm.text)}</p><div class="confirm-actions"><button class="btn quiet" data-ui="cancel-confirm">Batal</button><button class="btn danger" data-ui="confirm-new-life">Lanjut ke prolog</button></div></div></div>`;
 }
 
-function renderOnboarding(ui){
-  const steps=[
-    {kicker:'DASAR 1/3',title:'Waktu adalah biaya utama',text:'Kerja, belajar, istirahat, dan menjaga hubungan semuanya memakai waktu. Kamu tidak bisa memaksimalkan semuanya sekaligus.',note:'Tidak ada energy bar yang menahanmu. Konsekuensinya datang dari waktu, uang, dan kondisi hidup.'},
-    {kicker:'DASAR 2/3',title:'Dunia tidak menunggumu',text:'Ekonomi, perusahaan, orang lain, dan peluang bergerak sendiri. Kesempatan yang kamu lewatkan bisa diambil orang lain.',note:'Kamu tidak harus mengejar semua peluang. Melewatkan sesuatu juga merupakan pilihan.'},
-    {kicker:'DASAR 3/3',title:'Keputusan penting tetap milikmu',text:'Rutinitas bisa membantu hal repetitif, tapi game tidak akan memilih karier, hubungan, atau keputusan besar secara otomatis.',note:'Tidak ada satu jalur menang. Tujuannya adalah melihat hidup seperti apa yang terbentuk dari pilihanmu.'}
+function sceneInfo(state){
+  if(state.business?.active&&state.business?.ownerFullTime) return {id:'business',src:'./assets/scenes/business.svg',label:state.business.name||'Usaha Fernando',sub:'Kamu membangun sesuatu yang bergantung pada keputusanmu sendiri.'};
+  if(['mechanic_junior','mechanic_senior'].includes(state.player.job)) return {id:'workshop',src:'./assets/scenes/workshop.svg',label:'Bengkel Sinar Jaya',sub:'Bau oli, suara alat, dan pekerjaan yang nggak pernah persis sama.'};
+  if(['store_clerk','store_supervisor'].includes(state.player.job)) return {id:'store',src:'./assets/scenes/store.svg',label:'Toko Serba Ada',sub:'Orang datang silih berganti. Setiap shift menguji cara kamu menghadapi mereka.'};
+  if(state.player.job==='it_assistant') return {id:'tech',src:'./assets/scenes/tech.svg',label:'Nusa Komputer',sub:'Masalah kecil di layar bisa menjadi peluang besar kalau kamu terus belajar.'};
+  return {id:'home',src:'./assets/scenes/home.svg',label:state.housing?.id==='rented_room'?'Kamar Sewamu':'Rumah Keluarga',sub:state.housing?.id==='rented_room'?'Ruang kecil yang sekarang sepenuhnya milik ritmemu.':'Tempat semuanya dimulai. Aman, tapi hidup nggak akan bergerak sendiri.'};
+}
+function timeMood(state){const h=getCalendar(state.time.totalHours).hour;return h<5?'night':h<10?'morning':h<17?'day':h<20?'evening':'night';}
+function renderSceneHero(state,{menu=false}={}){
+  const scene=sceneInfo(state),cal=getCalendar(state.time.totalHours),condition=getCondition(state.player.fatigue);
+  return `<section class="scene-stage mood-${timeMood(state)} ${menu?'menu-scene':''}" aria-label="${esc(scene.label)}">
+    <img class="scene-art" src="${scene.src}" alt="${esc(scene.label)}" />
+    <div class="scene-shade"></div><div class="ambient ambient-a"></div><div class="ambient ambient-b"></div><div class="ambient ambient-c"></div>
+    <div class="scene-caption"><div><span class="scene-kicker">${timeMood(state)==='night'?'MALAM':timeMood(state)==='evening'?'SORE':timeMood(state)==='morning'?'PAGI':'SIANG'} · B${cal.month} H${cal.day}</span><h2>${esc(scene.label)}</h2><p>${esc(scene.sub)}</p></div></div>
+    ${menu?'':`<div class="scene-hud"><div><span>Uang</span><b>${compactMoney(state.player.money)}</b></div><div class="${toneClass(conditionTone(condition.id))}"><span>Kondisi</span><b>${esc(condition.label)}</b></div><div><span>Arah</span><b>${esc(lifeDirection(state))}</b></div></div>`}
+  </section>`;
+}
+
+function renderPrologue(ui){
+  const step=Math.max(0,Math.min(1,ui.prologueStep||0));
+  const beats=[
+    {k:'PROLOG · 1/2',title:'Kamu adalah Fernando.',text:'Umur 18 tahun. Kamu masih tinggal bersama keluarga, punya sedikit tabungan, belum punya pekerjaan tetap, dan belum tahu hidupmu akan mengarah ke mana.',note:'Nggak ada latar belakang “pahlawan”. Kamu mulai sebagai orang biasa dengan waktu yang terbatas.'},
+    {k:'PROLOG · 2/2',title:'Mulai bangun hidupmu sendiri.',text:'Cari kerja, belajar, jaga hubungan, ambil peluang, atau bangun sesuatu milikmu. Dunia bergerak walau kamu diam—dan pilihan yang kamu ambil akan membuka sekaligus menutup kemungkinan lain.',note:'Nggak ada satu ending terbaik. Game ini tentang melihat hidup seperti apa yang terbentuk dari keputusanmu.'}
   ];
-  const step=Math.max(0,Math.min(2,ui.onboardingStep||0));
-  const x=steps[step];
-  return `<div class="menu-screen onboarding-screen"><div class="menu-inner onboarding-inner">
-    <div class="onboarding-head"><button class="icon-btn back" data-ui="onboarding-back" aria-label="Kembali">‹</button><div class="onboarding-progress" aria-label="Langkah ${step+1} dari 3">${steps.map((_,i)=>`<span class="${i===step?'active':i<step?'done':''}"></span>`).join('')}</div><button class="text-btn onboarding-skip" data-ui="onboarding-skip">Lewati</button></div>
-    <div class="onboarding-card"><div class="eyebrow">${x.kicker}</div><div class="onboarding-title">${esc(x.title)}</div><div class="onboarding-text">${esc(x.text)}</div><div class="onboarding-note">${esc(x.note)}</div></div>
-    <button class="btn primary menu-primary" data-ui="${step===2?'onboarding-finish':'onboarding-next'}">${step===2?'Mulai hidup':'Lanjut'}</button>
-    <div class="build-note">Build U · UX Foundation</div>
-  </div></div>`;
+  const x=beats[step];
+  return `<div class="prologue-screen"><div class="prologue-visual"><img src="./assets/scenes/home.svg" alt="Kamar Fernando"/><div class="prologue-shade"></div><div class="ambient ambient-a"></div><div class="ambient ambient-b"></div></div><div class="prologue-panel"><div class="prologue-top"><button class="icon-btn" data-ui="prologue-back" aria-label="Kembali">‹</button><div class="prologue-dots"><span class="active"></span><span class="${step===1?'active':''}"></span></div><button class="text-btn" data-ui="prologue-skip">Lewati</button></div><div class="prologue-copy"><div class="eyebrow">${x.k}</div><h1>${esc(x.title)}</h1><p>${esc(x.text)}</p><div class="prologue-note">${esc(x.note)}</div></div><button class="btn primary prologue-next" data-ui="${step===1?'prologue-finish':'prologue-next'}">${step===1?'Mulai hidup':'Lanjut'}</button></div></div>`;
 }
 
 function primarySkill(state){
-  if(state.player.job==='mechanic_junior'||state.player.job==='mechanic_senior') return 'mechanics';
-  if(state.player.job==='store_clerk'||state.player.job==='store_supervisor') return 'social';
-  if(state.player.job==='it_assistant') return 'technology';
+  if(['mechanic_junior','mechanic_senior'].includes(state.player.job))return 'mechanics';
+  if(['store_clerk','store_supervisor'].includes(state.player.job))return 'social';
+  if(state.player.job==='it_assistant')return 'technology';
   return state.discoveredSkills.includes('technology')?'technology':'learning';
 }
-
-function skillProgress(state,id){
-  const xp=state.skills[id]||0;
-  const current=getSkillTier(xp);
-  const idx=skillTiers.findIndex(t=>t.id===current.id);
-  if(idx===skillTiers.length-1) return {pct:100,text:'Ahli'};
-  const next=skillTiers[idx+1];
-  const pct=Math.max(0,Math.min(100,((xp-current.min)/(next.min-current.min))*100));
-  return {pct,text:`${Math.round(pct)}% menuju ${next.label}`};
-}
-
-function jobText(state){
-  if(!state.player.job) return 'Belum bekerja';
-  const company=currentWorkplaceSnapshot(state);
-  return `${jobLabel(state.player.job)} · ${state.player.workplace}${company?` · ${company.label}`:''}`;
-}
+function skillProgress(state,id){const xp=state.skills[id]||0,current=getSkillTier(xp),idx=skillTiers.findIndex(t=>t.id===current.id);if(idx===skillTiers.length-1)return{pct:100,text:'Ahli'};const next=skillTiers[idx+1],pct=Math.max(0,Math.min(100,((xp-current.min)/(next.min-current.min))*100));return{pct,text:`${Math.round(pct)}% menuju ${next.label}`};}
+function jobText(state){if(!state.player.job)return 'Belum bekerja';const company=currentWorkplaceSnapshot(state);return `${jobLabel(state.player.job)} · ${state.player.workplace}${company?` · ${company.label}`:''}`;}
 
 function renderMainMenu(state,ui){
-  const cal=getCalendar(state.time.totalHours);
-  const hasSave=ui.hasSave;
-  const continueCopy=state.player.job?jobText(state):lifeDirection(state);
-  return `<div class="menu-screen">
-    <div class="menu-inner">
-      <div class="brand-block">
-        <div class="brand-mark">H</div>
-        <div class="brand-title">HIDUP</div>
-        <div class="brand-subtitle">Setiap pilihan meninggalkan jejak.</div>
-      </div>
-
-      ${renderSystemNotice(ui)}
-      ${hasSave?`<div class="resume-card">
-        <div class="resume-top"><div><div class="eyebrow">HIDUP TERAKHIR</div><div class="resume-name">${esc(state.player.name)}</div></div><div class="resume-money">${money(state.player.money)}</div></div>
-        <div class="resume-meta">Umur ${cal.age} · Bulan ${cal.month} Hari ${cal.day} · ${String(cal.hour).padStart(2,'0')}:00</div>
-        <div class="resume-line">${esc(continueCopy)}</div>
-        <div class="resume-line muted">${esc(lifeDirection(state))}</div>
-      </div>`:`<div class="menu-intro">Mulai dari umur 18. Waktu terus bergerak, dunia ikut berubah, dan nggak ada satu jalan hidup yang dianggap paling benar.</div>`}
-
-      <div class="menu-actions">
-        <button class="btn primary menu-primary" data-ui="${hasSave?'continue-game':'start-new'}">${hasSave?'Lanjutkan':'Mulai Hidup'}</button>
-        ${hasSave?'<button class="btn quiet center" data-ui="start-new">Mulai Hidup Baru</button>':''}
-        <button class="btn quiet center" data-ui="open-settings">Pengaturan</button>
-        ${ui.installAvailable?'<button class="btn quiet center" data-ui="install">Pasang aplikasi</button>':''}
-      </div>
-      <div class="build-note">Build U · UX Foundation</div>
-    </div>
-  </div>`;
+  const cal=getCalendar(state.time.totalHours),hasSave=ui.hasSave,continueCopy=state.player.job?jobText(state):lifeDirection(state);
+  return `<div class="menu-screen visual-menu"><div class="menu-visual">${renderSceneHero(state,{menu:true})}<div class="menu-brand"><div class="brand-chip">H</div><div><div class="brand-title">HIDUP</div><div class="brand-subtitle">Setiap pilihan meninggalkan jejak.</div></div></div></div><div class="menu-panel">${renderSystemNotice(ui)}${hasSave?`<div class="resume-card"><div class="resume-top"><div><span class="eyebrow">HIDUP TERAKHIR</span><strong>${esc(state.player.name)}</strong></div><b>${money(state.player.money)}</b></div><div class="resume-line">Umur ${cal.age} · B${cal.month} H${cal.day}</div><div class="resume-line">${esc(continueCopy)}</div><div class="resume-direction">${esc(lifeDirection(state))}</div></div>`:`<div class="menu-intro"><b>Umur 18. Semua masih terbuka.</b><span>Mulai dari hidup sederhana dan lihat keputusanmu membentuk karier, orang-orang di sekitar, dan dunia yang terus bergerak.</span></div>`}<div class="menu-actions"><button class="btn primary menu-primary" data-ui="${hasSave?'continue-game':'start-new'}">${hasSave?'Lanjutkan':'Mulai Hidup'}</button>${hasSave?'<button class="btn quiet" data-ui="start-new">Mulai Hidup Baru</button>':''}<button class="btn quiet" data-ui="open-settings">Pengaturan</button>${ui.installAvailable?'<button class="btn quiet" data-ui="install">Pasang aplikasi</button>':''}</div><div class="build-note">Build V · Visual Presentation Overhaul</div></div></div>`;
 }
+function settingChoice(label,value,current,dataAttr){return `<button class="seg ${current===value?'active':''}" ${dataAttr}="${value}">${esc(label)}</button>`;}
+function renderSettings(ui){const p=ui.prefs;return `<div class="menu-screen settings-screen"><div class="settings-visual"><div class="settings-orb"></div><div><span class="eyebrow">PENGATURAN</span><h1>Tampilan & kenyamanan</h1></div></div><div class="settings-inner"><button class="icon-btn settings-back" data-ui="settings-back" aria-label="Kembali">‹</button>${renderSystemNotice(ui)}<div class="settings-card"><b>Tema</b><span>Ikuti perangkat atau pilih tampilan tetap.</span><div class="segments three">${settingChoice('Sistem','system',p.theme,'data-pref-theme')}${settingChoice('Terang','light',p.theme,'data-pref-theme')}${settingChoice('Gelap','dark',p.theme,'data-pref-theme')}</div></div><div class="settings-card"><b>Ukuran teks</b><span>Pilih ukuran yang paling nyaman dibaca.</span><div class="segments two">${settingChoice('Normal','normal',p.textSize,'data-pref-text')}${settingChoice('Besar','large',p.textSize,'data-pref-text')}</div></div><div class="settings-card toggle-card"><div><b>Animasi ambient</b><span>Gerakan scene, transisi, dan feedback visual.</span></div><button class="switch ${p.motion?'on':''}" data-ui="toggle-motion" role="switch" aria-checked="${p.motion?'true':'false'}"><span></span></button></div><div class="settings-foot">Pengaturan tampilan tersimpan terpisah dari save hidupmu.</div></div></div>`;}
 
-function settingChoice(label,value,current,dataAttr){
-  return `<button class="seg ${current===value?'active':''}" ${dataAttr}="${value}">${esc(label)}</button>`;
-}
+function activityIcon(id){return id==='work'?'work':id==='study'?'study':id==='rest'?'rest':id==='rian'?'people':id==='family'?'home':id==='business_manage'?'business':'search';}
+function renderActions(state){const acts=availableActivities(state);return `<div class="action-dock"><div class="dock-head"><div><span class="eyebrow">MAU NGAPAIN?</span><b>Pilih penggunaan waktu</b></div><span>${acts.length} aksi</span></div><div class="action-grid">${acts.map((a,i)=>`<button class="action-tile ${i===0?'featured':''}" data-action="${esc(a.id)}"><span class="action-icon">${iconSvg(activityIcon(a.id))}</span><span class="action-copy"><b>${esc(a.name)}</b><small>${esc(a.hint)}</small></span><span class="action-arrow">›</span></button>`).join('')}</div></div>`;}
+function visibleOpportunities(state){return state.opportunities.filter(op=>!getContent('opportunities',op.id)||contentEnabled(state,'opportunities',op.id));}
+function renderOpportunities(state){const ops=visibleOpportunities(state);if(!ops.length)return '';return `<section class="opportunity-section"><div class="section-heading"><div><span class="eyebrow">PELUANG</span><h3>Kesempatan yang terbuka</h3></div><span>${ops.length}</span></div><div class="opportunity-track">${ops.map(op=>{const left=op.expireAt?Math.max(0,op.expireAt-state.time.totalHours):null;const claim=op.contested&&op.claimAt?Math.max(0,op.claimAt-state.time.totalHours):null;return `<article class="opportunity-card ${op.contested?'contested':''}"><div class="op-icon">${iconSvg('spark')}</div><div class="op-copy"><span class="eyebrow">${op.contested?'DIPEREBUTKAN':'PELUANG'}</span><h4>${esc(op.name)}</h4><p>${esc(op.summary)}</p>${claim!==null?`<small>${esc(op.competitor||'Orang lain')} juga mengincar · ${claim<=24?'kurang dari sehari':Math.ceil(claim/24)+' hari'}</small>`:left!==null?`<small>${left<=24?'Segera berakhir':Math.ceil(left/24)+' hari tersisa'}</small>`:''}</div><button class="btn primary compact" data-opportunity="${esc(op.id)}">Ambil</button></article>`;}).join('')}</div></section>`;}
 
-function renderSettings(ui){
-  const p=ui.prefs;
-  return `<div class="menu-screen settings-screen">
-    <div class="menu-inner settings-inner">
-      <div class="menu-page-head"><button class="icon-btn back" data-ui="settings-back" aria-label="Kembali">‹</button><div><div class="eyebrow">PENGATURAN</div><div class="menu-page-title">Tampilan</div></div></div>
-      ${renderSystemNotice(ui)}
-      <div class="settings-card">
-        <div class="setting-row"><div><b>Tema</b><div class="setting-help">Ikuti perangkat atau pilih tampilan tetap.</div></div></div>
-        <div class="segments three">
-          ${settingChoice('Sistem','system',p.theme,'data-pref-theme')}
-          ${settingChoice('Terang','light',p.theme,'data-pref-theme')}
-          ${settingChoice('Gelap','dark',p.theme,'data-pref-theme')}
-        </div>
-      </div>
-
-      <div class="settings-card">
-        <div class="setting-row"><div><b>Ukuran teks</b><div class="setting-help">Tidak mengubah jumlah informasi, hanya kenyamanan baca.</div></div></div>
-        <div class="segments two">
-          ${settingChoice('Normal','normal',p.textSize,'data-pref-text')}
-          ${settingChoice('Besar','large',p.textSize,'data-pref-text')}
-        </div>
-      </div>
-
-      <div class="settings-card setting-toggle-row">
-        <div><b>Animasi lembut</b><div class="setting-help">Matikan untuk mengurangi gerakan/transisi.</div></div>
-        <button class="switch ${p.motion?'on':''}" data-ui="toggle-motion" role="switch" aria-checked="${p.motion?'true':'false'}"><span></span></button>
-      </div>
-
-      <div class="settings-foot">Pengaturan tampilan dan onboarding disimpan terpisah dari save hidupmu.</div>
-    </div>
-  </div>`;
-}
-
-function renderFocusCard(kicker,title,text,body='',action=''){
-  return `<div class="focus-card">
-    <div class="focus-kicker">${esc(kicker)}</div>
-    <div class="focus-title">${esc(title)}</div>
-    ${text?`<div class="focus-text">${text}</div>`:''}
-    ${body}
-    ${action}
-  </div>`;
-}
-
-function renderChapter(profile){
-  if(!profile) return '';
-  const traits=`<div class="trait-list">${profile.traits.map(x=>`<div class="trait">${esc(x)}</div>`).join('')}</div>`;
-  return renderFocusCard('BAB PERTAMA SELESAI',profile.title,esc(profile.summary),traits+'<div class="focus-note">Ini bukan ending. Ini pembacaan sementara dari hidup yang sudah kamu bangun.</div>','<button class="btn primary full" data-ui="close-chapter">Lanjutkan hidup</button>');
-}
-
-function renderEvent(state){
-  const ev=state.pendingEvent;
-  if(!ev) return '';
-  const choices=`<div class="choices">${ev.choices.map((choice,index)=>`<button class="choice" data-event-choice="${index}"><span><b>${esc(choice.label)}</b>${choice.hint?`<span class="hint">${esc(choice.hint)}</span>`:''}</span><span class="choice-arrow">›</span></button>`).join('')}</div>`;
-  return renderFocusCard(ev.type||'SESUATU TERJADI',ev.title,esc(ev.text),choices);
-}
-
-function visibleOpportunities(state){
-  return state.opportunities.filter(op=>!getContent('opportunities',op.id) || contentEnabled(state,'opportunities',op.id));
-}
-
-function renderOpportunities(state){
-  const opportunities=visibleOpportunities(state);
-  if(!opportunities.length) return '';
-  return `<div class="stack opportunities-stack">${opportunities.map(op=>{
-    const left=op.expireAt?Math.max(0,op.expireAt-state.time.totalHours):null;
-    const expiry=left===null?'':`<span class="tag ${left<=24?'urgent':''}">${left<=24?'Segera berakhir':Math.ceil(left/24)+' hari'}</span>`;
-    const claimLeft=op.contested&&op.claimAt?Math.max(0,op.claimAt-state.time.totalHours):null;
-    const contested=claimLeft===null?'':`<div class="opportunity-warning">${esc(op.competitor||'Orang lain')} juga mengincar · ${claimLeft<=24?'kurang dari sehari':Math.ceil(claimLeft/24)+' hari untuk bergerak'}</div>`;
-    return `<article class="opportunity-card ${op.contested?'contested':''}">
-      <div class="opportunity-head"><div><div class="eyebrow">${op.contested?'PELUANG DIPEREBUTKAN':'PELUANG'}</div><div class="opportunity-title">${esc(op.name)}</div></div>${expiry}</div>
-      <div class="opportunity-summary">${esc(op.summary)}</div>${contested}
-      <button class="btn primary full compact" data-opportunity="${esc(op.id)}">Ambil peluang</button>
-    </article>`;
-  }).join('')}</div>`;
-}
-
-function renderLife(state,ui){
-  const condition=getCondition(state.player.fatigue);
-  const skillId=primarySkill(state),tier=getSkillTier(state.skills[skillId]||0),progress=skillProgress(state,skillId);
-  const acts=availableActivities(state);
-  return `<section id="life" class="page-stack">
-    ${renderChapter(ui.chapterProfile)}
-    ${ui.offlineSummary?renderFocusCard('SAAT KAMU PERGI','Rutinitas tetap berjalan',ui.offlineSummary,'','<button class="btn primary full" data-ui="close-offline">Lanjutkan hidup</button>'):''}
-    ${ui.milestone?renderFocusCard('PENCAPAIAN','Pilihan hidupmu mulai saling terhubung','Karier, kemampuan, hubungan, dan pekerjaan sampingan sekarang mulai menciptakan konsekuensi yang berbeda.','','<button class="btn primary full" data-ui="close-milestone">Lanjut bermain</button>'):''}
-    ${renderEvent(state)}
-    ${renderActionFeedback(ui)}
-
-    <div class="card life-card">
-      <div class="card-head"><div><div class="eyebrow">SEKARANG</div><div class="section-title large">${esc(lifeDirection(state))}</div><div class="subline">${esc(jobText(state))}</div></div><span class="pill">${esc(SKILL_NAMES[skillId])} · ${esc(tier.label)}</span></div>
-      <div class="skill-block"><div class="row small"><b>${esc(SKILL_NAMES[skillId])}</b><span class="muted">${esc(progress.text)}</span></div><div class="bar"><div style="width:${progress.pct}%"></div></div></div>
-      ${renderOpportunities(state)}
-      ${state.pendingEvent?'':`<div class="next-action"><div class="eyebrow">LANGKAH BERIKUTNYA</div><div class="actions">${acts.map(a=>`<button class="btn action-btn" data-action="${a.id}"><b>${esc(a.name)}</b><span class="hint">${esc(a.hint)}</span></button>`).join('')}</div></div>`}
-      <div class="result small"><span>Catatan terakhir</span>${esc(ui.result||'Pilihanmu akan menentukan jalur yang mulai terbuka.')}</div>
-    </div>
-
-    <div class="card secondary-card">
-      <div class="card-head"><div><div class="section-title">Rutinitas</div><div class="subline">${state.flags.routineUnlocked?(state.routine.enabled?'Aktif · hal repetitif berjalan otomatis':'Tersedia, tapi belum aktif'):'Terbuka setelah kamu punya ritme kerja.'}</div></div><button class="btn mini center ${state.routine.enabled?'tone-positive':''}" data-ui="toggle-routine" ${state.flags.routineUnlocked?'':'disabled'}>${state.routine.enabled?'Matikan':'Aktifkan'}</button></div>
-      <div class="focus-note">Rutinitas hanya mengotomatisasi hal repetitif. Event, peluang, dan keputusan penting tetap menunggumu.</div>
-      ${state.routine.enabled?'<button class="text-btn" data-ui="simulate-offline">Simulasikan 4 jam offline →</button>':''}
-    </div>
-
-    <div class="stat-strip"><div><span>Uang</span><b>${compactMoney(state.player.money)}</b></div><div class="${toneClass(conditionTone(condition.id))}"><span>Kondisi</span><b>${esc(condition.label)}</b></div><div><span>Arah</span><b>${esc(trajectoryLabel(state))}</b></div></div>
-  </section>`;
-}
+function renderEventOverlay(state){const ev=state.pendingEvent;if(!ev)return '';return `<div class="event-backdrop"><div class="event-sheet" role="dialog" aria-modal="true"><div class="event-art"><div class="event-glow"></div><span>${iconSvg('spark')}</span></div><div class="event-body"><span class="eyebrow">${esc(ev.type||'SESUATU TERJADI')}</span><h2>${esc(ev.title)}</h2><p>${esc(ev.text)}</p><div class="choices">${ev.choices.map((choice,index)=>`<button class="choice" data-event-choice="${index}"><span><b>${esc(choice.label)}</b>${choice.hint?`<small>${esc(choice.hint)}</small>`:''}</span><span>›</span></button>`).join('')}</div></div></div></div>`;}
+function renderSpecialCards(state,ui){const cards=[];if(ui.offlineSummary)cards.push(`<div class="special-card"><span class="special-icon">${iconSvg('world')}</span><div><b>Saat kamu pergi</b><p>${ui.offlineSummary}</p></div><button class="text-btn" data-ui="close-offline">Tutup</button></div>`);if(ui.milestone)cards.push(`<div class="special-card"><span class="special-icon">${iconSvg('spark')}</span><div><b>Pilihanmu mulai terhubung</b><p>Karier, kemampuan, hubungan, dan kerja sampingan mulai menciptakan konsekuensi berbeda.</p></div><button class="text-btn" data-ui="close-milestone">Oke</button></div>`);if(ui.chapterProfile)cards.push(`<div class="special-card"><span class="special-icon">${iconSvg('spark')}</span><div><b>${esc(ui.chapterProfile.title)}</b><p>${esc(ui.chapterProfile.summary)}</p></div><button class="text-btn" data-ui="close-chapter">Lanjut</button></div>`);return cards.join('');}
+function renderLife(state,ui){const skillId=primarySkill(state),tier=getSkillTier(state.skills[skillId]||0),progress=skillProgress(state,skillId);return `<section class="visual-life">${renderSceneHero(state)}${renderActionFeedback(ui)}${renderSpecialCards(state,ui)}${renderOpportunities(state)}${state.pendingEvent?'':renderActions(state)}<div class="life-glance"><div class="glance-main"><span class="eyebrow">PERKEMBANGAN</span><div class="glance-title"><b>${esc(SKILL_NAMES[skillId])}</b><span>${esc(tier.label)}</span></div><div class="bar"><div style="width:${progress.pct}%"></div></div><small>${esc(progress.text)}</small></div><div class="glance-side"><span class="eyebrow">SEKARANG</span><b>${esc(jobText(state))}</b><span>${esc(trajectoryLabel(state))}</span></div></div><div class="routine-mini"><span class="routine-icon">${iconSvg('world')}</span><div><b>Rutinitas</b><small>${state.flags.routineUnlocked?(state.routine.enabled?'Aktif · aktivitas repetitif bisa berjalan saat kamu pergi':'Tersedia · keputusan penting tetap manual'):'Terbuka setelah kamu punya ritme kerja.'}</small></div><button class="switch ${state.routine.enabled?'on':''}" data-ui="toggle-routine" ${state.flags.routineUnlocked?'':'disabled'} role="switch" aria-checked="${state.routine.enabled?'true':'false'}"><span></span></button></div></section>`;}
 
 function renderWorld(state){
-  const people=[];
-  const world=worldSnapshot(state);
-  const rianLife={serabutan:'Teman masa kecil · masih mengambil kerja serabutan',kurir:'Teman masa kecil · bekerja sebagai kurir',koordinator_logistik:'Teman masa kecil · koordinator logistik'}[state.npc.rian?.life]||'Teman masa kecil · ramah, impulsif';
-  people.push({name:'Rian',relation:relationshipLabel(state.relationships.rian),desc:rianLife});
-  if(state.npc.pak_arman.known) people.push({name:'Pak Arman',relation:relationshipLabel(state.relationships.pak_arman),desc:'Pemilik bengkel · tegas, adil'});
-  if(state.npc.dika.known){
-    const desc=state.npc.dika.life==='kepala_mekanik'?'Mantan rekan · sekarang kepala mekanik di bengkel lain':state.npc.dika.life==='bengkel_lain'?'Mantan rekan bengkel · sekarang bekerja di tempat lain':'Rekan bengkel · ambisius, kompetitif';
-    people.push({name:'Dika',relation:relationshipLabel(state.relationships.dika),desc});
-  }
-  if(state.npc.maya.known) people.push({name:'Maya',relation:relationshipLabel(state.relationships.maya),desc:state.npc.maya.life==='manajer_cabang'?'Manajer cabang · tenang, praktis':'Supervisor toko · tenang, praktis'});
-  if(state.npc.nadia.known) people.push({name:'Nadia',relation:relationshipLabel(state.relationships.nadia),desc:state.npc.nadia.life==='lead_teknisi'?'Lead teknisi · cepat, pragmatis':'Teknisi senior · cepat, pragmatis'});
-  if(state.npc.ari?.known) people.push({name:'Ari',relation:relationshipLabel(state.relationships.ari||0),desc:!state.business?.active?'Pernah membantu usaha kecilmu':state.business?.delegated?'Helper usahamu · mulai memegang pekerjaan rutin':'Helper usahamu · masih banyak bekerja bersamamu'});
-  const activeOpps=visibleOpportunities(state);
-  return `<section id="world" class="page-stack">
-    <div class="card">
-      <div class="card-head"><div><div class="eyebrow">DUNIA</div><div class="section-title large">Kondisi ${esc(world.phase)}</div><div class="subline">Simulasi bergerak setiap 7 hari game.</div></div><span class="pill ${toneClass(phaseTone(world.phase))}">Minggu ${state.world?.week||0}</span></div>
-      <div class="metric-grid"><div class="metric ${toneClass(demandTone(world.jobMarket))}"><span>Pasar kerja</span><b>${esc(world.jobMarket)}</b></div><div class="metric ${toneClass(costTone(world.costTrend))}"><span>Biaya hidup</span><b>${esc(world.costTrend)}</b></div><div class="metric ${toneClass(demandTone(world.mechanics))}"><span>Bengkel</span><b>${esc(world.mechanics)}</b></div><div class="metric ${toneClass(demandTone(world.retail))}"><span>Retail</span><b>${esc(world.retail)}</b></div><div class="metric ${toneClass(demandTone(world.technology))}"><span>Teknologi</span><b>${esc(world.technology)}</b></div></div>
-      ${world.news.length?`<div class="signal-list">${world.news.map(x=>`<div class="signal">${esc(x)}</div>`).join('')}</div>`:renderEmptyState('Dunia sedang tenang','Belum ada perubahan besar yang perlu kamu perhatikan minggu ini.')}
-    </div>
-
-    ${state.business?.active?(()=>{const c=world.competitors?.[state.business.sector];const pos=businessMarketPosition(state);return `<div class="card"><div class="eyebrow">PASAR USAHAMU</div><div class="section-title">${esc(state.business.name||'Usaha Kecil')}</div><div class="key-row"><span>Posisi pasar</span><b>${esc(pos.label)}</b></div><div class="key-row"><span>Reputasi</span><b>${esc(businessMarketReputationLabel(state))}</b></div><div class="key-row"><span>Tekanan kompetitor</span><b>${esc(businessCompetitorPressureLabel(state))}</b></div>${c?`<div class="signal">${esc(c.name)} · ${esc(c.actionLabel)} · kekuatan ${Math.round(c.strength)}</div>`:''}<div class="subline space-top">Respons saat ini: ${esc(businessStrategyLabel(state))}</div></div>`})():''}
-
-    <div class="card"><div class="eyebrow">TEMPAT KERJA</div><div class="section-title">Kondisi perusahaan</div><div class="list clean-list">${Object.values(world.workplaces||{}).map(c=>{const risk=employmentRiskLabel(c);return `<div class="list-row"><div><b>${esc(c.name)}</b><div class="subline">Arus usaha ${esc(companyCashflowLabel(c.margin||0))} · ${c.headcount||'-'} orang</div></div><div class="align-right"><b class="tone-text ${toneClass(workplaceTone(c.label))}">${esc(c.label)}</b><div class="subline tone-text ${toneClass(riskTone(risk))}">Risiko ${esc(risk)}</div></div></div>`}).join('')}</div></div>
-
-    <div class="card"><div class="card-head"><div><div class="eyebrow">PELUANG</div><div class="section-title">Yang sedang terbuka</div></div><span class="pill">${activeOpps.length}</span></div><div class="list clean-list">${activeOpps.length?activeOpps.map(o=>`<div class="list-row single"><div><b>${esc(o.name)}</b><div class="subline">${esc(o.summary)}</div></div></div>`).join(''):renderEmptyState('Belum ada peluang penting','Aktivitas, kemampuan, dan perubahan dunia akan membuka peluang baru.')}</div></div>
-
-    <div class="card"><div class="eyebrow">ORANG</div><div class="section-title">Lingkaran hidupmu</div><div class="list clean-list">${people.map(p=>`<div class="list-row"><div><b>${esc(p.name)}</b><div class="subline">${esc(p.desc)}</div></div><span class="relation">${esc(p.relation)}</span></div>`).join('')}</div></div>
-
-    <div class="card"><div class="eyebrow">TERBARU</div><div class="section-title">Perubahan dunia</div><div class="timeline">${state.recent.length?state.recent.slice(0,8).map(x=>`<div class="timeline-item">${esc(x)}</div>`).join(''):renderEmptyState('Belum ada perubahan besar','Dunia akan meninggalkan jejak di sini saat sesuatu yang relevan terjadi.')}</div></div>
-  </section>`;
+  const world=worldSnapshot(state),activeOpps=visibleOpportunities(state),people=[];
+  const rianLife={serabutan:'Masih mengambil kerja serabutan',kurir:'Sekarang bekerja sebagai kurir',koordinator_logistik:'Sudah menjadi koordinator logistik'}[state.npc.rian?.life]||'Teman masa kecil';people.push({name:'Rian',relation:relationshipLabel(state.relationships.rian),desc:rianLife});
+  if(state.npc.pak_arman.known)people.push({name:'Pak Arman',relation:relationshipLabel(state.relationships.pak_arman),desc:'Pemilik Bengkel Sinar Jaya'});
+  if(state.npc.dika.known)people.push({name:'Dika',relation:relationshipLabel(state.relationships.dika),desc:state.npc.dika.life==='kepala_mekanik'?'Sudah menjadi kepala mekanik':state.npc.dika.life==='bengkel_lain'?'Bekerja di bengkel lain':'Mekanik di Sinar Jaya'});
+  if(state.npc.maya.known)people.push({name:'Maya',relation:relationshipLabel(state.relationships.maya),desc:state.npc.maya.life==='manajer_cabang'?'Manajer cabang':'Supervisor toko'});
+  if(state.npc.nadia.known)people.push({name:'Nadia',relation:relationshipLabel(state.relationships.nadia),desc:state.npc.nadia.life==='lead_teknisi'?'Lead teknisi':'Teknisi senior'});
+  if(state.npc.ari?.known)people.push({name:'Ari',relation:relationshipLabel(state.relationships.ari||0),desc:state.business?.active?'Helper usahamu':'Pernah membantu usahamu'});
+  return `<section class="page-stack visual-page"><div class="world-hero"><div class="world-sky"><span class="city c1"></span><span class="city c2"></span><span class="city c3"></span><span class="city c4"></span><span class="city c5"></span><span class="world-pulse"></span></div><div class="world-copy"><span class="eyebrow">DUNIA · MINGGU ${state.world?.week||0}</span><h2>${esc(world.phase)}</h2><p>Pasar, perusahaan, dan orang lain bergerak tanpa menunggumu.</p></div></div><div class="metric-grid visual-metrics"><div class="metric ${toneClass(demandTone(world.jobMarket))}"><span>Pasar kerja</span><b>${esc(world.jobMarket)}</b></div><div class="metric ${toneClass(costTone(world.costTrend))}"><span>Biaya hidup</span><b>${esc(world.costTrend)}</b></div><div class="metric ${toneClass(demandTone(world.mechanics))}"><span>Bengkel</span><b>${esc(world.mechanics)}</b></div><div class="metric ${toneClass(demandTone(world.retail))}"><span>Retail</span><b>${esc(world.retail)}</b></div><div class="metric ${toneClass(demandTone(world.technology))}"><span>Teknologi</span><b>${esc(world.technology)}</b></div></div>${world.news.length?`<div class="signal-card"><span class="signal-icon">${iconSvg('world')}</span><div>${world.news.slice(0,4).map(x=>`<p>${esc(x)}</p>`).join('')}</div></div>`:''}${state.business?.active?(()=>{const c=world.competitors?.[state.business.sector];return `<div class="visual-card"><div class="card-visual-icon">${iconSvg('business')}</div><div class="card-copy"><span class="eyebrow">PASAR USAHAMU</span><h3>${esc(state.business.name||'Usaha Kecil')}</h3><p>${esc(businessMarketPosition(state).label)} · ${esc(businessMarketReputationLabel(state))}</p>${c?`<small>${esc(c.name)} · ${esc(c.actionLabel)}</small>`:''}</div><span class="status-chip">${esc(businessCompetitorPressureLabel(state))}</span></div>`})():''}<div class="section-heading"><div><span class="eyebrow">TEMPAT KERJA</span><h3>Kondisi perusahaan</h3></div></div><div class="company-grid">${Object.values(world.workplaces||{}).map(c=>{const risk=employmentRiskLabel(c);return `<div class="company-card"><div class="company-mark">${esc(c.name.charAt(0))}</div><div><b>${esc(c.name)}</b><span>${c.headcount||'-'} orang · arus ${esc(companyCashflowLabel(c.margin||0)).toLowerCase()}</span></div><div class="company-state ${toneClass(workplaceTone(c.label))}"><b>${esc(c.label)}</b><span>Risiko ${esc(risk)}</span></div></div>`}).join('')}</div><div class="section-heading"><div><span class="eyebrow">ORANG</span><h3>Lingkaran hidupmu</h3></div></div><div class="people-grid">${people.map(p=>`<div class="person-card"><div class="person-avatar">${esc(p.name.charAt(0))}</div><div><b>${esc(p.name)}</b><span>${esc(p.desc)}</span></div><small>${esc(p.relation)}</small></div>`).join('')}</div><div class="section-heading"><div><span class="eyebrow">PELUANG DUNIA</span><h3>${activeOpps.length?activeOpps.length+' kesempatan terbuka':'Belum ada yang mendesak'}</h3></div></div>${activeOpps.length?`<div class="mini-opps">${activeOpps.slice(0,4).map(o=>`<div><b>${esc(o.name)}</b><span>${esc(o.summary)}</span></div>`).join('')}</div>`:renderEmptyState('Dunia sedang tenang','Aktivitas dan perubahan dunia akan membuka kesempatan baru.')}</section>`;
 }
 
 function renderYou(state){
-  const skills=state.discoveredSkills.map(id=>({id,name:SKILL_NAMES[id]||id,tier:getSkillTier(state.skills[id]||0).label,progress:skillProgress(state,id)}));
-  const finance=financialState(state);
-  const statuses=state.player.statuses.map(id=>STATUS_NAMES[id]||id);
-  const profile=getOutcomeProfile(state);
-  const health=state.business?.active?businessHealthLabel(state):'';
-  return `<section id="you" class="page-stack">
-    <div class="card profile-card"><div class="eyebrow">JEJAK HIDUP</div><div class="section-title hero-title">${esc(profile.title)}</div><div class="profile-summary">${esc(profile.summary)}</div>${state.flags.verticalSliceComplete?'<span class="pill space-top tone-positive">Bab 1 terbentuk</span>':''}</div>
-
-    <div class="card"><div class="eyebrow">KAMU</div><div class="section-title">Kemampuan</div><div class="skill-list">${skills.map(s=>`<div class="skill-row"><div class="row"><b>${esc(s.name)}</b><span>${esc(s.tier)}</span></div><div class="bar slim"><div style="width:${s.progress.pct}%"></div></div></div>`).join('')}</div></div>
-
-    <div class="card"><div class="eyebrow">KEADAAN HIDUP</div><div class="key-row"><span>Arah</span><b>${esc(lifeDirection(state))}</b></div><div class="key-row"><span>Strategi</span><b>${esc(trajectoryLabel(state))}</b></div><div class="key-row"><span>Tempat tinggal</span><b>${esc(housingLabel(state))}</b></div><div class="key-row"><span>Keuangan</span><b class="tone-text ${toneClass(financeTone(finance.id))}">${esc(finance.label)}</b></div><div class="subline space-top">Biaya hidup ${money(state.economy.livingCost)}/bulan</div>${statuses.length?`<div class="tag-cloud">${statuses.map(x=>`<span class="tag">${esc(x)}</span>`).join('')}</div>`:''}</div>
-
-    <div class="card"><div class="eyebrow">KARIER</div><div class="section-title">${esc(state.player.job?jobLabel(state.player.job):'Belum bekerja')}</div><div class="subline space-top">${state.player.job?esc(state.player.workplace):'Peluang kerja akan muncul dari pilihan dan keadaan dunia.'}</div>${state.player.job?`<div class="key-row space-top"><span>Gaji saat ini</span><b>${money(state.player.salary||JOBS[state.player.job]?.salary||0)}/hari</b></div>`:''}<div class="key-row"><span>Pendapatan sampingan</span><b>${money(state.career.sideIncomeTotal||0)}</b></div></div>
-
-    ${state.business?.active?`<div class="card"><div class="card-head"><div><div class="eyebrow">USAHA KECIL</div><div class="section-title">${esc(state.business.name||'Usaha Kecil')}</div></div><span class="pill ${toneClass(businessHealthTone(health))}">${esc(health)}</span></div><div class="key-row"><span>Skala</span><b>${esc(businessScaleLabel(state))}</b></div><div class="key-row"><span>Kapasitas</span><b>${state.business.servedClients||state.business.clients||0}/${state.business.capacity||2}</b></div><div class="key-row"><span>Pelanggan tetap</span><b>${state.business.retainedClients||0}</b></div>${state.business.helperActive?`<div class="key-row"><span>Ari</span><b>${esc(businessHelperLabel(state))}</b></div>`:''}<div class="key-row"><span>Profit minggu lalu</span><b>${money(state.business.lastWeeklyProfit||0)}</b></div><div class="subline space-top">Pasar ${esc(businessMarketPosition(state).label)} · ${esc(businessMarketReputationLabel(state))} · strategi ${esc(businessStrategyLabel(state).toLowerCase())}</div></div>`:''}
-
-    <details class="card history-card"><summary><span><span class="eyebrow">RIWAYAT</span><span class="section-title">Riwayat hidup</span></span><span class="summary-hint">${state.history.length} catatan</span></summary><div class="timeline history-timeline">${state.history.map(x=>`<div class="timeline-item">${esc(x)}</div>`).join('')}</div></details>
-  </section>`;
+  const skills=state.discoveredSkills.map(id=>({id,name:SKILL_NAMES[id]||id,tier:getSkillTier(state.skills[id]||0).label,progress:skillProgress(state,id)})),finance=financialState(state),profile=getOutcomeProfile(state),statuses=state.player.statuses.map(id=>STATUS_NAMES[id]||id),health=state.business?.active?businessHealthLabel(state):'';
+  return `<section class="page-stack visual-page"><div class="profile-hero"><div class="profile-avatar"><span>F</span><div class="avatar-orbit"></div></div><div class="profile-copy"><span class="eyebrow">FERNANDO · UMUR ${getCalendar(state.time.totalHours).age}</span><h2>${esc(profile.title)}</h2><p>${esc(profile.summary)}</p></div></div><div class="identity-strip"><div><span>Arah</span><b>${esc(lifeDirection(state))}</b></div><div class="${toneClass(financeTone(finance.id))}"><span>Keuangan</span><b>${esc(finance.label)}</b></div><div><span>Tempat tinggal</span><b>${esc(housingLabel(state))}</b></div></div><div class="section-heading"><div><span class="eyebrow">KEMAMPUAN</span><h3>Yang sedang kamu bangun</h3></div></div><div class="skill-visual-grid">${skills.map(s=>`<div class="skill-visual"><div class="skill-ring" style="--p:${Math.max(6,s.progress.pct)}%"><span>${Math.round(s.progress.pct)}%</span></div><div><b>${esc(s.name)}</b><span>${esc(s.tier)}</span></div></div>`).join('')}</div><div class="visual-card"><div class="card-visual-icon">${iconSvg('work')}</div><div class="card-copy"><span class="eyebrow">KARIER</span><h3>${esc(state.player.job?jobLabel(state.player.job):'Belum bekerja')}</h3><p>${state.player.job?esc(state.player.workplace):'Belum ada tempat kerja tetap.'}</p><small>${state.player.job?`${money(state.player.salary||JOBS[state.player.job]?.salary||0)}/hari`:`Pendapatan sampingan ${money(state.career.sideIncomeTotal||0)}`}</small></div></div>${state.business?.active?`<div class="visual-card"><div class="card-visual-icon">${iconSvg('business')}</div><div class="card-copy"><span class="eyebrow">USAHA</span><h3>${esc(state.business.name||'Usaha Kecil')}</h3><p>${esc(businessScaleLabel(state))} · ${esc(businessMarketPosition(state).label)}</p><small>${state.business.retainedClients||0} pelanggan tetap · profit terakhir ${money(state.business.lastWeeklyProfit||0)}</small></div><span class="status-chip ${toneClass(businessHealthTone(health))}">${esc(health)}</span></div>`:''}<div class="tag-cloud">${statuses.map(x=>`<span class="tag">${esc(x)}</span>`).join('')}</div><details class="history-card"><summary><span><span class="eyebrow">RIWAYAT</span><b>Jejak hidup</b></span><small>${state.history.length} catatan</small></summary><div class="timeline">${state.history.map(x=>`<div class="timeline-item">${esc(x)}</div>`).join('')}</div></details></section>`;
 }
 
-function renderGameHeader(state){
-  const cal=getCalendar(state.time.totalHours),condition=getCondition(state.player.fatigue);
-  return `<header class="game-header">
-    <div class="game-header-left"><div class="header-time">Umur ${cal.age} · B${cal.month} H${cal.day} · ${String(cal.hour).padStart(2,'0')}:00</div><div class="header-name">${esc(state.player.name)}</div></div>
-    <div class="game-header-right"><div class="header-money">${money(state.player.money)}</div><div class="header-condition tone-text ${toneClass(conditionTone(condition.id))}">${esc(condition.label)}</div></div>
-    <button class="icon-btn menu-btn" data-ui="open-menu" aria-label="Buka menu">•••</button>
-  </header>`;
-}
-
-function renderGame(root,state,ui){
-  const page=ui.tab==='life'?renderLife(state,ui):ui.tab==='world'?renderWorld(state):renderYou(state);
-  root.innerHTML=`<div class="game-shell">${renderGameHeader(state)}<main class="game-main">${renderSystemNotice(ui)}${page}</main><nav class="tabs" aria-label="Navigasi utama"><button class="tab ${ui.tab==='life'?'active':''}" data-tab="life"><span>HIDUP</span></button><button class="tab ${ui.tab==='world'?'active':''}" data-tab="world"><span>DUNIA</span></button><button class="tab ${ui.tab==='you'?'active':''}" data-tab="you"><span>KAMU</span></button></nav></div>`;
-}
-
-function render(root,state,ui){
-  let screen='';
-  if(ui.screen==='settings') screen=renderSettings(ui);
-  else if(ui.screen==='onboarding') screen=renderOnboarding(ui);
-  else if(ui.screen==='menu') screen=renderMainMenu(state,ui);
-  else{
-    renderGame(root,state,ui);
-    if(ui.confirm) root.insertAdjacentHTML('beforeend',renderConfirm(ui));
-    return;
-  }
-  root.innerHTML=screen+renderConfirm(ui);
-}
+function renderGameHeader(state){const cal=getCalendar(state.time.totalHours),condition=getCondition(state.player.fatigue);return `<header class="game-header"><div class="header-clock"><b>${String(cal.hour).padStart(2,'0')}:00</b><span>B${cal.month} · H${cal.day}</span></div><div class="header-center"><b>${esc(state.player.name)}</b><span>${esc(state.player.job?jobLabel(state.player.job):'Mencari arah')}</span></div><div class="header-wallet"><b>${compactMoney(state.player.money)}</b><span class="${toneClass(conditionTone(condition.id))}">${esc(condition.label)}</span></div><button class="icon-btn menu-btn" data-ui="open-menu" aria-label="Menu">•••</button></header>`;}
+function navIcon(id){return id==='life'?iconSvg('home'):id==='world'?iconSvg('world'):iconSvg('user');}
+function renderGame(root,state,ui){const page=ui.tab==='life'?renderLife(state,ui):ui.tab==='world'?renderWorld(state):renderYou(state);root.innerHTML=`<div class="game-shell">${renderGameHeader(state)}<main class="game-main">${renderSystemNotice(ui)}${page}</main><nav class="tabs"><button class="tab ${ui.tab==='life'?'active':''}" data-tab="life">${navIcon('life')}<span>HIDUP</span></button><button class="tab ${ui.tab==='world'?'active':''}" data-tab="world">${navIcon('world')}<span>DUNIA</span></button><button class="tab ${ui.tab==='you'?'active':''}" data-tab="you">${navIcon('you')}<span>KAMU</span></button></nav></div>${renderEventOverlay(state)}${renderConfirm(ui)}`;}
+function render(root,state,ui){if(ui.screen==='game'){renderGame(root,state,ui);return;}let screen='';if(ui.screen==='settings')screen=renderSettings(ui);else if(ui.screen==='prologue')screen=renderPrologue(ui);else screen=renderMainMenu(state,ui);root.innerHTML=screen+renderConfirm(ui);}

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Bengkel Sinar Jaya">
+  <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a9ced8"/><stop offset="1" stop-color="#efe0b2"/></linearGradient><linearGradient id="shop" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#8e938b"/><stop offset="1" stop-color="#666b66"/></linearGradient></defs>
+  <rect width="1200" height="675" fill="url(#sky)"/><rect y="478" width="1200" height="197" fill="#66625b"/>
+  <rect x="65" y="125" width="1070" height="390" rx="18" fill="url(#shop)"/><rect x="92" y="195" width="770" height="320" fill="#363b3c"/><rect x="890" y="190" width="214" height="325" fill="#d2c4a7"/>
+  <rect x="140" y="230" width="625" height="255" fill="#4a5050"/><path d="M140 250h625M180 230v255M725 230v255" stroke="#676d6b" stroke-width="10"/>
+  <rect x="146" y="133" width="470" height="62" rx="14" fill="#d8a33c"/><text x="381" y="173" text-anchor="middle" font-family="Arial, sans-serif" font-size="31" font-weight="700" fill="#31291f">BENGKEL SINAR JAYA</text>
+  <g transform="translate(245 365)"><ellipse cx="240" cy="128" rx="247" ry="35" fill="#292d2d" opacity=".4"/><path d="M45 76c24-60 88-83 160-87h160c83 7 123 38 153 87l27 12v63H23V92z" fill="#b44c39"/><path d="M137 1h198c45 8 78 27 104 62H91c13-29 27-46 46-62z" fill="#a9d1d8"/><circle cx="117" cy="151" r="48" fill="#252829"/><circle cx="117" cy="151" r="22" fill="#a7a9a8"/><circle cx="447" cy="151" r="48" fill="#252829"/><circle cx="447" cy="151" r="22" fill="#a7a9a8"/></g>
+  <g transform="translate(820 360)"><circle cx="66" cy="0" r="40" fill="#b9825c"/><path d="M31-7c13-49 74-53 89-1-35-22-57-22-89 1z" fill="#282321"/><rect x="30" y="38" width="73" height="118" rx="22" fill="#334958"/><path d="M38 75L3 130M96 76l48 38" stroke="#b9825c" stroke-width="18" stroke-linecap="round"/><path d="M48 151l-11 97M88 151l26 97" stroke="#27343d" stroke-width="22" stroke-linecap="round"/></g>
+  <rect x="930" y="240" width="115" height="180" rx="9" fill="#85775f"/><g stroke="#4f493f" stroke-width="13"><path d="M953 278h70M953 325h70M953 372h70"/></g>
+  <g fill="#c9d1cd"><circle cx="112" cy="558" r="16"/><circle cx="175" cy="566" r="12"/><circle cx="1070" cy="565" r="14"/></g>
+</svg>

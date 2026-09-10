@@ -1,12 +1,12 @@
 {
-  "name": "Hidup — Idle Life Simulation",
+  "name": "Hidup — Life Simulation",
   "short_name": "Hidup",
-  "description": "Idle life simulation sistemik dalam Bahasa Indonesia.",
+  "description": "Life simulation sistemik dengan dunia yang bergerak dan presentasi visual.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f4f3ef",
-  "theme_color": "#f4f3ef",
+  "background_color": "#111416",
+  "theme_color": "#111416",
   "lang": "id",
   "icons": [
     {

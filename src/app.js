@@ -21,7 +21,7 @@ if(hadSaveAtLaunch && !prefs.onboardingSeen){
 const ui={
   screen:'menu',tab:'life',result:'Pilihanmu akan menentukan jalur yang mulai terbuka.',offlineSummary:'',
   milestone:false,chapterProfile:null,installAvailable:false,hasSave:hadSaveAtLaunch,prefs,
-  onboardingStep:0,confirm:null,feedback:null,updateAvailable:false,
+  prologueStep:0,confirm:null,feedback:null,updateAvailable:false,
   networkOnline:typeof navigator==='undefined'?true:navigator.onLine!==false
 };
 
@@ -175,17 +175,18 @@ function runActivity(id){
 
 function requestStartNewLife(){
   if(ui.hasSave){
-    ui.confirm={type:'new-life',title:'Mulai hidup baru?',text:'Hidup Fernando yang sekarang akan diganti. Pengaturan tampilan tetap tersimpan.'};
+    ui.confirm={type:'new-life',title:'Mulai hidup baru?',text:'Hidup Fernando yang sekarang akan diganti setelah prolog selesai. Pengaturan tampilan tetap tersimpan.'};
     draw();
     return;
   }
-  if(!prefs.onboardingSeen){
-    ui.onboardingStep=0;
-    ui.screen='onboarding';
-    draw();
-    return;
-  }
-  commitNewLife();
+  beginPrologue();
+}
+
+function beginPrologue(){
+  ui.confirm=null;
+  ui.prologueStep=0;
+  ui.screen='prologue';
+  draw();
 }
 
 function commitNewLife(){
@@ -206,7 +207,7 @@ function commitNewLife(){
   draw();
 }
 
-function finishOnboarding(){
+function finishPrologue(){
   prefs=savePrefs({...prefs,onboardingSeen:true});
   prefs=applyPrefs(prefs);
   ui.prefs=prefs;
@@ -228,17 +229,17 @@ function handleUi(action){
     return;
   }
   if(action==='start-new'){requestStartNewLife();return;}
-  if(action==='confirm-new-life'){commitNewLife();return;}
+  if(action==='confirm-new-life'){beginPrologue();return;}
   if(action==='cancel-confirm'){ui.confirm=null;draw();return;}
-  if(action==='onboarding-next'){
-    ui.onboardingStep=Math.min(2,(ui.onboardingStep||0)+1);
+  if(action==='prologue-next'){
+    ui.prologueStep=Math.min(1,(ui.prologueStep||0)+1);
     draw();return;
   }
-  if(action==='onboarding-back'){
-    if((ui.onboardingStep||0)<=0){ui.screen='menu';draw();return;}
-    ui.onboardingStep=Math.max(0,ui.onboardingStep-1);draw();return;
+  if(action==='prologue-back'){
+    if((ui.prologueStep||0)<=0){ui.screen='menu';draw();return;}
+    ui.prologueStep=Math.max(0,ui.prologueStep-1);draw();return;
   }
-  if(action==='onboarding-finish'||action==='onboarding-skip'){finishOnboarding();return;}
+  if(action==='prologue-finish'||action==='prologue-skip'){finishPrologue();return;}
   if(action==='open-menu'){
     persist();
     ui.screen='menu';

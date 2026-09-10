@@ -1,24 +1,31 @@
-# Hidup — Build U
+# Hidup — Build V
 
-Build U menutup checkpoint **Fase 4.5 — UI/UX Foundation** dengan fokus pada UX operasional dan feedback pemain.
+Build V adalah **Visual Presentation Overhaul v1**. Engine dan Content Framework tetap dipertahankan, tetapi layer presentasi dirombak supaya game tidak terasa seperti text game penuh.
 
-## Fokus Build U
+## Fokus Build V
 
-- First-time onboarding 3 langkah yang hanya muncul untuk pemain baru.
-- Pemain dengan save Build T atau lebih lama langsung dianggap sudah onboarded.
-- Feedback setelah aksi/keputusan tanpa membocorkan angka backend mentah.
-- Semantic visual states untuk kondisi positif, waspada, bahaya, dan informasi.
-- Empty states yang menjelaskan kapan konten akan muncul.
-- Dialog konfirmasi in-game untuk Mulai Hidup Baru.
-- Boot/loading placeholder sebelum JavaScript selesai memuat.
-- Status offline dan fondasi update PWA dengan tombol Muat ulang ketika service worker baru menunggu.
-- Tema, ukuran teks, motion, dan status onboarding tetap tersimpan terpisah dari save game.
-- Save Build T dimigrasikan otomatis ke save version 17.
+- Hero scene visual tetap di layar HIDUP.
+- Scene berubah sesuai kondisi Fernando: rumah, bengkel, toko, Nusa Komputer, atau usaha sendiri.
+- Pencahayaan scene mengikuti waktu game: pagi, siang, sore, malam.
+- Ambient motion ringan; bisa dimatikan lewat Pengaturan.
+- Action dock dengan ikon menggantikan daftar tombol teks panjang.
+- Opportunity cards menjadi horizontal visual track.
+- Event penting muncul sebagai overlay/sheet yang mengambil fokus.
+- Main Menu dan Settings memakai layout visual baru.
+- DUNIA memakai city pulse visualization dan kartu NPC/perusahaan lebih visual.
+- KAMU memakai profile hero, skill rings, dan identity strip.
+- Prolog 2 beat muncul setiap kali pemain sengaja memulai Hidup Baru.
+- Continue save lama tidak memunculkan prolog.
 
-## Struktur
+## Prolog
 
-Project tetap memakai struktur folder normal (`src/`, `styles/`) untuk static hosting / GitHub Pages.
+1. Fernando berumur 18 tahun, tinggal bersama keluarga, punya sedikit tabungan, belum punya pekerjaan tetap, dan arah hidup masih terbuka.
+2. Pemain membangun hidup lewat waktu, kerja, belajar, hubungan, peluang, dan usaha. Dunia bergerak sendiri dan tidak ada satu ending terbaik.
 
 ## Save
 
-Save key lama dipertahankan agar progres Build F–T terbawa. Mulai Hidup Baru tidak mereset preference aplikasi.
+Build U -> Build V otomatis migrasi ke Save Version 18 dengan SAVE_KEY lama tetap dipertahankan.
+
+## Asset visual
+
+`assets/scenes/` berisi SVG scene ringan supaya GitHub Pages/PWA tetap cepat dan offline-friendly. Ini adalah art direction pass pertama; aset bisa diganti dengan ilustrasi final tanpa mengubah simulation engine.

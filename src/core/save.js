@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save Build F–T tetap ikut naik ke Build U.
+// Pertahankan key lama supaya seluruh save Build F–U tetap ikut naik ke Build V.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){

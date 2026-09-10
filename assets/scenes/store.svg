@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Toko Serba Ada">
+  <defs><linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f0e7d5"/><stop offset="1" stop-color="#d8ccb8"/></linearGradient></defs>
+  <rect width="1200" height="675" fill="url(#wall)"/><rect y="520" width="1200" height="155" fill="#b9a88d"/>
+  <rect x="0" y="0" width="1200" height="76" fill="#476b61"/><text x="70" y="51" font-family="Arial,sans-serif" font-size="34" font-weight="800" fill="#f6f0df">TOKO SERBA ADA</text>
+  <g fill="#8b755a"><rect x="72" y="137" width="335" height="350" rx="10"/><rect x="465" y="137" width="310" height="350" rx="10"/></g>
+  <g fill="#ece4cd"><rect x="92" y="158" width="295" height="82"/><rect x="92" y="255" width="295" height="82"/><rect x="92" y="352" width="295" height="82"/><rect x="485" y="158" width="270" height="82"/><rect x="485" y="255" width="270" height="82"/><rect x="485" y="352" width="270" height="82"/></g>
+  <g fill="#d06b52"><rect x="112" y="180" width="36" height="40"/><rect x="165" y="175" width="52" height="45"/><rect x="240" y="186" width="34" height="34"/></g><g fill="#6e8fa4"><rect x="511" y="180" width="38" height="40"/><rect x="571" y="171" width="50" height="49"/><rect x="651" y="183" width="43" height="37"/></g>
+  <rect x="820" y="340" width="300" height="155" rx="18" fill="#6e5a48"/><rect x="850" y="310" width="125" height="36" rx="8" fill="#31383b"/><rect x="875" y="275" width="76" height="48" rx="7" fill="#7198a2"/>
+  <g transform="translate(710 353)"><circle cx="50" cy="0" r="40" fill="#bb8661"/><path d="M15-5c9-40 61-59 76-7-29-15-50-15-76 7z" fill="#2a2422"/><rect x="15" y="36" width="70" height="115" rx="20" fill="#4f7569"/><path d="M19 75l-45 32M80 74l49 23" stroke="#bb8661" stroke-width="17" stroke-linecap="round"/><path d="M34 148l-9 91M68 148l18 91" stroke="#37434a" stroke-width="22" stroke-linecap="round"/></g>
+  <circle cx="1070" cy="114" r="25" fill="#d9a542"/><path d="M1069 76v-31M1069 183v-31M1031 114h-31M1138 114h-31" stroke="#d9a542" stroke-width="8" stroke-linecap="round"/>
+</svg>
