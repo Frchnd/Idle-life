@@ -22,6 +22,8 @@ function takeJob(state,jobId,npc){
 }
 
 function runOpportunity(state,id){
+  const dataResult=runDataOpportunity(state,id);
+  if(dataResult!==null) return dataResult;
   const opp=state.opportunities.find(item=>item.id===id);
   if(!opp) return 'Peluang itu sudah tidak tersedia.';
   if(opp.contested) addRecent(state,`Kamu bergerak lebih cepat dan mengambil “${opp.name}” sebelum ${opp.competitor||'orang lain'}.`);
@@ -215,25 +217,7 @@ function runOpportunity(state,id){
     return 'Kamu pindah ke kamar sewa. Biaya hidup bulanan naik menjadi Rp1.100.000, tetapi belajar dan istirahat di rumah menjadi lebih efektif.';
   }
 
-  if(id==='repay_family'){
-    if(state.player.money<300000) return 'Uangmu belum cukup untuk melunasi utang keluarga.';
-    removeOpportunity(state,id);
-    state.player.money-=300000;
-    state.player.statuses=state.player.statuses.filter(x=>x!=='utang_keluarga');
-    state.relationships.family+=8;
-    addHistory(state,'Umur 18 · Melunasi utang kepada keluarga.');
-    return 'Utang keluarga lunas. Beban hubungan itu selesai.';
-  }
 
-  if(id==='repay_rian'){
-    if(state.player.money<300000) return 'Uangmu belum cukup untuk melunasi utang kepada Rian.';
-    removeOpportunity(state,id);
-    state.player.money-=300000;
-    state.player.statuses=state.player.statuses.filter(x=>x!=='utang_rian');
-    state.relationships.rian+=8;
-    addHistory(state,'Umur 18 · Melunasi utang kepada Rian.');
-    return 'Utang kepada Rian lunas. Hubungan kalian kembali lebih ringan.';
-  }
 
 
   if(id==='market_repair'){

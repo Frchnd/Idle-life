@@ -121,6 +121,9 @@ function getNextEvent(state){
   const scheduled=dueScheduledEvent(state);
   if(scheduled) return scheduled;
 
+  const dataEvent=nextDataEvent(state);
+  if(dataEvent) return dataEvent;
+
 
   if(state.housing?.id==='rented_room' && state.player.money<350000 && !state.flags.rentPressureSeen){
     return event('rent_pressure','KEUANGAN','Biaya Hidup Mulai Terasa','Tinggal sendiri memberi ruang lebih besar, tapi saldo mulai menipis. Sewa bulan berikutnya sekarang terasa seperti keputusan nyata.',[
@@ -313,41 +316,6 @@ function getNextEvent(state){
       {label:'Pinjam dari keluarga',hint:'+Rp300rb · hubungan keluarga turun',effects:[{type:'money',value:300000},{type:'relationship',target:'family',value:-6},{type:'status_add',status:'utang_keluarga'},{type:'flag',key:'moneyPressureSeen',value:true},{type:'history',text:'Umur 18 · Meminjam uang dari keluarga.'}],result:'Kamu punya ruang bernapas, tapi utang itu sekarang menjadi bagian dari hidupmu.'},
       {label:'Pinjam dari Rian',hint:'+Rp300rb · hubungan dengan Rian terpengaruh',effects:[{type:'money',value:300000},{type:'relationship',target:'rian',value:-6},{type:'status_add',status:'utang_rian'},{type:'flag',key:'moneyPressureSeen',value:true},{type:'history',text:'Umur 18 · Meminjam uang dari Rian.'}],result:'Rian membantu, tetapi hubungan kalian sekarang punya beban baru.'},
       {label:'Cari jalan sendiri',effects:[{type:'flag',key:'moneyPressureSeen',value:true}],result:'Kamu memilih tidak berutang pada siapa pun. Tekanan keuangan tetap ada.'}
-    ]);
-  }
-
-  if(getCondition(state.player.fatigue).id==='exhausted' && !state.flags.exhaustedWarningSeen){
-    return event('exhausted','KONDISI','Sudah Terlalu Dipaksakan','Kamu mulai sulit fokus. Kalau terus dipaksa, keputusan kecil bisa berubah menjadi masalah besar.',[
-      {label:'Istirahat sekarang',effects:[{type:'hours',value:8},{type:'fatigue',value:-45},{type:'flag',key:'exhaustedWarningSeen',value:true}],result:'Kamu berhenti memaksakan diri dan memulihkan kondisi.'},
-      {label:'Tetap lanjut',effects:[{type:'flag',key:'exhaustedWarningSeen',value:true}],result:'Kamu memilih tetap jalan. Kondisimu masih buruk dan risiko tetap ada.'}
-    ]);
-  }
-
-  if(state.career.jobSearchCount>=1 && !state.flags.workshopOfferSeen){
-    return event('job_leads','PELUANG AWAL','Dua Lowongan yang Masuk Akal','Setelah bertanya ke beberapa tempat, kamu menemukan dua lowongan yang bisa langsung dicoba. Jalurnya berbeda, dan kamu tidak harus memutuskan sekarang.',[
-      {label:'Catat lowongan bengkel',hint:'Mekanik Junior · Rp120rb/hari',effects:[{type:'flag',key:'workshopOfferSeen',value:true},{type:'opportunity',opportunity:{id:'workshop_job',name:'Mekanik Junior',summary:'8j/hari · Rp120rb · belajar Mekanik'}},{type:'recent',text:'Lowongan Bengkel Sinar Jaya masuk daftar peluangmu.'}],result:'Kamu menyimpan kontak Bengkel Sinar Jaya.'},
-      {label:'Catat keduanya',hint:'Tambahkan juga pekerjaan toko.',effects:[{type:'flag',key:'workshopOfferSeen',value:true},{type:'flag',key:'storeOfferSeen',value:true},{type:'opportunity',opportunity:{id:'workshop_job',name:'Mekanik Junior',summary:'8j/hari · Rp120rb · belajar Mekanik'}},{type:'opportunity',opportunity:{id:'store_job',name:'Pramuniaga',summary:'8j/hari · Rp100rb · banyak interaksi sosial'}},{type:'recent',text:'Dua lowongan awal sekarang tersedia.'}],result:'Sekarang kamu punya dua jalur kerja yang benar-benar berbeda.'}
-    ]);
-  }
-
-  if(!state.player.job && state.career.jobSearchCount>=2 && state.flags.workshopOfferSeen && !state.flags.storeOfferSeen){
-    return event('store_lead','PELUANG KERJA','Lowongan Lain Muncul','Pencarian kedua membawamu ke Toko Serba Ada. Gajinya sedikit lebih rendah dari bengkel, tapi pekerjaan ini lebih banyak melatih cara menghadapi orang.',[
-      {label:'Catat lowongan toko',effects:[{type:'flag',key:'storeOfferSeen',value:true},{type:'opportunity',opportunity:{id:'store_job',name:'Pramuniaga',summary:'8j/hari · Rp100rb · banyak interaksi sosial'}},{type:'recent',text:'Lowongan Toko Serba Ada sekarang tersedia.'}],result:'Sekarang kamu punya alternatif pekerjaan yang lebih sosial.'},
-      {label:'Tidak tertarik',effects:[{type:'flag',key:'storeOfferSeen',value:true}],result:'Kamu memilih tidak mengejar pekerjaan toko.'}
-    ]);
-  }
-
-  if(state.player.job==='mechanic_junior' && workCount(state,'mechanic_junior')>=1 && !state.flags.firstWorkshopDay){
-    return event('first_workshop','HARI PERTAMA','Hari Pertama di Bengkel','Pak Arman memasangkanmu dengan Dika. Bengkel lebih sibuk dari yang terlihat dari luar.',[
-      {label:'Dengarkan baik-baik',effects:[{type:'skill',skill:'mechanics',value:10},{type:'skill',skill:'learning',value:6},{type:'relationship',target:'pak_arman',value:4},{type:'flag',key:'firstWorkshopDay',value:true},{type:'recent',text:'Pak Arman melihat kamu serius belajar.'}],result:'Kamu fokus memahami ritme bengkel.'},
-      {label:'Coba menonjol sejak awal',effects:[{type:'skill',skill:'mechanics',value:16},{type:'relationship',target:'dika',value:-2},{type:'flag',key:'firstWorkshopDay',value:true},{type:'recent',text:'Dika mulai menganggapmu sebagai pesaing.'}],result:'Kamu belajar cepat, tapi persaingan dengan Dika mulai terasa.'}
-    ]);
-  }
-
-  if(state.player.job==='store_clerk' && workCount(state,'store_clerk')>=1 && !state.flags.firstStoreDay){
-    return event('first_store','HARI PERTAMA','Hari Pertama di Toko','Maya, supervisormu, langsung menaruhmu di depan pelanggan. Pekerjaan ini lebih banyak soal membaca orang daripada mengangkat barang.',[
-      {label:'Amati cara Maya melayani',effects:[{type:'skill',skill:'social',value:12},{type:'skill',skill:'learning',value:5},{type:'relationship',target:'maya',value:4},{type:'store_progress',value:1},{type:'flag',key:'firstStoreDay',value:true},{type:'recent',text:'Maya melihat kamu cepat menangkap cara menghadapi pelanggan.'}],result:'Kamu belajar dari cara Maya berbicara dan menyelesaikan masalah.'},
-      {label:'Langsung coba sendiri',effects:[{type:'skill',skill:'social',value:18},{type:'relationship',target:'maya',value:1},{type:'store_progress',value:1},{type:'flag',key:'firstStoreDay',value:true}],result:'Beberapa percakapan canggung, tapi kamu cepat belajar.'}
     ]);
   }
 

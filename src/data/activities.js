@@ -31,12 +31,8 @@ function availableActivities(state){
 }
 
 function executeActivity(state,id){
-  if(id==='job_search'){
-    state.time.totalHours+=6;
-    state.player.fatigue=Math.min(100,state.player.fatigue+8);
-    state.career.jobSearchCount++;
-    return 'Kamu menghabiskan waktu mencari lowongan dan bertanya ke beberapa tempat.';
-  }
+  const dataResult=runDataActivity(state,id);
+  if(dataResult!==null) return dataResult;
   if(id==='study'){
     if(state.player.money<20000) return {error:'Uangmu belum cukup untuk biaya belajar.'};
     state.player.money-=20000;
@@ -48,26 +44,6 @@ function executeActivity(state,id){
     return isLivingAlone(state)
       ? 'Ruang sendiri membuat sesi belajarmu lebih fokus. Belajar dan Teknologi meningkat.'
       : 'Kamu belajar beberapa jam. Kemampuan Belajar dan Teknologi meningkat.';
-  }
-  if(id==='family'){
-    state.time.totalHours+=4;
-    state.player.fatigue=Math.min(100,state.player.fatigue+7);
-    state.relationships.family+=4;
-    state.skills.social+=3;
-    return 'Kamu membantu keluarga dan menghabiskan waktu bersama mereka.';
-  }
-  if(id==='rian'){
-    state.time.totalHours+=3;
-    state.player.fatigue=Math.min(100,state.player.fatigue+5);
-    state.relationships.rian=Math.min(80,state.relationships.rian+3);
-    state.skills.social+=6;
-    return 'Kamu menghabiskan waktu bersama Rian. Hubungan kalian tetap hangat.';
-  }
-  if(id==='career_search'){
-    state.time.totalHours+=4;
-    state.player.fatigue=Math.min(100,state.player.fatigue+5);
-    state.career.changeSearchCount++;
-    return 'Kamu meluangkan waktu melihat lowongan, bertanya ke kenalan, dan membandingkan arah hidup lain.';
   }
   if(id==='business_manage'){
     return manageBusiness(state);
