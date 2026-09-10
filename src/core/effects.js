@@ -1,28 +1,26 @@
-import {addHours} from './time.js';
-
-export function addRecent(state,text){
+function addRecent(state,text){
   state.recent.unshift(text);
   state.recent=state.recent.slice(0,4);
 }
 
-export function addHistory(state,text){
+function addHistory(state,text){
   if(!state.history.includes(text)) state.history.unshift(text);
   state.history=state.history.slice(0,8);
 }
 
-export function discoverSkill(state,id){
+function discoverSkill(state,id){
   if(!state.discoveredSkills.includes(id)) state.discoveredSkills.push(id);
 }
 
-export function addOpportunity(state,opportunity){
+function addOpportunity(state,opportunity){
   if(!state.opportunities.some(item=>item.id===opportunity.id)) state.opportunities.push({...opportunity});
 }
 
-export function removeOpportunity(state,id){
+function removeOpportunity(state,id){
   state.opportunities=state.opportunities.filter(item=>item.id!==id);
 }
 
-export function resolveEffects(state,effects=[]){
+function resolveEffects(state,effects=[]){
   for(const effect of effects){
     switch(effect.type){
       case 'money': state.player.money+=effect.value; break;
@@ -59,6 +57,30 @@ export function resolveEffects(state,effects=[]){
       case 'housing':
         state.housing={...state.housing,...effect.value};
         state.economy.livingCost=state.housing.monthlyCost||state.economy.livingCost;
+        break;
+      case 'salary_delta':
+        state.player.salary=Math.max(0,Math.round((state.player.salary||0)+effect.value));
+        break;
+      case 'salary_scale':
+        state.player.salary=Math.max(0,Math.round((state.player.salary||0)*effect.value));
+        break;
+      case 'job_clear':
+        state.player.job=null; state.player.workplace=null; state.player.salary=0;
+        state.player.statuses=state.player.statuses.filter(x=>!['peran_ganda','gaji_ditekan','jam_lebih_fleksibel'].includes(x));
+        break;
+      case 'career_restructure':
+        state.career.restructureCount=(state.career.restructureCount||0)+1;
+        break;
+      case 'salary_negotiated':
+        state.career.salaryNegotiatedJobs=Array.isArray(state.career.salaryNegotiatedJobs)?state.career.salaryNegotiatedJobs:[];
+        if(state.player.job && !state.career.salaryNegotiatedJobs.includes(state.player.job)) state.career.salaryNegotiatedJobs.push(state.player.job);
+        break;
+      case 'business_close':
+        if(state.business){ state.business.active=false; state.business.lastWeeklyProfit=0; state.business.lossStreak=0; }
+        state.player.statuses=state.player.statuses.filter(x=>x!=='punya_usaha_kecil');
+        break;
+      case 'business_recover':
+        if(state.business){ state.business.reputation=Math.min(100,(state.business.reputation||0)+6); state.business.lossStreak=0; state.business.lastManagedAt=state.time.totalHours; }
         break;
     }
   }

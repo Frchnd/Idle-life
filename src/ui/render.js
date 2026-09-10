@@ -1,10 +1,5 @@
-import {getCalendar} from '../core/time.js';
-import {getCondition,getSkillTier,relationshipLabel,skillTiers,financialState,lifeDirection,housingLabel,trajectoryLabel} from '../core/state.js';
-import {jobLabel} from '../data/jobs.js';
-import {availableActivities} from '../data/activities.js';
-
 const SKILL_NAMES={mechanics:'Mekanik',learning:'Belajar',social:'Sosial',technology:'Teknologi'};
-const STATUS_NAMES={tinggal_bersama_keluarga:'Tinggal bersama keluarga',tinggal_sendiri:'Tinggal sendiri',utang_keluarga:'Berutang pada keluarga',utang_rian:'Berutang pada Rian',punya_laptop:'Punya laptop sendiri',fokus_karier:'Memprioritaskan karier utama',jalur_mandiri:'Membangun jalur mandiri'};
+const STATUS_NAMES={tinggal_bersama_keluarga:'Tinggal bersama keluarga',tinggal_sendiri:'Tinggal sendiri',utang_keluarga:'Berutang pada keluarga',utang_rian:'Berutang pada Rian',punya_laptop:'Punya laptop sendiri',fokus_karier:'Memprioritaskan karier utama',jalur_mandiri:'Membangun jalur mandiri',jam_lebih_fleksibel:'Punya jadwal kerja lebih fleksibel',peran_ganda:'Memegang peran ganda di tempat kerja',gaji_ditekan:'Kompensasi tertekan setelah restrukturisasi',punya_usaha_kecil:'Punya usaha kecil sendiri'};
 
 function money(value){
   const sign=value<0?'-':'';
@@ -35,7 +30,14 @@ function skillProgress(state,id){
 
 function jobText(state){
   if(!state.player.job) return 'Belum bekerja';
-  return `${jobLabel(state.player.job)} · ${state.player.workplace}`;
+  const company=currentWorkplaceSnapshot(state);
+  return `${jobLabel(state.player.job)} · ${state.player.workplace}${company?` · ${company.label}`:''}`;
+}
+
+
+function renderChapter(profile){
+  if(!profile) return '';
+  return `<div class="card event"><div class="label">BAB PERTAMA SELESAI</div><div class="section-title" style="font-size:1.2rem;margin-top:6px">${esc(profile.title)}</div><div class="muted small" style="margin-top:8px;line-height:1.5">${esc(profile.summary)}</div><div class="list" style="margin-top:12px">${profile.traits.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div><div class="note" style="margin-top:12px">Ini bukan ending. Ini pembacaan sementara dari hidup yang sudah kamu bangun di Vertical Slice.</div><button class="btn primary" style="width:100%;margin-top:14px" data-ui="close-chapter">Lanjutkan hidup</button></div>`;
 }
 
 function renderEvent(state){
@@ -54,7 +56,9 @@ function renderOpportunities(state){
   return `<div class="opp">${state.opportunities.map(op=>{
     const left=op.expireAt?Math.max(0,op.expireAt-state.time.totalHours):null;
     const expiry=left===null?'':`<span class="label">${left<=24?'Segera berakhir':Math.ceil(left/24)+' hari lagi'}</span>`;
-    return `<div class="opp-card"><div class="row"><div><div class="label">PELUANG</div><div class="section-title" style="margin-top:4px">${esc(op.name)}</div><div class="muted small" style="margin-top:4px">${esc(op.summary)}</div></div>${expiry}</div><button class="btn primary" style="width:100%;margin-top:10px" data-opportunity="${esc(op.id)}">Ambil peluang</button></div>`;
+    const claimLeft=op.contested&&op.claimAt?Math.max(0,op.claimAt-state.time.totalHours):null;
+    const contested=claimLeft===null?'':`<div class="note" style="margin-top:7px">Diperebutkan · ${esc(op.competitor||'orang lain')} juga mengincar${claimLeft<=24?' · bisa diambil dalam kurang dari sehari':' · sekitar '+Math.ceil(claimLeft/24)+' hari untuk bergerak'}</div>`;
+    return `<div class="opp-card"><div class="row"><div><div class="label">${op.contested?'PELUANG DIPEREBUTKAN':'PELUANG'}</div><div class="section-title" style="margin-top:4px">${esc(op.name)}</div><div class="muted small" style="margin-top:4px">${esc(op.summary)}</div>${contested}</div>${expiry}</div><button class="btn primary" style="width:100%;margin-top:10px" data-opportunity="${esc(op.id)}">Ambil peluang</button></div>`;
   }).join('')}</div>`;
 }
 
@@ -63,6 +67,7 @@ function renderLife(state,ui){
   const skillId=primarySkill(state), tier=getSkillTier(state.skills[skillId]||0), progress=skillProgress(state,skillId);
   const acts=availableActivities(state);
   return `<section id="life">
+    ${renderChapter(ui.chapterProfile)}
     ${ui.offlineSummary?`<div class="card event"><div class="label">SAAT KAMU PERGI</div><div class="section-title" style="font-size:1.1rem;margin-top:6px">Rutinitas tetap berjalan</div><div class="muted small" style="margin-top:8px;line-height:1.5">${ui.offlineSummary}</div><button class="btn primary" style="width:100%;margin-top:14px" data-ui="close-offline">Lanjutkan hidup</button></div>`:''}
     ${ui.milestone?`<div class="card event"><div class="label">PENCAPAIAN VERTICAL SLICE</div><div class="section-title" style="font-size:1.15rem;margin-top:6px">Pilihan hidupmu mulai saling terhubung</div><div class="muted small" style="margin-top:8px;line-height:1.5">Karier, kemampuan, hubungan, dan pekerjaan sampingan sekarang mulai menciptakan konsekuensi yang berbeda. Ini sudah lebih dekat ke bentuk game final daripada sekadar prototipe loop.</div><button class="btn primary" style="width:100%;margin-top:14px" data-ui="close-milestone">Lanjut bermain</button></div>`:''}
     ${renderEvent(state)}
@@ -86,15 +91,28 @@ function renderLife(state,ui){
 
 function renderWorld(state){
   const people=[];
-  people.push({name:'Rian',relation:relationshipLabel(state.relationships.rian),desc:state.npc.rian?.life==='kurir'?'Teman masa kecil · sekarang bekerja sebagai kurir':'Teman masa kecil · ramah, impulsif'});
+  const world=worldSnapshot(state);
+  const rianLife={serabutan:'Teman masa kecil · masih mengambil kerja serabutan',kurir:'Teman masa kecil · bekerja sebagai kurir',koordinator_logistik:'Teman masa kecil · koordinator logistik'}[state.npc.rian?.life]||'Teman masa kecil · ramah, impulsif';
+  people.push({name:'Rian',relation:relationshipLabel(state.relationships.rian),desc:rianLife});
   if(state.npc.pak_arman.known) people.push({name:'Pak Arman',relation:relationshipLabel(state.relationships.pak_arman),desc:'Pemilik bengkel · tegas, adil'});
-  if(state.npc.dika.known) people.push({name:'Dika',relation:relationshipLabel(state.relationships.dika),desc:state.npc.dika.life==='bengkel_lain'?'Mantan rekan bengkel · sekarang bekerja di tempat lain':'Rekan bengkel · ambisius, kompetitif'});
+  if(state.npc.dika.known){
+    const desc=state.npc.dika.life==='kepala_mekanik'?'Mantan rekan · sekarang kepala mekanik di bengkel lain':state.npc.dika.life==='bengkel_lain'?'Mantan rekan bengkel · sekarang bekerja di tempat lain':'Rekan bengkel · ambisius, kompetitif';
+    people.push({name:'Dika',relation:relationshipLabel(state.relationships.dika),desc});
+  }
   if(state.npc.maya.known) people.push({name:'Maya',relation:relationshipLabel(state.relationships.maya),desc:state.npc.maya.life==='manajer_cabang'?'Manajer cabang · tenang, praktis':'Supervisor toko · tenang, praktis'});
-  if(state.npc.nadia.known) people.push({name:'Nadia',relation:relationshipLabel(state.relationships.nadia),desc:'Teknisi senior · cepat, pragmatis'});
+  if(state.npc.nadia.known) people.push({name:'Nadia',relation:relationshipLabel(state.relationships.nadia),desc:state.npc.nadia.life==='lead_teknisi'?'Lead teknisi · cepat, pragmatis':'Teknisi senior · cepat, pragmatis'});
   return `<section id="world">
-    <div class="card"><div class="section-title">Peluang Aktif</div><div class="list">${state.opportunities.length?state.opportunities.map(o=>`<div class="item"><b>${esc(o.name)}</b><div class="muted small" style="margin-top:4px">${esc(o.summary)}</div></div>`).join(''):'<div class="empty">Belum ada peluang penting.</div>'}</div>
-    <div class="section-title" style="margin-top:22px">Orang</div><div class="people">${people.map(p=>`<div class="person"><div class="row"><b>${esc(p.name)}</b><span class="small">${esc(p.relation)}</span></div><div class="muted small">${esc(p.desc)}</div></div>`).join('')}</div>
-    <div class="section-title" style="margin-top:22px">Perubahan Terbaru</div><div class="list">${state.recent.length?state.recent.map(x=>`<div class="item small">${esc(x)}</div>`).join(''):'<div class="empty">Belum ada hal penting.</div>'}</div></div>
+    <div class="card">
+      <div class="row"><div><div class="section-title">Kondisi Dunia</div><div class="muted small">Simulasi bergerak setiap 7 hari game.</div></div><span class="pill">${esc(world.phase)}</span></div>
+      <div class="stats" style="margin-top:12px"><div class="stat"><div class="label">Pasar kerja</div><div class="value">${esc(world.jobMarket)}</div></div><div class="stat"><div class="label">Biaya hidup</div><div class="value">${esc(world.costTrend)}</div></div><div class="stat"><div class="label">Minggu dunia</div><div class="value">${state.world?.week||0}</div></div></div>
+      <div class="list" style="margin-top:12px"><div class="item"><div class="row"><span>Bengkel</span><b>${esc(world.mechanics)}</b></div></div><div class="item"><div class="row"><span>Retail</span><b>${esc(world.retail)}</b></div></div><div class="item"><div class="row"><span>Teknologi</span><b>${esc(world.technology)}</b></div></div></div>
+      <div class="section-title" style="margin-top:18px">Kondisi Tempat Kerja</div>
+      <div class="list">${Object.values(world.workplaces||{}).map(c=>`<div class="item"><div class="row"><span>${esc(c.name)}</span><b>${esc(c.label)}</b></div><div class="muted small" style="margin-top:4px">Arus usaha: ${esc(companyCashflowLabel(c.margin||0))} · Tim: ${c.headcount||'-'} orang</div><div class="muted small" style="margin-top:3px">Tekanan: ${esc(pressureLabel(c.pressure))} · Risiko kerja: ${esc(employmentRiskLabel(c))}</div></div>`).join('')}</div>
+      ${world.news.length?`<div class="section-title" style="margin-top:18px">Sinyal Dunia</div><div class="list">${world.news.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>`:''}
+      <div class="section-title" style="margin-top:22px">Peluang Aktif</div><div class="list">${state.opportunities.length?state.opportunities.map(o=>`<div class="item"><b>${esc(o.name)}</b><div class="muted small" style="margin-top:4px">${esc(o.summary)}</div></div>`).join(''):'<div class="empty">Belum ada peluang penting.</div>'}</div>
+      <div class="section-title" style="margin-top:22px">Orang</div><div class="people">${people.map(p=>`<div class="person"><div class="row"><b>${esc(p.name)}</b><span class="small">${esc(p.relation)}</span></div><div class="muted small">${esc(p.desc)}</div></div>`).join('')}</div>
+      <div class="section-title" style="margin-top:22px">Perubahan Terbaru</div><div class="list">${state.recent.length?state.recent.map(x=>`<div class="item small">${esc(x)}</div>`).join(''):'<div class="empty">Belum ada hal penting.</div>'}</div>
+    </div>
   </section>`;
 }
 
@@ -102,14 +120,17 @@ function renderYou(state){
   const skills=state.discoveredSkills.map(id=>({id,name:SKILL_NAMES[id]||id,tier:getSkillTier(state.skills[id]||0).label}));
   const finance=financialState(state);
   const statuses=state.player.statuses.map(id=>STATUS_NAMES[id]||id);
+  const profile=getOutcomeProfile(state);
   return `<section id="you"><div class="card"><div class="section-title">Kamu</div><div class="list">${skills.map(s=>`<div class="item"><div class="row"><span>${esc(s.name)}</span><b>${esc(s.tier)}</b></div></div>`).join('')}</div>
+  <div class="divider"></div><div class="section-title">Jejak Hidup Saat Ini</div><div class="item" style="margin-top:10px"><div class="row"><b>${esc(profile.title)}</b>${state.flags.verticalSliceComplete?'<span class="pill">Bab 1</span>':''}</div><div class="muted small" style="margin-top:6px;line-height:1.45">${esc(profile.summary)}</div></div>
   <div class="divider"></div><div class="section-title">Keadaan Hidup</div><div class="list"><div class="item"><div class="row"><span>Arah</span><b>${esc(lifeDirection(state))}</b></div></div><div class="item"><div class="row"><span>Strategi</span><b>${esc(trajectoryLabel(state))}</b></div></div><div class="item"><div class="row"><span>Tempat tinggal</span><b>${esc(housingLabel(state))}</b></div><div class="muted small" style="margin-top:4px">Biaya hidup: ${money(state.economy.livingCost)}/bulan</div></div><div class="item"><div class="row"><span>Keuangan</span><b>${esc(finance.label)}</b></div></div>${statuses.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>
-  <div class="divider"></div><div class="section-title">Karier & Sampingan</div><div class="small" style="margin-top:6px">${esc(jobText(state))}</div><div class="muted small" style="margin-top:5px">Total pendapatan sampingan: ${money(state.career.sideIncomeTotal||0)}</div>
+  <div class="divider"></div><div class="section-title">Karier & Sampingan</div><div class="small" style="margin-top:6px">${esc(jobText(state))}</div>${state.player.job?`<div class="muted small" style="margin-top:5px">Gaji saat ini: ${money(state.player.salary||JOBS[state.player.job]?.salary||0)}/hari</div>`:''}<div class="muted small" style="margin-top:5px">Total pendapatan sampingan: ${money(state.career.sideIncomeTotal||0)}</div>
+  ${state.business?.active?`<div class="divider"></div><div class="section-title">Usaha Kecil</div><div class="item" style="margin-top:10px"><div class="row"><b>${esc(state.business.name||'Usaha Kecil')}</b><span class="pill">${esc(businessHealthLabel(state))}</span></div><div class="muted small" style="margin-top:6px">Klien aktif: ${state.business.clients||0} · profit minggu terakhir: ${money(state.business.lastWeeklyProfit||0)}</div><div class="muted small" style="margin-top:4px">Total profit usaha: ${money(state.business.totalProfit||0)}</div></div>`:''}
   <div class="divider"></div><div class="section-title">Riwayat Hidup</div><div class="list">${state.history.map(x=>`<div class="item small">${esc(x)}</div>`).join('')}</div>
   <button class="btn center" style="width:100%;margin-top:16px" data-ui="reset">Mulai ulang save</button></div></section>`;
 }
 
-export function render(root,state,ui){
+function render(root,state,ui){
   const cal=getCalendar(state.time.totalHours),condition=getCondition(state.player.fatigue);
   root.innerHTML=`
     <header class="top"><div><div class="muted small">Umur ${cal.age} · Bulan ${cal.month} Hari ${cal.day} · ${String(cal.hour).padStart(2,'0')}:00</div><div class="name">${esc(state.player.name)}</div><div class="muted small">${esc(jobText(state))}</div></div><div><div class="money">${money(state.player.money)}</div><div class="muted small" style="text-align:right">Kondisi: ${condition.label}</div></div></header>

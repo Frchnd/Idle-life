@@ -1,6 +1,3 @@
-import {JOBS} from './jobs.js';
-import {getCondition} from '../core/state.js';
-
 function xpMod(state){
   const id=getCondition(state.player.fatigue).id;
   if(id==='exhausted') return .7;
@@ -12,7 +9,7 @@ function isLivingAlone(state){ return state.housing?.id==='rented_room'; }
 function careerFocus(state){ return state.life?.trajectory==='career'; }
 function independentFocus(state){ return state.life?.trajectory==='independent'; }
 
-export function availableActivities(state){
+function availableActivities(state){
   const list=[];
   if(!state.player.job){
     list.push({id:'job_search',name:'Cari Kerja',hint:'6j · cari peluang kerja',duration:6});
@@ -22,15 +19,17 @@ export function availableActivities(state){
     return list;
   }
   const job=JOBS[state.player.job];
-  list.push({id:'work',name:'Kerja',hint:`${job.duration}j · +Rp${Math.round(job.salary/1000)}rb`,duration:job.duration});
+  const salary=state.player.salary||job.salary;
+  list.push({id:'work',name:'Kerja',hint:`${job.duration}j · +Rp${Math.round(salary/1000)}rb`,duration:job.duration});
   list.push({id:'study',name:'Belajar',hint:isLivingAlone(state)?'4j · Rp20rb · lebih fokus':'4j · Rp20rb',duration:4});
   list.push({id:'rest',name:'Istirahat',hint:isLivingAlone(state)?'8j · pulih lebih tenang':'8j · pulihkan kondisi',duration:8});
   list.push({id:'rian',name:'Main dengan Rian',hint:'3j · sosial',duration:3});
   if(state.career.workCount>=4) list.push({id:'career_search',name:'Cari Peluang Lain',hint:'4j · lihat arah karier lain',duration:4});
+  if(state.business?.active) list.push({id:'business_manage',name:'Urus Usaha',hint:'4j · jaga klien & reputasi',duration:4});
   return list;
 }
 
-export function executeActivity(state,id){
+function executeActivity(state,id){
   if(id==='job_search'){
     state.time.totalHours+=6;
     state.player.fatigue=Math.min(100,state.player.fatigue+8);
@@ -69,6 +68,9 @@ export function executeActivity(state,id){
     state.career.changeSearchCount++;
     return 'Kamu meluangkan waktu melihat lowongan, bertanya ke kenalan, dan membandingkan arah hidup lain.';
   }
+  if(id==='business_manage'){
+    return manageBusiness(state);
+  }
   if(id==='rest'){
     state.time.totalHours+=8;
     state.player.fatigue=Math.max(0,state.player.fatigue-(isLivingAlone(state)?52:45));
@@ -77,20 +79,31 @@ export function executeActivity(state,id){
   if(id==='work'){
     const job=JOBS[state.player.job];
     if(!job) return {error:'Pekerjaan aktif tidak ditemukan.'};
+    const company=currentWorkplaceSnapshot(state);
+    const pressureFatigue=company?(company.pressure>=74?4:company.pressure>=62?2:company.pressure<38?-1:0):0;
+    const growthBonus=company&&company.health>=68?1:0;
+    const salary=state.player.salary||job.salary;
     state.time.totalHours+=job.duration;
-    state.player.money+=job.salary;
-    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0));
+    state.player.money+=salary;
+    const flexibleRelief=state.player.statuses.includes('jam_lebih_fleksibel')?-2:0;
+    const dualRoleCost=state.player.statuses.includes('peran_ganda')?2:0;
+    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0)+pressureFatigue+flexibleRelief+dualRoleCost);
     state.skills[job.skill]=(state.skills[job.skill]||0)+Math.round(job.skillXp*xpMod(state));
     if(!state.discoveredSkills.includes(job.skill)) state.discoveredSkills.push(job.skill);
     state.career.workCount++;
     state.career.jobWorkCounts[state.player.job]=(state.career.jobWorkCounts[state.player.job]||0)+1;
     const focusBonus=careerFocus(state)?1:0;
-    if(state.player.job==='mechanic_junior') state.career.promotionProgress+=1+focusBonus;
-    if(state.player.job==='store_clerk') state.career.storeProgress+=1+focusBonus;
-    if(state.player.job==='it_assistant') state.career.techProgress+=1+focusBonus;
+    if(state.player.job==='mechanic_junior') state.career.promotionProgress+=1+focusBonus+growthBonus;
+    if(state.player.job==='store_clerk') state.career.storeProgress+=1+focusBonus+growthBonus;
+    if(state.player.job==='it_assistant') state.career.techProgress+=1+focusBonus+growthBonus;
     const skillName={mechanics:'Mekanik',social:'Sosial',technology:'Teknologi'}[job.skill]||'kemampuan utama';
-    const extra=careerFocus(state)?' Fokus karier membuat progres pekerjaanmu lebih cepat.':independentFocus(state)?' Menjaga jalur mandiri membuat harimu sedikit lebih berat.':'';
-    return `Kerja selesai · +Rp${job.salary.toLocaleString('id-ID')} · kemampuan ${skillName} meningkat.${extra}`;
+    const parts=[];
+    if(careerFocus(state)) parts.push('Fokus karier membuat progres pekerjaanmu lebih cepat.');
+    if(independentFocus(state)) parts.push('Menjaga jalur mandiri membuat harimu sedikit lebih berat.');
+    if(company?.health>=68) parts.push(`${company.name} sedang tumbuh, jadi tanggung jawab dan peluang belajar datang lebih cepat.`);
+    else if(company?.pressure>=74) parts.push(`${company.name} sedang sangat tertekan; shift ini terasa lebih berat dari biasanya.`);
+    else if(company?.health<42) parts.push(`${company.name} sedang rentan, jadi prospek karier terasa lebih lambat.`);
+    return `Kerja selesai · +Rp${salary.toLocaleString('id-ID')} · kemampuan ${skillName} meningkat.${parts.length?' '+parts.join(' '):''}`;
   }
   return {error:'Aktivitas tidak dikenal.'};
 }

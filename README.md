@@ -1,23 +1,20 @@
-# Hidup — Vertical Slice Build I
+# HIDUP — Build M / Phase 3 Simulation Engine
 
-Build I memperdalam konsekuensi hidup tanpa menambah tab baru.
+Build M kembali memakai struktur project normal untuk development lewat PC.
 
-## Perubahan utama
+## Deploy ke GitHub Pages
+Upload seluruh isi folder ini ke root repo, termasuk folder `src/` dan `styles/`.
 
-- Save Build F–H tetap dipakai dan dimigrasikan otomatis ke versi 5.
-- Sistem **tempat tinggal**: mulai bersama keluarga, lalu bisa memilih menyewa kamar sendiri.
-- Tinggal bersama keluarga lebih murah (Rp600rb/bulan); kamar sewa sendiri lebih mahal (Rp1,1jt/bulan) tetapi membuat belajar dan istirahat lebih efektif.
-- Jika cashflow tinggal sendiri terlalu berat, pemain bisa kembali ke keluarga tanpa reset progres.
-- Relationship milestone tidak lagi bisa dicapai hanya dengan grinding: keluarga dan Rian punya kejadian penting yang membutuhkan waktu nyata.
-- Membantu keluarga pada momen penting dapat mengurangi biaya awal saat pindah.
-- Mendapat kepercayaan Rian meningkatkan nilai beberapa pekerjaan sampingan yang datang melalui jaringannya.
-- Keputusan trajectory baru setelah pekerjaan utama dan side income sama-sama terbukti:
-  - **Fokus karier utama** → progres karier lebih cepat saat bekerja.
-  - **Bangun jalur mandiri** → side income +15% dan peluang berulang lebih cepat, tetapi pekerjaan utama sedikit lebih melelahkan.
-- Biaya hidup mengikuti tempat tinggal secara dinamis.
-- UI tetap hanya **HIDUP / DUNIA / KAMU**.
-- Cache service worker diperbarui untuk Build I.
+## Perubahan Build M
+- Save Build L otomatis dimigrasikan ke save version 9.
+- Source code kembali dipecah ke `src/core`, `src/data`, `src/ui`, dan `styles`.
+- Tempat kerja sekarang punya revenue index, margin, cash reserve, dan headcount abstrak.
+- Perusahaan dapat hiring atau mengurangi posisi sesuai kondisi usahanya.
+- Restrukturisasi dapat menyentuh pekerjaan player dan menghasilkan pilihan: peran lebih luas, kompensasi ditekan, atau pesangon.
+- Gaji player sekarang benar-benar tersimpan terpisah dari base salary job.
+- Negosiasi kompensasi dapat menghasilkan kenaikan gaji atau jadwal lebih fleksibel.
+- Jalur mandiri yang sudah terbukti dapat berkembang menjadi usaha kecil.
+- Usaha kecil memberi profit mingguan mengikuti demand, reputasi, klien, dan skill; mengurus usaha memperbaiki pertumbuhannya.
+- Tidak ada tab baru: usaha dan kondisi perusahaan tetap muncul di HIDUP / DUNIA / KAMU.
 
-## Deploy GitHub Pages
-
-Ganti isi root repo dengan isi folder/ZIP Build I, commit, lalu push. Setelah deploy, tutup dan buka ulang PWA atau refresh agar service worker Build I mengambil cache terbaru.
+Setelah deploy, refresh atau tutup-buka PWA agar service worker Build M mengganti cache Build L.

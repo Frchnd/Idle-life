@@ -1,6 +1,6 @@
-export const SAVE_VERSION = 5;
+const SAVE_VERSION = 9;
 
-export function createInitialState(){
+function createInitialState(){
   return {
     version:SAVE_VERSION,
     player:{
@@ -13,20 +13,24 @@ export function createInitialState(){
       statuses:['tinggal_bersama_keluarga']
     },
     time:{totalHours:0},
-    economy:{lastLivingCostAt:0,livingCost:600000},
+    economy:{lastLivingCostAt:0,livingCost:600000,baseLivingCost:600000},
+    world:{lastSimulatedAt:0,week:0,economy:52,costIndex:100,jobMarket:50,sectors:{mechanics:54,retail:50,technology:56},phase:'stabil',news:[],lastOpportunityWeek:{},workplaces:{sinar_jaya:{health:58,staffing:52,pressure:52,status:'stabil',revenueIndex:56,margin:6,cashReserve:58,headcount:8,lastStaffActionWeek:-99},serba_ada:{health:56,staffing:54,pressure:48,status:'stabil',revenueIndex:52,margin:4,cashReserve:55,headcount:16,lastStaffActionWeek:-99},nusa_komputer:{health:60,staffing:50,pressure:56,status:'stabil',revenueIndex:60,margin:8,cashReserve:62,headcount:7,lastStaffActionWeek:-99}}},
     housing:{id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null},
-    life:{trajectory:'open',majorDecisionAt:null},
+    life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null},
+    pacing:{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8},
+    playtest:{actions:0,opportunitiesTaken:0,careerChanges:0,offlineBatches:0},
     skills:{mechanics:0,learning:25,social:40,technology:0},
     discoveredSkills:['mechanics','learning','social'],
     relationships:{family:60,rian:35,pak_arman:0,dika:0,maya:0,nadia:0},
     npc:{
-      rian:{known:true,life:'serabutan'},
-      pak_arman:{known:false,life:'pemilik_bengkel'},
-      dika:{known:false,rivalry:10,life:'sinar_jaya'},
-      maya:{known:false,life:'supervisor'},
-      nadia:{known:false,life:'teknisi_senior'}
+      rian:{known:true,life:'serabutan',progress:0},
+      pak_arman:{known:false,life:'pemilik_bengkel',progress:0},
+      dika:{known:false,rivalry:10,life:'sinar_jaya',progress:0},
+      maya:{known:false,life:'supervisor',progress:0},
+      nadia:{known:false,life:'teknisi_senior',progress:0}
     },
     assets:{laptop:false},
+    business:{active:false,sector:null,name:null,level:0,reputation:0,clients:0,lastManagedAt:0,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:null},
     career:{
       workCount:0,
       jobSearchCount:0,
@@ -36,6 +40,9 @@ export function createInitialState(){
       changeSearchCount:0,
       changeHandledCount:0,
       sideIncomeTotal:0,
+      salaryNegotiated:false,
+      salaryNegotiatedJobs:[],
+      restructureCount:0,
       jobWorkCounts:{mechanic_junior:0,mechanic_senior:0,store_clerk:0,store_supervisor:0,it_assistant:0}
     },
     flags:{
@@ -82,7 +89,15 @@ export function createInitialState(){
       rianMilestoneSeen:false,
       rianTrusted:false,
       trajectoryChoiceSeen:false,
-      rentPressureSeen:false
+      rentPressureSeen:false,
+      verticalSliceComplete:false,
+      mechanicPromotionFrozenSeen:false,
+      storePromotionFrozenSeen:false,
+      workplaceShockSeen:false,
+      salaryTalkSeen:false,
+      businessPathSeen:false,
+      businessStarted:false,
+      firstBusinessCycleSeen:false
     },
     opportunities:[],
     scheduled:[],
@@ -94,7 +109,7 @@ export function createInitialState(){
   };
 }
 
-export const skillTiers=[
+const skillTiers=[
   {id:'novice',label:'Pemula',min:0},
   {id:'basic',label:'Dasar',min:100},
   {id:'skilled',label:'Terampil',min:300},
@@ -102,19 +117,19 @@ export const skillTiers=[
   {id:'expert',label:'Ahli',min:1500}
 ];
 
-export function getSkillTier(xp){
+function getSkillTier(xp){
   let out=skillTiers[0];
   for(const tier of skillTiers){ if(xp>=tier.min) out=tier; }
   return out;
 }
 
-export function getCondition(fatigue){
+function getCondition(fatigue){
   if(fatigue>=70) return {id:'exhausted',label:'Kelelahan'};
   if(fatigue>=30) return {id:'tired',label:'Lelah'};
   return {id:'good',label:'Baik'};
 }
 
-export function relationshipLabel(value){
+function relationshipLabel(value){
   if(value>=80) return 'Sangat percaya';
   if(value>=50) return 'Dekat';
   if(value>=20) return 'Bersahabat';
@@ -123,7 +138,7 @@ export function relationshipLabel(value){
   return 'Bermusuhan';
 }
 
-export function financialState(state){
+function financialState(state){
   const money=state.player.money;
   if(money<0) return {id:'debt',label:'Berutang'};
   if(money<250000) return {id:'tight',label:'Seret'};
@@ -131,17 +146,17 @@ export function financialState(state){
   return {id:'stable',label:'Stabil'};
 }
 
-export function housingLabel(state){
+function housingLabel(state){
   return state.housing?.id==='rented_room'?'Kamar sewa sendiri':'Bersama keluarga';
 }
 
-export function trajectoryLabel(state){
+function trajectoryLabel(state){
   if(state.life?.trajectory==='career') return 'Fokus karier utama';
   if(state.life?.trajectory==='independent') return 'Karier + jalur mandiri';
   return 'Masih terbuka';
 }
 
-export function lifeDirection(state){
+function lifeDirection(state){
   if(state.life?.trajectory==='independent') return 'Membangun jalur mandiri';
   if(state.life?.trajectory==='career') return 'Memperkuat karier utama';
   if(state.player.job==='mechanic_senior') return 'Karier bengkel mulai mapan';
@@ -157,4 +172,4 @@ export function lifeDirection(state){
   return ranked[0][2];
 }
 
-export function clone(value){ return JSON.parse(JSON.stringify(value)); }
+function clone(value){ return JSON.parse(JSON.stringify(value)); }

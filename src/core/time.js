@@ -1,9 +1,9 @@
-export const HOURS_PER_DAY=24;
-export const DAYS_PER_YEAR=360;
-export const START_AGE=18;
-export const START_HOUR=8;
+const HOURS_PER_DAY=24;
+const DAYS_PER_YEAR=360;
+const START_AGE=18;
+const START_HOUR=8;
 
-export function getCalendar(totalHours){
+function getCalendar(totalHours){
   const absolute=START_HOUR+Math.max(0,Math.floor(totalHours));
   const totalDays=Math.floor(absolute/HOURS_PER_DAY);
   const dayOfLife=1+totalDays;
@@ -20,6 +20,6 @@ export function getCalendar(totalHours){
   };
 }
 
-export function addHours(state,hours){
+function addHours(state,hours){
   state.time.totalHours=Math.max(0,state.time.totalHours+Math.max(0,hours));
 }

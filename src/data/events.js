@@ -1,8 +1,16 @@
-import {getSkillTier,getCondition} from '../core/state.js';
-import {resolveEffects,addRecent} from '../core/effects.js';
-
 function event(id,type,title,text,choices){ return {id,type,title,text,choices}; }
 function workCount(state,job){ return state.career.jobWorkCounts?.[job]||0; }
+
+function managerTargetForWorkplace(id){
+  if(id==='sinar_jaya') return 'pak_arman';
+  if(id==='serba_ada') return 'maya';
+  if(id==='nusa_komputer') return 'nadia';
+  return null;
+}
+
+function basicSkillCount(state){
+  return ['mechanics','social','technology','learning'].filter(id=>getSkillTier(state.skills[id]||0).id!=='novice').length;
+}
 
 function housingDecisionEvent(state,revisit=false){
   const deposit=state.flags.familySupport?1000000:1200000;
@@ -65,7 +73,7 @@ function dueScheduledEvent(state){
 
   if(item.kind==='tech_freelance_offer'){
     return event('tech_freelance_offer','PELUANG SAMPINGAN','Ada Pesan Masuk ke Laptopmu','Seseorang membutuhkan bantuan setup, backup, dan perapihan komputer. Pekerjaan kecil ini bisa dikerjakan di luar jam kerja utama.',[
-      {label:'Ambil detail pekerjaannya',effects:[{type:'opportunity',opportunity:{id:'tech_freelance',name:'Freelance Teknologi',summary:'4j · Rp220rb · dari laptop sendiri',expireAt:state.time.totalHours+72}}],result:'Pekerjaan freelance tersedia selama beberapa hari.'},
+      {label:'Ambil detail pekerjaannya',effects:[{type:'opportunity',opportunity:{id:'tech_freelance',name:'Kerja Lepas Teknologi',summary:'4j · Rp220rb · dari laptop sendiri',expireAt:state.time.totalHours+72}}],result:'Pekerjaan lepas tersedia selama beberapa hari.'},
       {label:'Abaikan dulu',effects:[{type:'schedule',after:96,kind:'tech_freelance_offer'}],result:'Kamu memilih menjaga waktu luangmu. Peluang lain bisa muncul nanti.'}
     ]);
   }
@@ -89,10 +97,25 @@ function dueScheduledEvent(state){
     return housingDecisionEvent(state,true);
   }
 
+  if(item.kind==='job_restructure'){
+    const currentId=workplaceIdFromState(state);
+    if(!state.player.job || (item.workplace && currentId!==item.workplace)) return null;
+    const company=currentWorkplaceSnapshot(state);
+    const salary=state.player.salary||JOBS[state.player.job]?.salary||0;
+    const manager=managerTargetForWorkplace(currentId);
+    const choices=[];
+    if(basicSkillCount(state)>=2){
+      choices.push({label:'Tawarkan peran lebih luas',hint:'Pertahankan pekerjaan · hari kerja sedikit lebih berat',effects:[{type:'status_add',status:'peran_ganda'},{type:'career_restructure'},{type:'relationship',target:manager||'rian',value:4},{type:'recent',text:'Kamu mempertahankan posisi dengan mengambil tanggung jawab lintas fungsi.'}],result:'Kemampuan lintas bidang membuatmu lebih sulit digantikan, tapi beban kerja bertambah.'});
+    }
+    choices.push({label:'Terima kompensasi yang lebih ketat',hint:'Tetap bekerja · gaji turun sekitar 10%',effects:[{type:'salary_scale',value:.9},{type:'status_add',status:'gaji_ditekan'},{type:'career_restructure'}],result:'Pekerjaanmu aman untuk sekarang, tetapi kompensasinya ikut tertekan oleh kondisi perusahaan.'});
+    choices.push({label:'Ambil pesangon dan pergi',hint:`+Rp${Math.round(salary*2).toLocaleString('id-ID')} · kembali mencari arah`,effects:[{type:'money',value:salary*2},{type:'job_clear'},{type:'career_restructure'},{type:'history',text:'Umur 18 · Keluar dari pekerjaan setelah restrukturisasi perusahaan.'}],result:'Kamu memilih keluar dengan pesangon daripada bertahan di tempat yang sedang memangkas biaya.'});
+    return event('job_restructure','RISIKO KERJA','Posisimu Ikut Ditinjau',`${company?.name||'Tempat kerjamu'} sedang mengurangi biaya setelah beberapa minggu yang berat. Bukan semua orang akan kehilangan pekerjaan, tapi posisi kamu ikut dibahas.`,choices);
+  }
+
   return null;
 }
 
-export function getNextEvent(state){
+function getNextEvent(state){
   if(state.pendingEvent) return state.pendingEvent;
 
   const scheduled=dueScheduledEvent(state);
@@ -132,6 +155,39 @@ export function getNextEvent(state){
   }
 
 
+  if(state.business?.active && (state.business.lossStreak||0)>=2){
+    return event('business_losses','USAHA KECIL','Usahamu Dua Minggu Berturut-turut Merugi',`${state.business.name||'Usaha kecilmu'} belum menemukan ritme yang sehat. Menutupnya sekarang berarti mengakui kerugian lebih cepat; mempertahankannya berarti memberi waktu dan tenaga lagi.`,[
+      {label:'Urus lebih serius',hint:'4j · tambah reputasi · pertahankan usaha',effects:[{type:'hours',value:4},{type:'fatigue',value:8},{type:'business_recover'},{type:'recent',text:'Kamu turun tangan lebih serius untuk memperbaiki usaha kecilmu.'}],result:'Kamu memilih memberi usaha ini satu kesempatan lagi. Aktivitas Urus Usaha akan membantu reputasi dan klien.'},
+      {label:'Tutup usaha',hint:'Hentikan profit/rugi mingguan · karier dan skill tetap',effects:[{type:'business_close'},{type:'history',text:'Umur 18 · Menutup usaha kecil setelah beberapa minggu merugi.'}],result:'Kamu menutup usaha sebelum kerugiannya menjadi lubang yang lebih besar. Skill, kontak, dan pengalaman yang didapat tetap menjadi milikmu.'}
+    ]);
+  }
+
+
+  if(state.player.job && !(state.career.salaryNegotiatedJobs||[]).includes(state.player.job)){
+    const company=currentWorkplaceSnapshot(state);
+    const count=workCount(state,state.player.job);
+    if(company && count>=8 && company.health>=58 && company.cashReserve>=42){
+      const manager=managerTargetForWorkplace(company.id);
+      const salary=state.player.salary||JOBS[state.player.job]?.salary||0;
+      const raise=Math.max(10000,Math.round((salary*.12)/5000)*5000);
+      return event('salary_talk','KARIER','Waktunya Membahas Kompensasi',`${company.name} sedang cukup sehat dan kamu sudah punya jam terbang. Ini salah satu momen ketika meminta sesuatu dari perusahaan masuk akal—tapi pilihanmu tidak harus selalu uang.`,[
+        {label:'Minta kenaikan gaji',hint:`Target sekitar +Rp${raise.toLocaleString('id-ID')}/hari`,effects:[{type:'salary_delta',value:raise},{type:'salary_negotiated'},{type:'relationship',target:manager||'rian',value:-1},{type:'history',text:'Umur 18 · Berhasil menegosiasikan kompensasi yang lebih tinggi.'}],result:'Perusahaan menyetujui kenaikan yang masih masuk akal terhadap kondisi usahanya.'},
+        {label:'Minta jadwal lebih fleksibel',hint:'Gaji tetap · kerja utama sedikit lebih ringan',effects:[{type:'status_add',status:'jam_lebih_fleksibel'},{type:'salary_negotiated'},{type:'relationship',target:manager||'rian',value:2}],result:'Kamu menukar kesempatan kenaikan langsung dengan ritme kerja yang lebih fleksibel.'},
+        {label:'Jangan dorong sekarang',effects:[{type:'salary_negotiated'},{type:'relationship',target:manager||'rian',value:1}],result:'Kamu memilih menjaga posisi dan tidak menegosiasikan apa pun sekarang.'}
+      ]);
+    }
+  }
+
+  if(state.life?.trajectory==='independent' && !state.business?.active && (state.career.sideIncomeTotal||0)>=900000 && strongestBusinessSector(state) && !state.flags.businessPathSeen){
+    const sector=strongestBusinessSector(state);
+    const meta=BUSINESS_META[sector];
+    return event('business_path','ARAH HIDUP','Kerja Sampinganmu Mulai Terlihat Seperti Usaha',`Pemasukan sampinganmu sudah berulang, bukan lagi kebetulan satu-dua kali. Dengan modal Rp850rb, ${meta?.label?.toLowerCase()||'jasa kecil'} bisa mulai diperlakukan sebagai usaha sungguhan.`,[
+      {label:'Siapkan usaha kecil',hint:'Modal Rp850rb · profit mingguan mengikuti permintaan pasar',effects:[{type:'flag',key:'businessPathSeen',value:true},{type:'opportunity',opportunity:{id:'start_business',name:`Mulai ${meta?.name||'Usaha Kecil'}`,summary:'Modal Rp850rb · usaha tetap berjalan bersama karier utama'}}],result:'Opsi membuka usaha sekarang tersedia. Kamu tetap boleh mempertahankan pekerjaan utama.'},
+      {label:'Tetap sebagai pekerja lepas',effects:[{type:'flag',key:'businessPathSeen',value:true}],result:'Kamu memilih fleksibilitas kerja lepas tanpa biaya dan tanggung jawab usaha formal.'}
+    ]);
+  }
+
+
   if(state.player.statuses.includes('utang_keluarga') && state.player.money>=500000 && !state.flags.familyDebtRepaySeen){
     return event('repay_family_ready','KEUANGAN','Kamu Sudah Bisa Membayar Kembali','Tabunganmu sudah cukup untuk mengembalikan uang yang pernah kamu pinjam dari keluarga.',[
       {label:'Siapkan pelunasan',hint:'Rp300rb',effects:[{type:'flag',key:'familyDebtRepaySeen',value:true},{type:'opportunity',opportunity:{id:'repay_family',name:'Lunasi Utang Keluarga',summary:'Rp300rb · hilangkan beban utang'}}],result:'Pelunasan sekarang tersedia sebagai keputusan finansial.'},
@@ -146,25 +202,7 @@ export function getNextEvent(state){
     ]);
   }
 
-  if(state.time.totalHours>=240 && !state.flags.rianJobUpdateSeen){
-    return event('rian_job_update','DUNIA BERGERAK','Rian Akhirnya Dapat Kerja Tetap','Tanpa menunggu keputusanmu, Rian berhasil mendapat pekerjaan sebagai kurir. Waktunya sekarang lebih terbatas, tapi penghasilannya jauh lebih stabil.',[
-      {label:'Ikut senang untuk dia',effects:[{type:'flag',key:'rianJobUpdateSeen',value:true},{type:'npc_state',npc:'rian',key:'life',value:'kurir'},{type:'relationship',target:'rian',value:3},{type:'recent',text:'Rian mulai bekerja sebagai kurir.'}],result:'Rian punya hidupnya sendiri. Hubungan kalian tetap ada, tetapi ritmenya mulai berubah.'}
-    ]);
-  }
-
-  if(state.time.totalHours>=360 && state.npc.dika.known && !state.flags.dikaMoveSeen){
-    const close=state.relationships.dika>=20;
-    return event('dika_move','DUNIA BERGERAK','Dika Mendapat Tawaran dari Bengkel Lain','Dika mendapat tawaran dengan gaji sedikit lebih tinggi. Ini bukan keputusanmu, tapi hubungan kalian memengaruhi seberapa terbuka dia membicarakannya.',[
-      {label:'Dukung dia ambil kesempatan',effects:[{type:'flag',key:'dikaMoveSeen',value:true},{type:'flag',key:'dikaLeftWorkshop',value:true},{type:'npc_state',npc:'dika',key:'life',value:'bengkel_lain'},{type:'relationship',target:'dika',value:5},{type:'recent',text:'Dika pindah ke bengkel lain untuk mengejar peluang baru.'}],result:'Dika pindah. Kalian bukan lagi rekan satu bengkel, tapi hubungan baik tetap bisa bertahan.'},
-      {label:close?'Bilang Sinar Jaya masih butuh dia':'Dengarkan saja',effects:[{type:'flag',key:'dikaMoveSeen',value:true},{type:'npc_state',npc:'dika',key:'life',value:close?'sinar_jaya':'bengkel_lain'},{type:'flag',key:'dikaLeftWorkshop',value:!close},{type:'relationship',target:'dika',value:close?3:1}],result:close?'Karena hubungan kalian cukup baik, Dika memutuskan bertahan dulu dan melihat apakah ada ruang tumbuh di Sinar Jaya.':'Dika akhirnya mengambil tawaran itu. Hidupnya terus bergerak meski kamu tidak ikut menentukan.'}
-    ]);
-  }
-
-  if(state.time.totalHours>=480 && state.npc.maya.known && !state.flags.mayaProgressSeen){
-    return event('maya_progress','DUNIA BERGERAK','Maya Dipindahkan ke Cabang Baru','Perusahaan mempercayakan Maya membantu membuka cabang baru. Posisi dan waktunya berubah tanpa menunggu perkembangan kariermu.',[
-      {label:'Ucapkan selamat',effects:[{type:'flag',key:'mayaProgressSeen',value:true},{type:'npc_state',npc:'maya',key:'life',value:'manajer_cabang'},{type:'relationship',target:'maya',value:3},{type:'recent',text:'Maya sekarang membantu mengelola cabang baru.'}],result:'Dunia kerja terus berubah. Maya sekarang punya tanggung jawab yang lebih besar.'}
-    ]);
-  }
+  // Perkembangan hidup NPC sekarang ditangani Simulation Engine mingguan.
 
   if(state.career.changeSearchCount>state.career.changeHandledCount){
     const choices=[];
@@ -180,7 +218,7 @@ export function getNextEvent(state){
 
   if(state.skills.technology>=60 && !state.assets.laptop && !state.flags.laptopOfferSeen){
     return event('laptop_offer','KEPUTUSAN FINANSIAL','Laptop Bekas yang Masih Layak','Rian menemukan laptop bekas yang cukup untuk belajar dan mengambil pekerjaan teknologi ringan. Harganya Rp750rb—cukup besar dibanding tabunganmu sekarang.',[
-      {label:'Simpan peluang pembelian',hint:'Rp750rb · investasi untuk kerja sampingan Teknologi',effects:[{type:'flag',key:'laptopOfferSeen',value:true},{type:'opportunity',opportunity:{id:'buy_laptop',name:'Beli Laptop Bekas',summary:'Rp750rb · membuka freelance Teknologi'}}],result:'Laptop itu sekarang menjadi pilihan investasi, bukan kewajiban.'},
+      {label:'Simpan peluang pembelian',hint:'Rp750rb · investasi untuk kerja sampingan Teknologi',effects:[{type:'flag',key:'laptopOfferSeen',value:true},{type:'opportunity',opportunity:{id:'buy_laptop',name:'Beli Laptop Bekas',summary:'Rp750rb · membuka kerja lepas Teknologi'}}],result:'Laptop itu sekarang menjadi pilihan investasi, bukan kewajiban.'},
       {label:'Jangan beli',effects:[{type:'flag',key:'laptopOfferSeen',value:true}],result:'Kamu menjaga tabunganmu. Teknologi tetap bisa dipelajari tanpa membeli aset sekarang.'}
     ]);
   }
@@ -314,14 +352,30 @@ export function getNextEvent(state){
     ]);
   }
 
-  if(state.player.job==='mechanic_junior' && state.career.promotionProgress>=12 && getSkillTier(state.skills.mechanics).id!=='novice' && !state.flags.promotionTalkSeen){
+  if(state.player.job==='mechanic_junior' && state.career.promotionProgress>=12 && getSkillTier(state.skills.mechanics).id!=='novice' && !companyCanPromote(state,'sinar_jaya') && !state.flags.mechanicPromotionFrozenSeen){
+    const company=workplaceSnapshot(state,'sinar_jaya');
+    return event('mechanic_promotion_frozen','KONDISI TEMPAT KERJA','Promosi Belum Bisa Dibuka',`Pak Arman sebenarnya mulai percaya padamu, tapi ${company?.name||'bengkel'} sedang dalam kondisi ${company?.label?.toLowerCase()||'rentan'}. Pemasukan dan ruang untuk menaikkan posisi sedang sempit.`,[
+      {label:'Tetap bangun reputasi',hint:'Promosi bisa muncul saat kondisi bengkel pulih.',effects:[{type:'flag',key:'mechanicPromotionFrozenSeen',value:true},{type:'relationship',target:'pak_arman',value:2}],result:'Skillmu tidak hilang. Hambatannya sekarang datang dari kondisi tempat kerja, bukan kemampuanmu.'},
+      {label:'Mulai lihat peluang lain',effects:[{type:'flag',key:'mechanicPromotionFrozenSeen',value:true},{type:'recent',text:'Kamu mulai memperhatikan lowongan di tempat yang kondisi usahanya lebih sehat.'}],result:'Kamu mulai lebih terbuka pada kemungkinan bahwa tempat kerja yang sehat juga bagian dari strategi karier.'}
+    ]);
+  }
+
+  if(state.player.job==='mechanic_junior' && state.career.promotionProgress>=12 && getSkillTier(state.skills.mechanics).id!=='novice' && companyCanPromote(state,'sinar_jaya') && !state.flags.promotionTalkSeen){
     return event('promotion_talk','PELUANG KARIER','Pak Arman Ingin Bicara','Pak Arman merasa kamu mulai bisa diberi tanggung jawab lebih besar.',[
       {label:'Pertimbangkan promosi',effects:[{type:'flag',key:'promotionTalkSeen',value:true},{type:'opportunity',opportunity:{id:'promotion',name:'Promosi Mekanik Senior',summary:'Gaji Rp170rb/hari · tanggung jawab lebih besar'}}],result:'Promosi sekarang tersedia sebagai pilihan.'},
       {label:'Belum sekarang',effects:[{type:'flag',key:'promotionTalkSeen',value:true}],result:'Kamu memilih tidak terburu-buru.'}
     ]);
   }
 
-  if(state.player.job==='store_clerk' && state.career.storeProgress>=10 && getSkillTier(state.skills.social).id!=='novice' && state.relationships.maya>=10 && !state.flags.storePromotionTalkSeen){
+  if(state.player.job==='store_clerk' && state.career.storeProgress>=10 && getSkillTier(state.skills.social).id!=='novice' && state.relationships.maya>=10 && !companyCanPromote(state,'serba_ada') && !state.flags.storePromotionFrozenSeen){
+    const company=workplaceSnapshot(state,'serba_ada');
+    return event('store_promotion_frozen','KONDISI TEMPAT KERJA','Tanggung Jawab Naik, Jabatan Belum',`Maya mulai mengandalkanmu, tapi ${company?.name||'toko'} sedang dalam kondisi ${company?.label?.toLowerCase()||'rentan'}. Cabang belum punya ruang untuk membuka posisi supervisor baru.`,[
+      {label:'Tetap tunjukkan kemampuan',effects:[{type:'flag',key:'storePromotionFrozenSeen',value:true},{type:'relationship',target:'maya',value:2}],result:'Kamu tetap membangun posisi. Saat bisnis pulih, progres itu masih ada.'},
+      {label:'Cari tempat yang sedang tumbuh',effects:[{type:'flag',key:'storePromotionFrozenSeen',value:true},{type:'recent',text:'Kamu mulai membandingkan cabang dan perusahaan yang sedang tumbuh.'}],result:'Kamu mulai melihat kondisi perusahaan sebagai bagian dari keputusan karier.'}
+    ]);
+  }
+
+  if(state.player.job==='store_clerk' && state.career.storeProgress>=10 && getSkillTier(state.skills.social).id!=='novice' && state.relationships.maya>=10 && companyCanPromote(state,'serba_ada') && !state.flags.storePromotionTalkSeen){
     return event('store_promotion_talk','PELUANG KARIER','Maya Menawarkan Tanggung Jawab Baru','Maya ingin kamu mulai memegang shift ketika dia tidak ada. Gajinya lebih tinggi, tapi masalah orang lain juga akan ikut menjadi masalahmu.',[
       {label:'Pertimbangkan posisi supervisor',effects:[{type:'flag',key:'storePromotionTalkSeen',value:true},{type:'opportunity',opportunity:{id:'store_promotion',name:'Supervisor Toko',summary:'Gaji Rp145rb/hari · tanggung jawab tim'}}],result:'Posisi Supervisor Toko sekarang tersedia.'},
       {label:'Tetap sebagai pramuniaga',effects:[{type:'flag',key:'storePromotionTalkSeen',value:true}],result:'Kamu belum ingin membawa pekerjaan lebih jauh.'}
@@ -331,18 +385,36 @@ export function getNextEvent(state){
   return null;
 }
 
-export function applyEventChoice(state,choice){
+function applyEventChoice(state,choice){
   resolveEffects(state,choice.effects||[]);
   state.pendingEvent=null;
+  state.pacing=state.pacing||{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8};
+  state.pacing.lastResolvedEventAt=state.time.totalHours;
+  state.pacing.eventCount=(state.pacing.eventCount||0)+1;
 }
 
-export function refreshEvent(state){
+function urgentStateNeedsAttention(state){
+  const rentPressure=state.housing?.id==='rented_room' && state.player.money<350000 && !state.flags.rentPressureSeen;
+  const moneyCrisis=state.player.money<0 && !state.flags.moneyPressureSeen;
+  const exhaustion=getCondition(state.player.fatigue).id==='exhausted' && !state.flags.exhaustedWarningSeen;
+  const restructure=state.scheduled.some(item=>item.kind==='job_restructure' && item.at<=state.time.totalHours);
+  return rentPressure||moneyCrisis||exhaustion||restructure;
+}
+
+function refreshEvent(state){
   if(state.pendingEvent) return;
+  state.pacing=state.pacing||{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8};
+  const gap=Math.max(4,state.pacing.minGapHours||8);
+  const elapsed=state.time.totalHours-(state.pacing.lastResolvedEventAt??-999);
+  if(!urgentStateNeedsAttention(state) && elapsed<gap) return;
   const next=getNextEvent(state);
-  if(next) state.pendingEvent=next;
+  if(next){
+    state.pendingEvent=next;
+    state.pacing.lastSurfacedEventAt=state.time.totalHours;
+  }
 }
 
-export function expireOpportunities(state){
+function expireOpportunities(state){
   const expired=state.opportunities.filter(item=>item.expireAt && item.expireAt<=state.time.totalHours);
   if(expired.length) addRecent(state,'Sebuah peluang lewat karena waktunya habis.');
   state.opportunities=state.opportunities.filter(item=>!item.expireAt || item.expireAt>state.time.totalHours);

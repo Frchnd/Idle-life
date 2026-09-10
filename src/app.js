@@ -1,25 +1,19 @@
-import {createInitialState,getSkillTier,getCondition} from './core/state.js';
-import {loadState,saveState,clearState} from './core/save.js';
-import {processLivingCosts} from './core/economy.js';
-import {availableActivities,executeActivity} from './data/activities.js';
-import {runOpportunity} from './data/opportunities.js';
-import {refreshEvent,applyEventChoice,expireOpportunities} from './data/events.js';
-import {addRecent} from './core/effects.js';
-import {render} from './ui/render.js';
-
 const root=document.getElementById('app');
 let state=loadState();
 let deferredPrompt=null;
-const ui={tab:'life',result:'Pilihanmu akan menentukan jalur yang mulai terbuka.',offlineSummary:'',milestone:false,installAvailable:false};
+const ui={tab:'life',result:'Pilihanmu akan menentukan jalur yang mulai terbuka.',offlineSummary:'',milestone:false,chapterProfile:null,installAvailable:false};
 
 function persist(){ saveState(state); }
 
 function postStep(){
+  simulateWorld(state);
+  resolveContestedOpportunities(state);
   expireOpportunities(state);
   processLivingCosts(state);
   if(state.career.workCount>=3) state.flags.routineUnlocked=true;
   refreshEvent(state);
   checkMilestone();
+  checkVerticalSliceOutcome();
   persist();
   draw();
 }
@@ -37,6 +31,17 @@ function checkMilestone(){
   }
 }
 
+function checkVerticalSliceOutcome(){
+  if(state.flags.verticalSliceComplete || state.pendingEvent) return;
+  if(!isVerticalSliceReady(state)) return;
+  const profile=getOutcomeProfile(state);
+  state.flags.verticalSliceComplete=true;
+  state.life.outcomeAt=state.time.totalHours;
+  addHistory(state,`Umur 18 · Bab pertama hidupmu terbentuk sebagai “${profile.title}”.`);
+  addRecent(state,`Vertical Slice selesai dengan arah sementara: ${profile.title}.`);
+  ui.chapterProfile=profile;
+}
+
 function draw(){
   render(root,state,ui);
   bind();
@@ -47,7 +52,14 @@ function bind(){
   root.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('click',()=>runActivity(btn.dataset.action)));
   root.querySelectorAll('[data-opportunity]').forEach(btn=>btn.addEventListener('click',()=>{
     if(state.pendingEvent) return;
-    ui.result=runOpportunity(state,btn.dataset.opportunity);
+    const id=btn.dataset.opportunity;
+    const existed=state.opportunities.some(x=>x.id===id);
+    const oldJob=state.player.job;
+    ui.result=runOpportunity(state,id);
+    if(existed && !state.opportunities.some(x=>x.id===id)){
+      state.playtest.opportunitiesTaken=(state.playtest.opportunitiesTaken||0)+1;
+      if(oldJob && state.player.job && oldJob!==state.player.job) state.playtest.careerChanges=(state.playtest.careerChanges||0)+1;
+    }
     postStep();
   }));
   root.querySelectorAll('[data-event-choice]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -66,6 +78,7 @@ function runActivity(id){
   if(!allowed) return;
   const result=executeActivity(state,id);
   if(result && typeof result==='object' && result.error){ ui.result=result.error; draw(); return; }
+  state.playtest.actions=(state.playtest.actions||0)+1;
   ui.result=result;
   postStep();
 }
@@ -85,9 +98,10 @@ function handleUi(action){
   }
   if(action==='close-offline'){ ui.offlineSummary=''; draw(); return; }
   if(action==='close-milestone'){ ui.milestone=false; draw(); return; }
+  if(action==='close-chapter'){ ui.chapterProfile=null; draw(); return; }
   if(action==='reset'){
     if(confirm('Mulai ulang seluruh save Vertical Slice?')){
-      clearState(); state=createInitialState(); ui.tab='life'; ui.result='Hidup baru dimulai.'; ui.offlineSummary=''; ui.milestone=false; postStep();
+      clearState(); state=createInitialState(); ui.tab='life'; ui.result='Hidup baru dimulai.'; ui.offlineSummary=''; ui.milestone=false; ui.chapterProfile=null; postStep();
     }
     return;
   }
@@ -106,6 +120,7 @@ function processOffline(realMs){
   const budget=Math.floor(capped/(60*60*1000)*6);
   const startHours=state.time.totalHours,startMoney=state.player.money;
   let consumed=0;
+  state.playtest.offlineBatches=(state.playtest.offlineBatches||0)+1;
   while(consumed<budget && !state.pendingEvent){
     const before=state.time.totalHours;
     const remaining=budget-consumed;
@@ -123,13 +138,17 @@ function processOffline(realMs){
     }else{
       break;
     }
+    state.playtest.actions=(state.playtest.actions||0)+1;
     consumed+=state.time.totalHours-before;
+    simulateWorld(state);
+    resolveContestedOpportunities(state);
     expireOpportunities(state);
     processLivingCosts(state);
     if(state.career.workCount>=3) state.flags.routineUnlocked=true;
     refreshEvent(state);
   }
   checkMilestone();
+  checkVerticalSliceOutcome();
   persist();
   return {gameHours:state.time.totalHours-startHours,moneyDelta:state.player.money-startMoney,stopped:!!state.pendingEvent};
 }
@@ -148,7 +167,11 @@ if(state.routine.enabled && elapsed>45*60*1000){
   const report=processOffline(elapsed);
   if(report.gameHours>0) ui.offlineSummary=`<b>${report.gameHours} jam waktu game berlalu.</b><br>Perubahan uang: ${formatSignedMoney(report.moneyDelta)}${report.stopped?'<br>Ada keputusan penting yang menghentikan rutinitas.':''}`;
 }
+simulateWorld(state);
+resolveContestedOpportunities(state);
+expireOpportunities(state);
 processLivingCosts(state);
 refreshEvent(state);
+checkVerticalSliceOutcome();
 persist();
 draw();

@@ -1,10 +1,8 @@
-import {JOBS} from './jobs.js';
-import {removeOpportunity,addHistory,addRecent,discoverSkill} from '../core/effects.js';
-
-function sideMultiplier(state,fromRian=false){
+function sideMultiplier(state,fromRian=false,sector=null){
   let mult=1;
   if(state.life?.trajectory==='independent') mult+=0.15;
   if(fromRian && state.flags.rianTrusted) mult+=0.10;
+  if(sector) mult*=sectorMultiplier(state,sector);
   return mult;
 }
 
@@ -18,13 +16,15 @@ function takeJob(state,jobId,npc){
   state.player.job=job.id;
   state.player.workplace=job.workplace;
   state.player.salary=job.salary;
+  state.player.statuses=state.player.statuses.filter(x=>!['peran_ganda','gaji_ditekan','jam_lebih_fleksibel'].includes(x));
   if(npc && state.npc[npc]) state.npc[npc].known=true;
   return {job,previous};
 }
 
-export function runOpportunity(state,id){
+function runOpportunity(state,id){
   const opp=state.opportunities.find(item=>item.id===id);
   if(!opp) return 'Peluang itu sudah tidak tersedia.';
+  if(opp.contested) addRecent(state,`Kamu bergerak lebih cepat dan mengambil “${opp.name}” sebelum ${opp.competitor||'orang lain'}.`);
 
   if(id==='workshop_job'){
     removeOpportunity(state,id);
@@ -61,7 +61,7 @@ export function runOpportunity(state,id){
   if(id==='tech_side_job'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    const payout=Math.round(250000*sideMultiplier(state,true));
+    const payout=Math.round(250000*sideMultiplier(state,true,'technology'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+10);
     state.skills.technology+=18;
@@ -85,7 +85,7 @@ export function runOpportunity(state,id){
   if(id==='private_repair'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    const payout=Math.round(350000*sideMultiplier(state,true));
+    const payout=Math.round(350000*sideMultiplier(state,true,'mechanics'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+14);
     state.skills.mechanics+=18;
@@ -100,7 +100,7 @@ export function runOpportunity(state,id){
   if(id==='private_repeat'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    const payout=Math.round(300000*sideMultiplier(state,state.flags.rianTrusted));
+    const payout=Math.round(300000*sideMultiplier(state,state.flags.rianTrusted,'mechanics'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+12);
     state.skills.mechanics+=16;
@@ -175,20 +175,20 @@ export function runOpportunity(state,id){
   if(id==='tech_freelance'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    const payout=Math.round(220000*sideMultiplier(state,false));
+    const payout=Math.round(220000*sideMultiplier(state,false,'technology'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+9);
     state.skills.technology+=16;
     state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
     state.scheduled.push({at:state.time.totalHours+sideCooldown(state,72),kind:'tech_freelance_offer'});
     addRecent(state,'Kamu menyelesaikan pekerjaan teknologi dari laptopmu sendiri.');
-    return `Freelance teknologi selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+    return `Kerja lepas teknologi selesai · +Rp${payout.toLocaleString('id-ID')}.`;
   }
 
   if(id==='promo_side_job'){
     removeOpportunity(state,id);
     state.time.totalHours+=4;
-    const payout=Math.round(180000*sideMultiplier(state,false));
+    const payout=Math.round(180000*sideMultiplier(state,false,'retail'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+8);
     state.skills.social+=14;
@@ -233,6 +233,52 @@ export function runOpportunity(state,id){
     state.relationships.rian+=8;
     addHistory(state,'Umur 18 · Melunasi utang kepada Rian.');
     return 'Utang kepada Rian lunas. Hubungan kalian kembali lebih ringan.';
+  }
+
+
+  if(id==='market_repair'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(300000*sideMultiplier(state,false,'mechanics'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+12);
+    state.skills.mechanics+=16;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Lonjakan permintaan servis lokal memberimu pekerjaan tambahan.');
+    return `Servis dari kondisi pasar selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+  if(id==='market_promo'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(190000*sideMultiplier(state,false,'retail'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+8);
+    state.skills.social+=14;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Kondisi retail yang ramai membuka shift tambahan untukmu.');
+    return `Shift event selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+  if(id==='market_tech'){
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(240000*sideMultiplier(state,false,'technology'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+9);
+    state.skills.technology+=17;
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Permintaan digital lokal menghasilkan pekerjaan teknologi tambahan.');
+    return `Setup digital selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
+
+  if(id==='start_business'){
+    const sector=strongestBusinessSector(state);
+    if(!sector) return 'Belum ada kemampuan yang cukup kuat untuk dijadikan usaha.';
+    const result=startBusiness(state,sector);
+    if(result.error) return result.error;
+    removeOpportunity(state,id);
+    return result.text;
   }
 
   return 'Peluang belum memiliki aksi.';

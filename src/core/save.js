@@ -1,9 +1,7 @@
-import {createInitialState,SAVE_VERSION,clone} from './state.js';
+// Pertahankan key lama supaya save Build F–L tetap ikut naik ke Build M.
+const SAVE_KEY='hidup-vertical-slice-f-v2';
 
-// Pertahankan key lama supaya save Build F–H tetap ikut naik ke Build I.
-export const SAVE_KEY='hidup-vertical-slice-f-v2';
-
-export function loadState(){
+function loadState(){
   const fresh=createInitialState();
   try{
     const raw=localStorage.getItem(SAVE_KEY);
@@ -23,15 +21,25 @@ function mergeState(base,saved){
   out.player={...base.player,...(saved.player||{})};
   out.time={...base.time,...(saved.time||{})};
   out.economy={...base.economy,...(saved.economy||{})};
+  out.world={...base.world,...(saved.world||{})};
+  out.world.sectors={...base.world.sectors,...(saved.world?.sectors||{})};
+  out.world.lastOpportunityWeek={...base.world.lastOpportunityWeek,...(saved.world?.lastOpportunityWeek||{})};
+  out.world.workplaces={...base.world.workplaces,...(saved.world?.workplaces||{})};
+  for(const key of Object.keys(base.world.workplaces)) out.world.workplaces[key]={...base.world.workplaces[key],...(saved.world?.workplaces?.[key]||{})};
+  if(!Array.isArray(out.world.news)) out.world.news=[];
   out.housing={...base.housing,...(saved.housing||{})};
   out.life={...base.life,...(saved.life||{})};
+  out.pacing={...base.pacing,...(saved.pacing||{})};
+  out.playtest={...base.playtest,...(saved.playtest||{})};
   out.skills={...base.skills,...(saved.skills||{})};
   out.relationships={...base.relationships,...(saved.relationships||{})};
   out.assets={...base.assets,...(saved.assets||{})};
+  out.business={...base.business,...(saved.business||{})};
   out.npc={...base.npc,...(saved.npc||{})};
   for(const key of Object.keys(base.npc)) out.npc[key]={...base.npc[key],...(saved.npc?.[key]||{})};
   out.career={...base.career,...(saved.career||{})};
   out.career.jobWorkCounts={...base.career.jobWorkCounts,...(saved.career?.jobWorkCounts||{})};
+  if(!Array.isArray(out.career.salaryNegotiatedJobs)) out.career.salaryNegotiatedJobs=[];
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];
@@ -48,7 +56,6 @@ function mergeState(base,saved){
     }
   }
 
-  // Build H dan versi sebelumnya belum punya sistem tempat tinggal eksplisit.
   if(!saved.housing){
     const livingAlone=out.player.statuses.includes('tinggal_sendiri');
     out.housing=livingAlone
@@ -56,13 +63,33 @@ function mergeState(base,saved){
       : {id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null};
   }
   out.economy.livingCost=out.housing.id==='rented_room'?1100000:600000;
+
+  // Build I dan versi sebelumnya belum punya pencatat pacing/playtest.
+  if(!saved.pacing){
+    out.pacing.lastResolvedEventAt=Math.max(-999,out.time.totalHours-12);
+    out.pacing.lastSurfacedEventAt=Math.max(-999,out.time.totalHours-12);
+    out.pacing.eventCount=Math.min(6,(out.history?.length||0));
+  }
+  if(!saved.playtest){
+    out.playtest.actions=Math.max(0,out.career.workCount||0);
+    out.playtest.opportunitiesTaken=Math.max(0,Math.floor((out.career.sideIncomeTotal||0)/200000));
+  }
+
+  // Build M menambah ekonomi perusahaan dan usaha kecil.
+  for(const [id,baseCompany] of Object.entries(base.world.workplaces)){
+    out.world.workplaces[id]={...baseCompany,...(out.world.workplaces[id]||{})};
+  }
+  if(!saved.business) out.business={...base.business};
+  if(saved.player?.job && (!Number.isFinite(out.player.salary) || out.player.salary<=0)){
+    out.player.salary=JOBS[out.player.job]?.salary||0;
+  }
   return out;
 }
 
-export function saveState(state){
+function saveState(state){
   state.version=SAVE_VERSION;
   state.lastSeen=Date.now();
   localStorage.setItem(SAVE_KEY,JSON.stringify(state));
 }
 
-export function clearState(){ localStorage.removeItem(SAVE_KEY); }
+function clearState(){ localStorage.removeItem(SAVE_KEY); }

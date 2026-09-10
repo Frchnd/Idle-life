@@ -1,19 +1,21 @@
-import {addRecent} from './effects.js';
+const LIVING_COST_INTERVAL=30*24;
 
-export const LIVING_COST_INTERVAL=30*24;
-
-export function syncLivingCost(state){
-  const cost=state.housing?.id==='rented_room'?1100000:600000;
-  state.economy.livingCost=cost;
-  if(state.housing){ state.housing.monthlyCost=cost; }
-  return cost;
+function syncLivingCost(state){
+  const world=ensureWorldState(state);
+  const base=state.housing?.id==='rented_room'?1100000:600000;
+  const indexed=Math.round((base*(world.costIndex||100)/100)/10000)*10000;
+  state.economy.baseLivingCost=base;
+  state.economy.livingCost=indexed;
+  if(state.housing){ state.housing.monthlyCost=indexed; }
+  return indexed;
 }
 
-export function processLivingCosts(state){
+function processLivingCosts(state){
   syncLivingCost(state);
   let charged=0;
   while(state.time.totalHours-state.economy.lastLivingCostAt>=LIVING_COST_INTERVAL){
     state.economy.lastLivingCostAt+=LIVING_COST_INTERVAL;
+    syncLivingCost(state);
     state.player.money-=state.economy.livingCost;
     charged+=state.economy.livingCost;
   }
