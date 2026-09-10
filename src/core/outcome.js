@@ -36,7 +36,7 @@ function getOutcomeProfile(state){
     return {
       id:'independent',title:'Perintis Mandiri',
       summary:'Pekerjaan utama masih penting, tapi identitasmu mulai terbentuk dari peluang yang kamu ciptakan sendiri.',
-      traits:[state.business?.active?`Punya ${state.business.name}`:`Pendapatan sampingan Rp${Math.round(side).toLocaleString('id-ID')}`,state.assets.laptop?'Punya alat kerja sendiri':'Jaringan pelanggan mulai terbentuk','Waktu menjadi resource paling ketat']
+      traits:[state.business?.active?`Punya ${state.business.name} · ${state.business.retainedClients||0} pelanggan tetap`:`Pendapatan sampingan Rp${Math.round(side).toLocaleString('id-ID')}`,state.business?.active?`Kapasitas ${state.business.capacity||2} pekerjaan/minggu · ${state.business.missedDemand||0} permintaan terlewat`:(state.assets.laptop?'Punya alat kerja sendiri':'Jaringan pelanggan mulai terbentuk'),'Waktu menjadi resource paling ketat']
     };
   }
 

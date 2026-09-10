@@ -126,7 +126,8 @@ function processOffline(realMs){
     const remaining=budget-consumed;
     if(!state.player.job){
       if(remaining<4) break;
-      const result=executeActivity(state,state.player.money>=20000?'study':'family');
+      const offlineAction=state.business?.active?'business_manage':(state.player.money>=20000?'study':'family');
+      const result=executeActivity(state,offlineAction);
       if(result?.error) break;
     }else if(getCondition(state.player.fatigue).id==='exhausted'){
       if(remaining<8) break;

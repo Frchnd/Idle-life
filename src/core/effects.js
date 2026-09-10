@@ -82,6 +82,21 @@ function resolveEffects(state,effects=[]){
       case 'business_recover':
         if(state.business){ state.business.reputation=Math.min(100,(state.business.reputation||0)+6); state.business.lossStreak=0; state.business.lastManagedAt=state.time.totalHours; }
         break;
+      case 'business_reinvest':
+        reinvestBusiness(state);
+        break;
+      case 'business_retainer':
+        addBusinessRetainer(state);
+        break;
+      case 'business_reputation':
+        if(state.business) state.business.reputation=Math.max(0,Math.min(100,(state.business.reputation||0)+effect.value));
+        break;
+      case 'business_client_loss':
+        loseBusinessClient(state,effect.value||1);
+        break;
+      case 'business_stamp':
+        if(state.business) state.business[effect.key]=state.time.totalHours;
+        break;
     }
   }
 }

@@ -1,4 +1,4 @@
-const SAVE_VERSION = 9;
+const SAVE_VERSION = 10;
 
 function createInitialState(){
   return {
@@ -30,7 +30,7 @@ function createInitialState(){
       nadia:{known:false,life:'teknisi_senior',progress:0}
     },
     assets:{laptop:false},
-    business:{active:false,sector:null,name:null,level:0,reputation:0,clients:0,lastManagedAt:0,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:null},
+    business:{active:false,sector:null,name:null,level:0,reputation:0,clients:0,lastManagedAt:0,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:null,equipmentLevel:0,retainedClients:0,capacity:2,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999},
     career:{
       workCount:0,
       jobSearchCount:0,
@@ -97,7 +97,10 @@ function createInitialState(){
       salaryTalkSeen:false,
       businessPathSeen:false,
       businessStarted:false,
-      firstBusinessCycleSeen:false
+      firstBusinessCycleSeen:false,
+      businessRetainerSeen:false,
+      businessCapacitySeen:false,
+      businessConflictSeen:false
     },
     opportunities:[],
     scheduled:[],

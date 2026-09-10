@@ -155,6 +155,39 @@ function getNextEvent(state){
   }
 
 
+  if(state.business?.active){
+    const b=ensureBusinessState(state);
+    const meta=businessMeta(state);
+    if((b.lossStreak||0)<2 && (b.reputation||0)>=28 && (b.servedClients||b.clients||0)>=3 && (b.retainedClients||0)<3 && state.time.totalHours-(b.lastRetainerAt||-999)>=7*24){
+      return event('business_retainer','USAHA KECIL','Pelanggan Meminta Jadwal Tetap',`Salah satu pelanggan ${b.name||'usahamu'} tidak ingin terus berebut slot. Mereka menawarkan pekerjaan rutin setiap minggu selama kualitas dan komunikasimu tetap terjaga.`,[
+        {label:'Terima pelanggan tetap',hint:'Permintaan lebih stabil · tanggung jawab mingguan bertambah',effects:[{type:'business_retainer'},{type:'business_stamp',key:'lastRetainerAt'},{type:'history',text:`Umur 18 · ${b.name||'Usaha kecil'} mendapat pelanggan tetap.`}],result:'Usahamu sekarang punya permintaan yang lebih pasti. Tapi pelanggan rutin akan cepat terasa kalau jadwal dan kualitas mulai berantakan.'},
+        {label:'Tetap fleksibel',hint:'Tidak ada kewajiban rutin',effects:[{type:'business_stamp',key:'lastRetainerAt'}],result:'Kamu memilih menjaga usaha tetap fleksibel dan tidak menjanjikan slot rutin.'}
+      ]);
+    }
+
+    const reinvestCost=600000+(b.equipmentLevel||0)*250000;
+    if((b.lossStreak||0)<2 && (b.missedDemand||0)>=2 && (b.equipmentLevel||0)<3 && state.player.money>=reinvestCost && state.time.totalHours-(b.lastReinvestOfferAt||-999)>=10*24){
+      return event('business_capacity','USAHA KECIL','Permintaan Mulai Melebihi Kapasitas',`${b.name||'Usahamu'} menerima lebih banyak permintaan daripada yang sanggup ditangani. Upgrade peralatan senilai Rp${reinvestCost.toLocaleString('id-ID')} bisa menambah kapasitas, tapi uang itu tidak lagi tersedia sebagai bantalan hidup.`,[
+        {label:'Investasikan ke peralatan',hint:`-Rp${reinvestCost.toLocaleString('id-ID')} · kapasitas mingguan naik`,effects:[{type:'business_reinvest'},{type:'business_stamp',key:'lastReinvestOfferAt'}],result:'Kamu memilih mengubah uang tunai menjadi kapasitas usaha. Mulai minggu berikutnya kamu bisa menangani lebih banyak pekerjaan.'},
+        {label:'Jaga usaha tetap kecil',hint:'Tidak keluar modal · sebagian permintaan akan lewat',effects:[{type:'business_stamp',key:'lastReinvestOfferAt'}],result:'Kamu memilih tidak mengejar setiap permintaan. Usahamu tetap kecil, tapi cadangan uangmu aman.'}
+      ]);
+    }
+
+    if((b.lossStreak||0)<2 && state.player.job && (b.retainedClients||0)>0 && (b.missedDemand||0)>=1 && state.time.totalHours-(b.lastConflictAt||-999)>=10*24){
+      const company=currentWorkplaceSnapshot(state);
+      const manager=company?managerTargetForWorkplace(company.id):null;
+      const workSalary=state.player.salary||JOBS[state.player.job]?.salary||0;
+      const protectJobEffects=[{type:'business_client_loss',value:1},{type:'business_stamp',key:'lastConflictAt'}];
+      const serveEffects=[{type:'hours',value:4},{type:'fatigue',value:8},{type:'business_reputation',value:5},{type:'business_stamp',key:'lastConflictAt'}];
+      if(manager) serveEffects.push({type:'relationship',target:manager,value:-2});
+      return event('business_time_conflict','WAKTU','Pelanggan Tetap Bertabrakan dengan Pekerjaan Utama',`Pelanggan rutin ${b.name||'usahamu'} membutuhkan slot tambahan di hari kerja. Menjaga keduanya berarti ada pihak yang tidak mendapat waktu penuh darimu.`,[
+        {label:'Prioritaskan pelanggan usaha',hint:'4j · reputasi usaha naik · hubungan kerja bisa sedikit terganggu',effects:serveEffects,result:'Kamu meluangkan waktu untuk usaha. Pelanggan melihat komitmenmu, tapi pekerjaan utama mulai merasakan bahwa perhatianmu terbagi.'},
+        {label:'Jaga pekerjaan utama',hint:`Lindungi gaji Rp${workSalary.toLocaleString('id-ID')}/hari · satu pelanggan tetap bisa pergi`,effects:protectJobEffects,result:'Kamu menjaga pekerjaan utama sebagai fondasi. Usahamu kehilangan sebagian kepastian yang sudah dibangun.'}
+      ]);
+    }
+  }
+
+
   if(state.business?.active && (state.business.lossStreak||0)>=2){
     return event('business_losses','USAHA KECIL','Usahamu Dua Minggu Berturut-turut Merugi',`${state.business.name||'Usaha kecilmu'} belum menemukan ritme yang sehat. Menutupnya sekarang berarti mengakui kerugian lebih cepat; mempertahankannya berarti memberi waktu dan tenaga lagi.`,[
       {label:'Urus lebih serius',hint:'4j · tambah reputasi · pertahankan usaha',effects:[{type:'hours',value:4},{type:'fatigue',value:8},{type:'business_recover'},{type:'recent',text:'Kamu turun tangan lebih serius untuk memperbaiki usaha kecilmu.'}],result:'Kamu memilih memberi usaha ini satu kesempatan lagi. Aktivitas Urus Usaha akan membantu reputasi dan klien.'},

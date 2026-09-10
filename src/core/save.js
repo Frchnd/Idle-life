@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya save Build F–L tetap ikut naik ke Build M.
+// Pertahankan key lama supaya save Build F–M tetap ikut naik ke Build N.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function loadState(){
@@ -75,11 +75,12 @@ function mergeState(base,saved){
     out.playtest.opportunitiesTaken=Math.max(0,Math.floor((out.career.sideIncomeTotal||0)/200000));
   }
 
-  // Build M menambah ekonomi perusahaan dan usaha kecil.
+  // Build M menambah ekonomi perusahaan dan usaha kecil; Build N memperdalam kapasitas dan pelanggan tetap.
   for(const [id,baseCompany] of Object.entries(base.world.workplaces)){
     out.world.workplaces[id]={...baseCompany,...(out.world.workplaces[id]||{})};
   }
   if(!saved.business) out.business={...base.business};
+  ensureBusinessState(out);
   if(saved.player?.job && (!Number.isFinite(out.player.salary) || out.player.salary<=0)){
     out.player.salary=JOBS[out.player.job]?.salary||0;
   }
