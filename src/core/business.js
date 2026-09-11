@@ -107,7 +107,7 @@ function manageBusiness(state){
   const meta=businessMeta(state);
   if(!b.active||!meta) return {error:'Kamu belum punya usaha kecil.'};
   state.time.totalHours+=4;
-  state.player.fatigue=Math.min(100,state.player.fatigue+8);
+  state.player.fatigue=Math.min(100,state.player.fatigue+8+(typeof healthActionFatigueModifier==='function'?healthActionFatigueModifier(state,'business'):0));
   b.lastManagedAt=state.time.totalHours;
   b.reputation=Math.min(100,b.reputation+(b.helperActive?4:5));
   if(b.helperActive){

@@ -1,22 +1,21 @@
-Hidup Build AH — Content & Ownership Validation
+Hidup Build AI — Content & Health Validation
 
 Content Framework
 - Errors: 0
 - Warnings: 0
-- Activities: 4
+- Activities: 4 data-driven (+ contextual health activity)
 - Opportunities: 11
-- Events: 14
+- Events: 14 data-driven (+ dynamic health events)
 - Jobs: 12
 
-Build AH regression
-- Save v29 -> v30 migration: PASS
-- Motor Bekas -> Motor Harian Andal trade-in: PASS
-- Transport ownership/condition sync: PASS
-- Commute reduction: PASS
-- Peralatan Usaha Profesional purchase/capacity: PASS
-- Unit Kerja Milik Sendiri purchase/capacity: PASS
-- Business gross/cost integration: PASS
-- Major asset wear + maintenance: PASS
-- KAMU render: PASS
+Build AI regression
+- Save v30 -> v31 migration: PASS
+- No retroactive illness on old saves: PASS
+- Sustained pressure -> mild condition: PASS
+- Recovery clears condition: PASS
+- Gym/rest pressure recovery: PASS
+- Contextual Jaga Ritme/Pulihkan Diri: PASS
+- Health event priority: PASS
+- Offline routine recovers first: PASS
+- HIDUP/KAMU health render: PASS
 - JavaScript syntax: PASS
-- Static asset graph: PASS

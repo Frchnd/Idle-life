@@ -52,6 +52,9 @@ function resolveEffects(state,effects=[]){
       case 'relationship_stake_decline': declineRelationshipStake(state,effect.stake); break;
       case 'relationship_stake_finish': finishRelationshipStake(state,effect.stake); break;
       case 'relationship_strain': changeRelationshipStrain(state,effect.npc,effect.value||0); break;
+      case 'health_stress': ensureHealthState(state).stress=clampHealth(ensureHealthState(state).stress+(effect.value||0)); break;
+      case 'health_rhythm': ensureHealthState(state).rhythm=clampHealth(ensureHealthState(state).rhythm+(effect.value||0)); break;
+      case 'health_recover': { const h=ensureHealthState(state); h.stress=clampHealth(h.stress-20); h.rhythm=clampHealth(h.rhythm+14); h.workSinceRecovery=0; h.lastRecoveryAt=state.time.totalHours; if(h.illness) clearMinorIllness(state,true); break; }
       case 'recent': addRecent(state,effect.text); break;
       case 'history': addHistory(state,effect.text); break;
       case 'opportunity': addOpportunity(state,effect.opportunity); break;

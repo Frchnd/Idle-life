@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AH.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AI.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -44,6 +44,7 @@ function mergeState(base,saved){
   if(!Array.isArray(out.world.news)) out.world.news=[];
   out.housing={...base.housing,...(saved.housing||{})};
   out.finance={...base.finance,...(saved.finance||{})};
+  out.health={...base.health,...(saved.health||{})};
   out.finance.ownedTransport=Array.isArray(saved.finance?.ownedTransport)?[...saved.finance.ownedTransport]:[...base.finance.ownedTransport];
   out.city={...base.city,...(saved.city||{})};
   out.city.visits={...base.city.visits,...(saved.city?.visits||{})};
@@ -116,6 +117,7 @@ function mergeState(base,saved){
   }
   if(typeof ensureHousingState==='function') ensureHousingState(out);
   if(typeof ensureFinanceState==='function') ensureFinanceState(out);
+  if(typeof ensureHealthState==='function') { ensureHealthState(out); if(!saved.health) { out.health.lastProcessedAt=out.time.totalHours; out.health.lastRecoveryAt=out.time.totalHours; out.health.lastActionAt=out.time.totalHours; } }
   if(typeof ensureAssetState==='function') ensureAssetState(out);
   if(typeof ensureOwnershipState==='function') ensureOwnershipState(out);
   if(typeof syncPersonalAssets==='function') syncPersonalAssets(out);

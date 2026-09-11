@@ -1,4 +1,4 @@
-# Hidup — Content Catalog (Build AF)
+# Hidup — Content Catalog (Build AI)
 
 Fase 4 memisahkan **engine** dari **content**. Konten data-driven dimiliki oleh satu content pack, memakai template/preset bila cocok, dan harus lolos validator sebelum game boot.
 

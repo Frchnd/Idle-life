@@ -473,7 +473,8 @@ function urgentStateNeedsAttention(state){
   const exhaustion=getCondition(state.player.fatigue).id==='exhausted' && !state.flags.exhaustedWarningSeen;
   const restructure=state.scheduled.some(item=>item.kind==='job_restructure' && item.at<=state.time.totalHours);
   const helperIssue=!!state.business?.helperIssuePending;
-  return rentPressure||moneyCrisis||exhaustion||restructure||helperIssue;
+  const healthPressure=typeof healthNeedsUrgentAttention==='function'&&healthNeedsUrgentAttention(state);
+  return rentPressure||moneyCrisis||exhaustion||restructure||helperIssue||healthPressure;
 }
 
 function refreshEvent(state){
@@ -483,8 +484,8 @@ function refreshEvent(state){
   const elapsed=state.time.totalHours-(state.pacing.lastResolvedEventAt??-999);
   if(!urgentStateNeedsAttention(state) && elapsed<gap) return;
   let next;
-  if(urgentStateNeedsAttention(state)) next=getNextEvent(state);
-  else next=getNextRelationshipStakeEvent(state)||getNextCharacterStoryEvent(state)||getNextEvent(state);
+  if(urgentStateNeedsAttention(state)) next=(typeof getNextHealthEvent==='function'?getNextHealthEvent(state):null)||getNextEvent(state);
+  else next=getNextRelationshipStakeEvent(state)||(typeof getNextHealthEvent==='function'?getNextHealthEvent(state):null)||getNextCharacterStoryEvent(state)||getNextEvent(state);
   if(next){
     state.pendingEvent=next;
     state.pacing.lastSurfacedEventAt=state.time.totalHours;

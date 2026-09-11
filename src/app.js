@@ -51,6 +51,7 @@ function postStep(){
   resolveContestedOpportunities(state);
   expireOpportunities(state);
   processLivingCosts(state);
+  if(typeof processHealth==='function') processHealth(state);
   if(state.career.workCount>=3) state.flags.routineUnlocked=true;
   refreshEvent(state);
   checkMilestone();
@@ -106,6 +107,7 @@ function prepareGame({allowOffline=true}={}){
   resolveContestedOpportunities(state);
   expireOpportunities(state);
   processLivingCosts(state);
+  if(typeof processHealth==='function') processHealth(state);
   refreshEvent(state);
   checkVerticalSliceOutcome();
   if(ui.hasSave) persist();
@@ -200,6 +202,7 @@ function bind(){
       draw();
       return;
     }
+    if(typeof recordHealthAction==='function') recordHealthAction(state,`city:${btn.dataset.cityVisit}`);
     state.playtest.actions=(state.playtest.actions||0)+1;
     ui.result=result;
     ui.feedback=buildFeedback(before,state,result,'Kunjungan selesai');
@@ -216,6 +219,7 @@ function bind(){
       state.playtest.opportunitiesTaken=(state.playtest.opportunitiesTaken||0)+1;
       if(oldJob && state.player.job && oldJob!==state.player.job) state.playtest.careerChanges=(state.playtest.careerChanges||0)+1;
     }
+    if(typeof recordHealthAction==='function') recordHealthAction(state,'opportunity');
     ui.feedback=buildFeedback(before,state,ui.result,'Peluang diambil');
     postStep();
   }));
@@ -239,6 +243,10 @@ function feedbackSnapshot(source){
     fatigue:source.player.fatigue,
     hours:source.time.totalHours,
     condition:getCondition(source.player.fatigue).id,
+    stress:typeof ensureHealthState==='function'?ensureHealthState(source).stress:0,
+    stressLabel:typeof healthStressLabel==='function'?healthStressLabel(ensureHealthState(source).stress).id:null,
+    rhythmLabel:typeof healthRhythmLabel==='function'?healthRhythmLabel(ensureHealthState(source).rhythm).id:null,
+    illness:typeof ensureHealthState==='function'?ensureHealthState(source).illness:null,
     skills:{...source.skills}
   };
 }
@@ -257,6 +265,12 @@ function buildFeedback(before,after,message,title='Aksi selesai'){
   if(nowCondition!==before.condition){
     const rank={good:0,tired:1,exhausted:2};
     details.push(rank[nowCondition]>rank[before.condition]?'Kondisi lebih berat':'Kondisi membaik');
+  }
+  if(typeof healthSnapshot==='function'){
+    const hs=healthSnapshot(after);
+    if(before.illness!==ensureHealthState(after).illness) details.push(ensureHealthState(after).illness?'Tubuh mulai drop':'Tubuh kembali fit');
+    else if(before.stressLabel&&before.stressLabel!==hs.stress.id) details.push(hs.stress.id==='calm'||hs.stress.id==='steady'?'Tekanan menurun':'Tekanan meningkat');
+    else if(before.rhythmLabel&&before.rhythmLabel!==hs.rhythm.id) details.push(`Ritme ${hs.rhythm.label.toLowerCase()}`);
   }
   let tone='neutral';
   if(after.player.money<0 || nowCondition==='exhausted') tone='danger';
@@ -277,6 +291,7 @@ function runActivity(id){
     draw();
     return;
   }
+  if(typeof recordHealthAction==='function') recordHealthAction(state,id);
   state.playtest.actions=(state.playtest.actions||0)+1;
   ui.result=result;
   ui.feedback=buildFeedback(before,state,result,'Aksi selesai');
@@ -405,21 +420,31 @@ function processOffline(realMs){
   while(consumed<budget && !state.pendingEvent){
     const before=state.time.totalHours;
     const remaining=budget-consumed;
+    let healthAction=null;
     if(!state.player.job){
       if(remaining<4) break;
       const offlineAction=state.business?.active?'business_manage':(state.player.money>=20000?'study':'family');
       const result=executeActivity(state,offlineAction);
       if(result?.error) break;
+      healthAction=offlineAction;
+    }else if(typeof healthIllnessActive==='function'&&healthIllnessActive(state)){
+      if(remaining<10) break;
+      executeActivity(state,'health_recover');
+      healthAction='health_recover';
     }else if(getCondition(state.player.fatigue).id==='exhausted'){
       if(remaining<8) break;
       executeActivity(state,'rest');
+      healthAction='rest';
     }else if(remaining>=8){
       executeActivity(state,'work');
+      healthAction='work';
     }else if(remaining>=4 && state.player.money>=20000){
       executeActivity(state,'study');
+      healthAction='study';
     }else{
       break;
     }
+    if(healthAction&&typeof recordHealthAction==='function') recordHealthAction(state,healthAction);
     state.playtest.actions=(state.playtest.actions||0)+1;
     consumed+=state.time.totalHours-before;
     simulateWorld(state);
@@ -432,6 +457,7 @@ function processOffline(realMs){
     resolveContestedOpportunities(state);
     expireOpportunities(state);
     processLivingCosts(state);
+    if(typeof processHealth==='function') processHealth(state);
     if(state.career.workCount>=3) state.flags.routineUnlocked=true;
     refreshEvent(state);
   }
