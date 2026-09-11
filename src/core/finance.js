@@ -46,10 +46,11 @@ function indexedFinanceCost(state,base){
 function lifestyleMonthlyCost(state){return personalFinanceUnlocked(state)?indexedFinanceCost(state,currentLifestyle(state).monthlyCost):0;}
 function transportMonthlyCost(state){return personalFinanceUnlocked(state)?indexedFinanceCost(state,currentTransport(state).monthlyCost):0;}
 function monthlyBudgetBreakdown(state){
-  const housing=typeof housingCurrentMonthlyCost==='function'?housingCurrentMonthlyCost(state):Math.max(0,state.economy?.livingCost||0);
-  const lifestyle=lifestyleMonthlyCost(state);
-  const transport=transportMonthlyCost(state);
-  return {housing,lifestyle,transport,total:housing+lifestyle+transport};
+  const fullHousing=typeof housingCurrentMonthlyCost==='function'?housingCurrentMonthlyCost(state):Math.max(0,state.economy?.livingCost||0);
+  const fullLifestyle=lifestyleMonthlyCost(state);
+  const split=typeof adjustSharedLivingCosts==='function'?adjustSharedLivingCosts(state,fullHousing,fullLifestyle):{housing:fullHousing,lifestyle:fullLifestyle,partnerContribution:0};
+  const housing=split.housing,lifestyle=split.lifestyle,transport=transportMonthlyCost(state);
+  return {housing,lifestyle,transport,partnerContribution:split.partnerContribution||0,total:housing+lifestyle+transport};
 }
 function emergencyFundTarget(state){return Math.max(300000,monthlyBudgetBreakdown(state).total);}
 function emergencyCoverageMonths(state){const total=Math.max(1,monthlyBudgetBreakdown(state).total);return ensureFinanceState(state).emergencyFund/total;}

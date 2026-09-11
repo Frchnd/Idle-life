@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AI.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AL.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -64,6 +64,7 @@ function mergeState(base,saved){
   out.partnership={...base.partnership,...(saved.partnership||{})};
   out.partnership.friendOnly={...base.partnership.friendOnly,...(saved.partnership?.friendOnly||{})};
   out.partnership.consideredAt={...base.partnership.consideredAt,...(saved.partnership?.consideredAt||{})};
+  out.sharedLife={...base.sharedLife,...(saved.sharedLife||{})};
   out.life={...base.life,...(saved.life||{})};
   out.life.ageWindows={...base.life.ageWindows,...(saved.life?.ageWindows||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
@@ -98,6 +99,7 @@ function mergeState(base,saved){
   ensureCharacterStories(out);
   ensureRelationshipStakes(out);
   if(typeof ensurePartnershipState==='function') ensurePartnershipState(out);
+  if(typeof ensureSharedLifeState==='function') ensureSharedLifeState(out);
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];

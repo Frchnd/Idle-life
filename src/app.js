@@ -52,6 +52,7 @@ function postStep(){
   resolveContestedOpportunities(state);
   expireOpportunities(state);
   processLivingCosts(state);
+  if(typeof processSharedLife==='function') processSharedLife(state);
   if(typeof processHealth==='function') processHealth(state);
   if(typeof processLifePhases==='function') processLifePhases(state);
   if(state.career.workCount>=3) state.flags.routineUnlocked=true;
@@ -110,6 +111,7 @@ function prepareGame({allowOffline=true}={}){
   resolveContestedOpportunities(state);
   expireOpportunities(state);
   processLivingCosts(state);
+  if(typeof processSharedLife==='function') processSharedLife(state);
   if(typeof processHealth==='function') processHealth(state);
   if(typeof processLifePhases==='function') processLifePhases(state);
   refreshEvent(state);
@@ -140,6 +142,20 @@ function bind(){
     ui.result=result;
     ui.feedback=buildFeedback(before,state,result,'Tempat tinggal berubah');
     postStep();
+  }));
+  root.querySelectorAll('[data-shared-home]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);
+    const result=moveInTogether(state,btn.dataset.sharedHome);
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum bisa tinggal bersama',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    state.playtest.actions=(state.playtest.actions||0)+1;ui.result=result;ui.feedback=buildFeedback(before,state,result,'Mulai berbagi rumah');postStep();
+  }));
+  root.querySelectorAll('[data-shared-agreement]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);
+    const result=changeSharedAgreement(state,btn.dataset.sharedAgreement);
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum bisa diubah',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    ui.result=result;ui.feedback=buildFeedback(before,state,result,'Kesepakatan rumah diperbarui');postStep();
   }));
   root.querySelectorAll('[data-finance-lifestyle]').forEach(btn=>btn.addEventListener('click',()=>{
     if(state.pendingEvent) return;
@@ -462,6 +478,7 @@ function processOffline(realMs){
     resolveContestedOpportunities(state);
     expireOpportunities(state);
     processLivingCosts(state);
+    if(typeof processSharedLife==='function') processSharedLife(state);
     if(typeof processHealth==='function') processHealth(state);
     if(typeof processLifePhases==='function') processLifePhases(state);
     if(state.career.workCount>=3) state.flags.routineUnlocked=true;

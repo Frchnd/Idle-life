@@ -133,7 +133,7 @@ function getNextEvent(state){
   if(dataEvent) return dataEvent;
 
 
-  if(state.housing?.id!=='family_home' && state.player.money<housingPressureThreshold(state) && !state.flags.rentPressureSeen){
+  if(state.housing?.id!=='family_home' && !(typeof ensureSharedLifeState==='function'&&ensureSharedLifeState(state).cohabiting) && state.player.money<housingPressureThreshold(state) && !state.flags.rentPressureSeen){
     return event('rent_pressure','KEUANGAN','Biaya Hidup Mulai Terasa',`${housingLabel(state)} memberi ritme hidup yang berbeda, tapi saldo mulai menipis. Biaya bulan berikutnya sekarang terasa seperti keputusan nyata.`,[
       {label:'Bertahan sendiri',hint:`Pertahankan biaya sekitar Rp${Math.round(housingCurrentMonthlyCost(state)/1000).toLocaleString('id-ID')}rb/bulan`,effects:[{type:'flag',key:'rentPressureSeen',value:true},{type:'recent',text:'Kamu memilih mempertahankan tempat tinggal sendiri meski cashflow ketat.'}],result:'Kamu mempertahankan kemandirian dan menerima tekanan keuangannya.'},
       {label:'Pulang ke keluarga sementara',hint:'Kembali ke biaya keluarga yang lebih ringan',effects:[{type:'flag',key:'rentPressureSeen',value:true},{type:'flag',key:'movedOut',value:false},{type:'housing',value:{id:'family_home',label:'Bersama keluarga',neighborhood:'Kampung Melati',monthlyCost:600000,baseMonthlyCost:600000,movedAt:null}},{type:'status_remove',status:'tinggal_sendiri'},{type:'status_remove',status:'tinggal_bersama_penghuni'},{type:'status_remove',status:'tinggal_tepi_kota'},{type:'status_add',status:'tinggal_bersama_keluarga'},{type:'relationship',target:'family',value:3},{type:'schedule',after:360,kind:'housing_revisit'},{type:'history',text:'Umur 18 · Kembali tinggal bersama keluarga untuk menstabilkan keuangan.'}],result:'Kamu pulang. Ini bukan reset—hanya perubahan strategi hidup karena kondisi keuangan.'}
@@ -468,7 +468,7 @@ function applyEventChoice(state,choice){
 }
 
 function urgentStateNeedsAttention(state){
-  const rentPressure=state.housing?.id!=='family_home' && state.player.money<housingPressureThreshold(state) && !state.flags.rentPressureSeen;
+  const rentPressure=state.housing?.id!=='family_home' && !(typeof ensureSharedLifeState==='function'&&ensureSharedLifeState(state).cohabiting) && state.player.money<housingPressureThreshold(state) && !state.flags.rentPressureSeen;
   const moneyCrisis=state.player.money<0 && !state.flags.moneyPressureSeen;
   const exhaustion=getCondition(state.player.fatigue).id==='exhausted' && !state.flags.exhaustedWarningSeen;
   const restructure=state.scheduled.some(item=>item.kind==='job_restructure' && item.at<=state.time.totalHours);
@@ -485,7 +485,7 @@ function refreshEvent(state){
   if(!urgentStateNeedsAttention(state) && elapsed<gap) return;
   let next;
   if(urgentStateNeedsAttention(state)) next=(typeof getNextHealthEvent==='function'?getNextHealthEvent(state):null)||getNextEvent(state);
-  else next=(typeof getNextLifePhaseEvent==='function'?getNextLifePhaseEvent(state):null)||(typeof getNextPartnershipEvent==='function'?getNextPartnershipEvent(state):null)||getNextRelationshipStakeEvent(state)||(typeof getNextHealthEvent==='function'?getNextHealthEvent(state):null)||getNextCharacterStoryEvent(state)||getNextEvent(state);
+  else next=(typeof getNextLifePhaseEvent==='function'?getNextLifePhaseEvent(state):null)||(typeof getNextSharedLifeEvent==='function'?getNextSharedLifeEvent(state):null)||(typeof getNextPartnershipEvent==='function'?getNextPartnershipEvent(state):null)||getNextRelationshipStakeEvent(state)||(typeof getNextHealthEvent==='function'?getNextHealthEvent(state):null)||getNextCharacterStoryEvent(state)||getNextEvent(state);
   if(next){
     state.pendingEvent=next;
     state.pacing.lastSurfacedEventAt=state.time.totalHours;

@@ -4,14 +4,17 @@ function syncLivingCost(state){
   const world=ensureWorldState(state);
   if(typeof syncPersonalFinance==='function') syncPersonalFinance(state);
   const baseHousing=typeof housingMonthlyBase==='function'?housingMonthlyBase(state):(state.housing?.id==='rented_room'?1100000:600000);
-  const housing=Math.round((baseHousing*(world.costIndex||100)/100)/10000)*10000;
-  const lifestyle=typeof lifestyleMonthlyCost==='function'?lifestyleMonthlyCost(state):0;
+  const fullHousing=Math.round((baseHousing*(world.costIndex||100)/100)/10000)*10000;
+  const fullLifestyle=typeof lifestyleMonthlyCost==='function'?lifestyleMonthlyCost(state):0;
+  const shared=typeof adjustSharedLivingCosts==='function'?adjustSharedLivingCosts(state,fullHousing,fullLifestyle):{housing:fullHousing,lifestyle:fullLifestyle,partnerContribution:0};
+  const housing=shared.housing,lifestyle=shared.lifestyle;
   const transport=typeof transportMonthlyCost==='function'?transportMonthlyCost(state):0;
   const total=housing+lifestyle+transport;
   state.economy.baseLivingCost=baseHousing;
   state.economy.housingCost=housing;
   state.economy.lifestyleCost=lifestyle;
   state.economy.transportCost=transport;
+  state.economy.partnerContribution=shared.partnerContribution||0;
   state.economy.livingCost=total;
   if(state.housing){ state.housing.monthlyCost=housing; }
   return total;

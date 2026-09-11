@@ -1,8 +1,15 @@
-HIDUP Build AK — Content Validation
+HIDUP Build AL — Content Validation
 
 Errors: 0
 Warnings: 0
 
+activities: 4
+opportunities: 13
+events: 14
+jobs: 12
+certifications: 3
+eventPools: 6
+presets: 18
 packs: 7
-byType: 6
-byTag: 30
+
+Shared Life: runtime system (not a standalone content pack)

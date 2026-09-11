@@ -22,7 +22,7 @@ function housingCommuteHours(state,workplaceId){const h=housingMeta(state);retur
 function housingCityTravel(state,locationId){const h=housingMeta(state);const extraHours=Math.max(0,Number(h.cityTravel?.[locationId]||0));return {extraHours,extraCost:idTravelCost(extraHours)};}
 function idTravelCost(extraHours){return extraHours>=2?10000:extraHours===1?5000:0;}
 function housingCurrentMonthlyCost(state){const base=housingMonthlyBase(state),idx=state.world?.costIndex||100;return Math.round((base*idx/100)/10000)*10000;}
-function housingPressureThreshold(state){return Math.max(300000,Math.round(housingCurrentMonthlyCost(state)*.38));}
+function housingPressureThreshold(state){const actual=(typeof ensureSharedLifeState==='function'&&ensureSharedLifeState(state).cohabiting)?(state.economy?.housingCost||housingCurrentMonthlyCost(state)):housingCurrentMonthlyCost(state);return Math.max(250000,Math.round(actual*.38));}
 function housingSnapshot(state){
   ensureHousingState(state);
   return Object.values(HOUSING_OPTIONS).map(meta=>({
@@ -33,6 +33,7 @@ function housingSnapshot(state){
 function housingCommuteForMeta(meta,workplaceId){return Math.max(0,Number(meta?.commute?.[workplaceId]||0));}
 function moveHousing(state,id){
   ensureHousingState(state);
+  if(typeof ensureSharedLifeState==='function'&&ensureSharedLifeState(state).cohabiting) return {error:'Kamu sedang tinggal bersama pasangan. Ubah rumah lewat bagian Kehidupan Bersama supaya keputusan ini mempertimbangkan kalian berdua.'};
   const target=HOUSING_OPTIONS[id];
   if(!target)return {error:'Pilihan tempat tinggal itu belum tersedia.'};
   if(state.housing.id===id)return {error:'Kamu sudah tinggal di sana.'};

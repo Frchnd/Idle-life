@@ -163,3 +163,7 @@ Pack `life_phases` memiliki `young_talent_program` dan `young_professional_forum
 Build AK menambahkan sistem partnership sebagai systemic life layer di luar Content Registry utama. Candidate definition berada di `src/data/partnership.js`, sementara state machine dan event generator berada di `src/core/partnership.js`.
 
 Tahap saat ini: `single -> exploring -> dating -> committed`. Kandidat awal adalah Sari dan Andi. Sistem hanya aktif setelah character story dan relationship stake kandidat cukup berkembang; memilih tetap sahabat menonaktifkan jalur romantis kandidat itu tanpa menghapus hubungan sosialnya.
+
+
+## Build AL — Shared Life Decisions
+Build AL menambah lapisan sistemik `sharedLife` di luar Content Registry karena ia merupakan state kehidupan lintas-event, bukan content pack mandiri. Event yang dihasilkan meliputi pembicaraan tinggal bersama, konflik rutinitas rumah, pertunangan, dan pernikahan. Save version: 34.

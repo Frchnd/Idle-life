@@ -65,6 +65,13 @@ function resolveEffects(state,effects=[]){
       case 'partnership_strain': ensurePartnershipState(state).strain=Math.max(0,Math.min(3,ensurePartnershipState(state).strain+(effect.value||0))); break;
       case 'partnership_shared_direct': { const p=ensurePartnershipState(state); p.sharedHours+=Number(effect.hours||0); p.trust+=Number(effect.trust||0); p.lastSharedAt=state.time.totalHours; p.strain=Math.max(0,p.strain-1); break; }
       case 'partnership_delay_commit': { const p=ensurePartnershipState(state); p.nextMilestoneAt=state.time.totalHours+30*24; break; }
+      case 'shared_life_plan': planSharedHome(state); break;
+      case 'shared_life_defer': deferSharedLife(state,effect.days||30); break;
+      case 'shared_life_engage': engagePartnership(state); break;
+      case 'shared_life_marry': marryPartnership(state); break;
+      case 'shared_life_defer_milestone': deferSharedMilestone(state,effect.days||30); break;
+      case 'shared_life_conflict': adjustSharedConflict(state,effect.value||0); break;
+      case 'shared_life_agreement': { const s=ensureSharedLifeState(state); if(effect.force){s.agreement=effect.agreement||'balanced';s.lastAgreementAt=state.time.totalHours;if(typeof syncLivingCost==='function')syncLivingCost(state);}else changeSharedAgreement(state,effect.agreement); break; }
       case 'health_stress': ensureHealthState(state).stress=clampHealth(ensureHealthState(state).stress+(effect.value||0)); break;
       case 'health_rhythm': ensureHealthState(state).rhythm=clampHealth(ensureHealthState(state).rhythm+(effect.value||0)); break;
       case 'health_recover': { const h=ensureHealthState(state); h.stress=clampHealth(h.stress-20); h.rhythm=clampHealth(h.rhythm+14); h.workSinceRecovery=0; h.lastRecoveryAt=state.time.totalHours; if(h.illness) clearMinorIllness(state,true); break; }

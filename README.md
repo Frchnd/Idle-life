@@ -1,23 +1,22 @@
-# HIDUP — Build AK
+# HIDUP — Build AL
 
-Build AK membuka Fase 6: Life & Legacy lewat fondasi hubungan pasangan.
+Build AL melanjutkan Fase 6: Life & Legacy lewat keputusan hidup bersama.
 
-## Baru di Build AK
-- Partnership system opt-in: `single -> exploring -> dating -> committed`.
-- Kandidat awal: Sari dan Andi; game memilih kandidat yang benar-benar paling dekat secara sistem.
-- Syarat hubungan: umur, relationship, encounter, character story, dan minimal satu janji yang benar-benar ditepati.
-- Pilihan `tetap sahabat` dihormati dan tidak dipaksa muncul lagi untuk karakter yang sama.
-- Waktu bersama menjadi opportunity kontekstual dengan biaya waktu dan uang kecil.
-- Kesibukan berkepanjangan bisa menciptakan strain hubungan; komunikasi jujur lebih ringan daripada janji palsu.
-- Hubungan serius baru terbuka pada umur 21+ setelah hubungan bertahan dan cukup terawat.
-- Hubungan yang sedang terjaga memberi sedikit dukungan terhadap tekanan hidup; hubungan yang terabaikan bisa menambah pressure.
-- KAMU mendapat kartu HUBUNGAN hanya ketika jalur partnership memang aktif.
-- DUNIA menampilkan status hubungan langsung pada kartu NPC tanpa tab relationship baru.
+## Baru di Build AL
+- Hubungan serius bisa membuka pembicaraan tinggal bersama setelah umur, trust, dan waktu bersama cukup matang.
+- Tiga opsi hunian independen bisa dinilai berdasarkan biaya penuh, commute Raka, dan commute pasangan.
+- Tinggal bersama benar-benar membagi biaya rumah dan sebagian biaya gaya hidup; transportasi pribadi tetap biaya masing-masing.
+- Pembagian biaya bisa dipilih: seimbang, Raka menanggung lebih, atau pasangan menanggung lebih. Perubahan kesepakatan punya cooldown agar tidak menjadi exploit tagihan.
+- Lokasi rumah bisa menimbulkan tekanan kalau commute dua orang buruk atau pembagian biaya tidak cocok dengan kondisi pasangan.
+- Konflik rumah tidak langsung memutus hubungan; muncul percakapan untuk merapikan ritme atau pembagian biaya.
+- Hubungan serius bisa berkembang ke pertunangan, lalu pernikahan sederhana setelah cukup waktu, trust, umur, dan kondisi hidup yang stabil.
+- Menunda pertunangan/pernikahan tidak memberi penalti. Tidak ada tanggal wajib.
+- KAMU menampilkan lapisan `Kehidupan Bersama` hanya ketika relevan; tidak ada tab pasangan atau household manager baru.
 
 ## Save
-Build AJ v32 otomatis dimigrasikan ke Build AK v33. Save lama tetap berstatus single; tidak ada pasangan atau event romantis retroaktif.
+Build AK v33 otomatis dimigrasikan ke Build AL v34. Save lama tidak otomatis tinggal bersama, bertunangan, atau menikah.
 
 ## Prinsip
-Partnership bukan dating sim terpisah. Ia tetap menjadi salah satu sistem kehidupan yang harus berbagi waktu dengan kerja, usaha, kesehatan, teman, dan keuangan.
+Pasangan bukan NPC ekonomi kedua yang harus dimicromanage. Yang disimulasikan hanya hal yang mengubah pilihan Raka: rumah, biaya, commute, waktu, tekanan, dan komitmen.
 
 Aplikasi tetap Rp0: tidak ada IAP, paywall, atau premium currency.

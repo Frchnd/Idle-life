@@ -24,7 +24,12 @@ function partnershipPerson(state){
 
 function partnershipStatusLabel(state){
   const p=ensurePartnershipState(state);
-  if(p.status==='committed') return 'Hubungan serius';
+  if(p.status==='committed'){
+    const sl=typeof ensureSharedLifeState==='function'?ensureSharedLifeState(state):null;
+    if(sl?.stage==='married') return 'Menikah';
+    if(sl?.stage==='engaged') return 'Bertunangan';
+    return 'Hubungan serius';
+  }
   if(p.status==='dating') return 'Berpacaran';
   if(p.status==='exploring') return 'Sedang saling mengenal lebih dekat';
   return 'Belum punya pasangan';
@@ -179,7 +184,12 @@ function getNextPartnershipEvent(state){
 function partnershipNpcStatus(state,id){
   const p=ensurePartnershipState(state);
   if(p.partner===id){
-    if(p.status==='committed') return 'Pasangan · hubungan serius';
+    if(p.status==='committed'){
+      const sl=typeof ensureSharedLifeState==='function'?ensureSharedLifeState(state):null;
+      if(sl?.stage==='married') return 'Pasangan · menikah';
+      if(sl?.stage==='engaged') return 'Pasangan · bertunangan';
+      return 'Pasangan · hubungan serius';
+    }
     if(p.status==='dating') return p.strain>=2?'Pasangan · hubungan sedang tegang':'Pasangan';
   }
   if(p.candidate===id&&p.status==='exploring') return 'Sedang saling mengenal lebih dekat';
@@ -198,8 +208,10 @@ function partnershipPressureModifier(state){
   const p=ensurePartnershipState(state);
   if(!['dating','committed'].includes(p.status)) return 0;
   const sinceShared=state.time.totalHours-(p.lastSharedAt||p.sinceAt||state.time.totalHours);
-  if(p.strain>=2) return 5;
-  if(sinceShared<=7*24) return p.status==='committed'?-5:-3;
-  if(sinceShared>=12*24) return 3;
-  return 0;
+  let base=0;
+  if(p.strain>=2) base=5;
+  else if(sinceShared<=7*24) base=p.status==='committed'?-5:-3;
+  else if(sinceShared>=12*24) base=3;
+  const shared=typeof sharedLifePressureModifier==='function'?sharedLifePressureModifier(state):0;
+  return base+shared;
 }
