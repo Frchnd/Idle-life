@@ -24,6 +24,8 @@ function takeJob(state,jobId,npc){
 }
 
 function runOpportunity(state,id){
+  const partnershipResult=runPartnershipOpportunity(state,id);
+  if(partnershipResult!==null) return partnershipResult;
   const dataResult=runDataOpportunity(state,id);
   if(dataResult!==null) return dataResult;
   const commitmentResult=runRelationshipCommitment(state,id);

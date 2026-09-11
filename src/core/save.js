@@ -61,6 +61,9 @@ function mergeState(base,saved){
   out.relationshipStakes.missed={...base.relationshipStakes.missed,...(saved.relationshipStakes?.missed||{})};
   out.relationshipStakes.lastRepairAt={...base.relationshipStakes.lastRepairAt,...(saved.relationshipStakes?.lastRepairAt||{})};
   out.relationshipStakes.lastStakeAt=Number.isFinite(saved.relationshipStakes?.lastStakeAt)?saved.relationshipStakes.lastStakeAt:base.relationshipStakes.lastStakeAt;
+  out.partnership={...base.partnership,...(saved.partnership||{})};
+  out.partnership.friendOnly={...base.partnership.friendOnly,...(saved.partnership?.friendOnly||{})};
+  out.partnership.consideredAt={...base.partnership.consideredAt,...(saved.partnership?.consideredAt||{})};
   out.life={...base.life,...(saved.life||{})};
   out.life.ageWindows={...base.life.ageWindows,...(saved.life?.ageWindows||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
@@ -94,6 +97,7 @@ function mergeState(base,saved){
   ensureSocialState(out);
   ensureCharacterStories(out);
   ensureRelationshipStakes(out);
+  if(typeof ensurePartnershipState==='function') ensurePartnershipState(out);
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];

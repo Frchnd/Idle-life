@@ -1,22 +1,23 @@
-# HIDUP — Build AJ
+# HIDUP — Build AK
 
-Build AJ menutup bagian akhir Fase 5 menuju Life & Legacy lewat **Time, Age & Life Phases**.
+Build AK membuka Fase 6: Life & Legacy lewat fondasi hubungan pasangan.
 
-## Yang baru
-- Umur sekarang diproses sebagai sistem, bukan sekadar angka di header.
-- Fase hidup: `Mencari pijakan` (18–20), `Membangun arah` (21–24), `Menata hidup dewasa` (25–29), dan fondasi fase 30+.
-- Ulang tahun otomatis tercatat di riwayat tanpa memaksa event setiap tahun.
-- Transisi umur 21/25/30 memunculkan milestone fase hidup.
-- Fokus fase: Stabilitas, Eksplorasi, atau Keseimbangan; tiap fokus memberi modifier kecil ke kerja/belajar/recovery.
-- Peluang dengan jendela usia pertama: `Program Talenta Muda Kota` dan `Forum Profesional Muda`.
-- Jendela usia hanya memengaruhi konten sampingan; pekerjaan utama dan jalur inti tidak terkunci oleh umur.
-- Timeline lama yang hardcode `Umur 18` sekarang otomatis memakai umur aktual saat kejadian baru terjadi.
-- Panel fase hidup baru di KAMU menampilkan umur, fase, fokus, dan perkiraan ulang tahun berikutnya.
+## Baru di Build AK
+- Partnership system opt-in: `single -> exploring -> dating -> committed`.
+- Kandidat awal: Sari dan Andi; game memilih kandidat yang benar-benar paling dekat secara sistem.
+- Syarat hubungan: umur, relationship, encounter, character story, dan minimal satu janji yang benar-benar ditepati.
+- Pilihan `tetap sahabat` dihormati dan tidak dipaksa muncul lagi untuk karakter yang sama.
+- Waktu bersama menjadi opportunity kontekstual dengan biaya waktu dan uang kecil.
+- Kesibukan berkepanjangan bisa menciptakan strain hubungan; komunikasi jujur lebih ringan daripada janji palsu.
+- Hubungan serius baru terbuka pada umur 21+ setelah hubungan bertahan dan cukup terawat.
+- Hubungan yang sedang terjaga memberi sedikit dukungan terhadap tekanan hidup; hubungan yang terabaikan bisa menambah pressure.
+- KAMU mendapat kartu HUBUNGAN hanya ketika jalur partnership memang aktif.
+- DUNIA menampilkan status hubungan langsung pada kartu NPC tanpa tab relationship baru.
 
 ## Save
-Build AI v31 otomatis dimigrasikan ke **v32**. Save lama tidak memutar ulang ulang tahun atau milestone fase yang sudah lewat; fase saat ini hanya disinkronkan ke umur aktual.
+Build AJ v32 otomatis dimigrasikan ke Build AK v33. Save lama tetap berstatus single; tidak ada pasangan atau event romantis retroaktif.
 
 ## Prinsip
-Umur harus menciptakan konteks dan opportunity cost, bukan menghukum pemain karena bermain lama. Sistem keluarga/legacy penuh tetap disimpan untuk Fase 6.
+Partnership bukan dating sim terpisah. Ia tetap menjadi salah satu sistem kehidupan yang harus berbagi waktu dengan kerja, usaha, kesehatan, teman, dan keuangan.
 
-Aplikasi tetap **Rp0**: tidak ada paywall, IAP, premium currency, atau gameplay berbayar.
+Aplikasi tetap Rp0: tidak ada IAP, paywall, atau premium currency.

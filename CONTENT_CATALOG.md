@@ -158,3 +158,8 @@ Fase awal:
 Requirement preset baru: `age_min`, `age_max`, `age_between`.
 
 Pack `life_phases` memiliki `young_talent_program` dan `young_professional_forum`. Konten usia sengaja bersifat sampingan; tidak boleh mengunci career core karena pemain tidak boleh dihukum permanen hanya karena memilih bermain lebih lama.
+
+## Build AK — Partnership layer
+Build AK menambahkan sistem partnership sebagai systemic life layer di luar Content Registry utama. Candidate definition berada di `src/data/partnership.js`, sementara state machine dan event generator berada di `src/core/partnership.js`.
+
+Tahap saat ini: `single -> exploring -> dating -> committed`. Kandidat awal adalah Sari dan Andi. Sistem hanya aktif setelah character story dan relationship stake kandidat cukup berkembang; memilih tetap sahabat menonaktifkan jalur romantis kandidat itu tanpa menghapus hubungan sosialnya.

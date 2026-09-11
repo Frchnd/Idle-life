@@ -1,4 +1,4 @@
-const SAVE_VERSION = 32;
+const SAVE_VERSION = 33;
 
 function createInitialState(){
   return {
@@ -22,6 +22,7 @@ function createInitialState(){
     social:{encounters:{andi:0,bu_lestari:0,sari:0,dimas:0},lastEncounterAt:{andi:-999,bu_lestari:-999,sari:-999,dimas:-999},lastLocationByNpc:{},hangouts:0},
     characterStories:{andi:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999},bu_lestari:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999},sari:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999},dimas:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999}},
     relationshipStakes:{records:{},strain:{andi:0,bu_lestari:0,sari:0,dimas:0},fulfilled:{andi:0,bu_lestari:0,sari:0,dimas:0},missed:{andi:0,bu_lestari:0,sari:0,dimas:0},lastRepairAt:{andi:-999,bu_lestari:-999,sari:-999,dimas:-999},lastStakeAt:-999},
+    partnership:{status:'single',candidate:null,partner:null,sinceAt:null,interestAt:null,dates:0,sharedHours:0,trust:0,strain:0,lastSharedAt:-9999,lastOpportunityAt:-9999,lastEventAt:-9999,nextMilestoneAt:null,friendOnly:{sari:false,andi:false},consideredAt:{sari:-9999,andi:-9999}},
     life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null,phase:'finding_footing',phaseFocus:'open',lastBirthdayAge:18,phaseEnteredAt:0,phaseEventPending:null,ageWindows:{youngTalentTaken:false,youngTalentOffered:false,professionalForumTaken:false,professionalForumOffered:false}},
     pacing:{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8},
     playtest:{actions:0,opportunitiesTaken:0,careerChanges:0,offlineBatches:0},

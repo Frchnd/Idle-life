@@ -57,6 +57,14 @@ function resolveEffects(state,effects=[]){
       case 'relationship_stake_decline': declineRelationshipStake(state,effect.stake); break;
       case 'relationship_stake_finish': finishRelationshipStake(state,effect.stake); break;
       case 'relationship_strain': changeRelationshipStrain(state,effect.npc,effect.value||0); break;
+      case 'partnership_explore': beginPartnershipExploration(state,effect.npc); break;
+      case 'partnership_friend': keepPartnershipFriendship(state,effect.npc); break;
+      case 'partnership_dating': beginDating(state); break;
+      case 'partnership_commit': commitPartnership(state); break;
+      case 'partnership_step_back': stepBackFromPartnership(state,{friendOnly:!!effect.friendOnly}); break;
+      case 'partnership_strain': ensurePartnershipState(state).strain=Math.max(0,Math.min(3,ensurePartnershipState(state).strain+(effect.value||0))); break;
+      case 'partnership_shared_direct': { const p=ensurePartnershipState(state); p.sharedHours+=Number(effect.hours||0); p.trust+=Number(effect.trust||0); p.lastSharedAt=state.time.totalHours; p.strain=Math.max(0,p.strain-1); break; }
+      case 'partnership_delay_commit': { const p=ensurePartnershipState(state); p.nextMilestoneAt=state.time.totalHours+30*24; break; }
       case 'health_stress': ensureHealthState(state).stress=clampHealth(ensureHealthState(state).stress+(effect.value||0)); break;
       case 'health_rhythm': ensureHealthState(state).rhythm=clampHealth(ensureHealthState(state).rhythm+(effect.value||0)); break;
       case 'health_recover': { const h=ensureHealthState(state); h.stress=clampHealth(h.stress-20); h.rhythm=clampHealth(h.rhythm+14); h.workSinceRecovery=0; h.lastRecoveryAt=state.time.totalHours; if(h.illness) clearMinorIllness(state,true); break; }

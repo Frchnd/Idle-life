@@ -1,23 +1,8 @@
-Hidup Build AJ — Content & Life Phase Validation
+HIDUP Build AK — Content Validation
 
-Content Framework
-- Errors: 0
-- Warnings: 0
-- Activities: 4 data-driven (+ contextual health activity)
-- Opportunities: 13
-- Events: 14 data-driven (+ dynamic health/life-phase events)
-- Jobs: 12
-- Certifications: 3
-- Requirement presets: 18
-- Content packs: 7
+Errors: 0
+Warnings: 0
 
-Build AJ regression
-- Save v31 -> v32 migration: PASS
-- No retroactive birthday/phase event on old saves: PASS
-- Age 19 -> Talenta Muda window: PASS
-- Age 21 -> Building Direction phase: PASS
-- Life phase focus choice: PASS
-- Stability/Explore/Balance modifiers: PASS
-- Dynamic history age stamping: PASS
-- Life phase UI render: PASS
-- JavaScript syntax: PASS
+packs: 7
+byType: 6
+byTag: 30

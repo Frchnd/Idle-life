@@ -47,6 +47,7 @@ function postStep(){
   if(typeof syncAssetOpportunities==='function') syncAssetOpportunities(state);
   syncCharacterStories(state);
   syncRelationshipStakes(state);
+  if(typeof syncPartnership==='function') syncPartnership(state);
   syncEducationOpportunities(state);
   resolveContestedOpportunities(state);
   expireOpportunities(state);
@@ -104,6 +105,7 @@ function prepareGame({allowOffline=true}={}){
   if(typeof syncAssetOpportunities==='function') syncAssetOpportunities(state);
   syncCharacterStories(state);
   syncRelationshipStakes(state);
+  if(typeof syncPartnership==='function') syncPartnership(state);
   syncEducationOpportunities(state);
   resolveContestedOpportunities(state);
   expireOpportunities(state);
@@ -221,7 +223,7 @@ function bind(){
       state.playtest.opportunitiesTaken=(state.playtest.opportunitiesTaken||0)+1;
       if(oldJob && state.player.job && oldJob!==state.player.job) state.playtest.careerChanges=(state.playtest.careerChanges||0)+1;
     }
-    if(typeof recordHealthAction==='function') recordHealthAction(state,'opportunity');
+    if(typeof recordHealthAction==='function') recordHealthAction(state,id==='partnership_time'?'social':'opportunity');
     ui.feedback=buildFeedback(before,state,ui.result,'Peluang diambil');
     postStep();
   }));
@@ -455,6 +457,7 @@ function processOffline(realMs){
     if(typeof syncAssetOpportunities==='function') syncAssetOpportunities(state);
     syncCharacterStories(state);
     syncRelationshipStakes(state);
+    if(typeof syncPartnership==='function') syncPartnership(state);
     syncEducationOpportunities(state);
     resolveContestedOpportunities(state);
     expireOpportunities(state);
