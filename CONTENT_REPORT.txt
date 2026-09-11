@@ -1,4 +1,4 @@
-HIDUP Build AL — Content Validation
+HIDUP Build AM — Content Validation
 
 Errors: 0
 Warnings: 0
@@ -12,4 +12,5 @@ eventPools: 6
 presets: 18
 packs: 7
 
-Shared Life: runtime system (not a standalone content pack)
+Shared Life: runtime system
+Family Foundations: runtime life-stage system

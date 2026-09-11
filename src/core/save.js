@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AL.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AM.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -65,6 +65,8 @@ function mergeState(base,saved){
   out.partnership.friendOnly={...base.partnership.friendOnly,...(saved.partnership?.friendOnly||{})};
   out.partnership.consideredAt={...base.partnership.consideredAt,...(saved.partnership?.consideredAt||{})};
   out.sharedLife={...base.sharedLife,...(saved.sharedLife||{})};
+  out.family={...base.family,...(saved.family||{})};
+  out.family.children=Array.isArray(saved.family?.children)?saved.family.children.map(x=>({...x})):[];
   out.life={...base.life,...(saved.life||{})};
   out.life.ageWindows={...base.life.ageWindows,...(saved.life?.ageWindows||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
@@ -100,6 +102,7 @@ function mergeState(base,saved){
   ensureRelationshipStakes(out);
   if(typeof ensurePartnershipState==='function') ensurePartnershipState(out);
   if(typeof ensureSharedLifeState==='function') ensureSharedLifeState(out);
+  if(typeof ensureFamilyState==='function') { ensureFamilyState(out); if((saved.version||0)<35 && !saved.family) processFamily(out,{migration:true}); }
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];

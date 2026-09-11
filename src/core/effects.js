@@ -71,6 +71,11 @@ function resolveEffects(state,effects=[]){
       case 'shared_life_marry': marryPartnership(state); break;
       case 'shared_life_defer_milestone': deferSharedMilestone(state,effect.days||30); break;
       case 'shared_life_conflict': adjustSharedConflict(state,effect.value||0); break;
+      case 'family_intent': setFamilyIntent(state,effect.value); break;
+      case 'family_defer': deferFamilyDiscussion(state,effect.days||180); break;
+      case 'family_start': startParenthoodPlan(state); break;
+      case 'family_defer_start': { const f=ensureFamilyState(state); f.deferredUntil=state.time.totalHours+(effect.days||90)*24; break; }
+      case 'family_parenting_style': setParentingStyle(state,effect.value); break;
       case 'shared_life_agreement': { const s=ensureSharedLifeState(state); if(effect.force){s.agreement=effect.agreement||'balanced';s.lastAgreementAt=state.time.totalHours;if(typeof syncLivingCost==='function')syncLivingCost(state);}else changeSharedAgreement(state,effect.agreement); break; }
       case 'health_stress': ensureHealthState(state).stress=clampHealth(ensureHealthState(state).stress+(effect.value||0)); break;
       case 'health_rhythm': ensureHealthState(state).rhythm=clampHealth(ensureHealthState(state).rhythm+(effect.value||0)); break;

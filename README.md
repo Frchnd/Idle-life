@@ -1,22 +1,16 @@
-# HIDUP — Build AL
+# HIDUP — Build AM
 
-Build AL melanjutkan Fase 6: Life & Legacy lewat keputusan hidup bersama.
+Build AM membuka **Family Foundations** di Fase 6 Life & Legacy.
 
-## Baru di Build AL
-- Hubungan serius bisa membuka pembicaraan tinggal bersama setelah umur, trust, dan waktu bersama cukup matang.
-- Tiga opsi hunian independen bisa dinilai berdasarkan biaya penuh, commute Raka, dan commute pasangan.
-- Tinggal bersama benar-benar membagi biaya rumah dan sebagian biaya gaya hidup; transportasi pribadi tetap biaya masing-masing.
-- Pembagian biaya bisa dipilih: seimbang, Raka menanggung lebih, atau pasangan menanggung lebih. Perubahan kesepakatan punya cooldown agar tidak menjadi exploit tagihan.
-- Lokasi rumah bisa menimbulkan tekanan kalau commute dua orang buruk atau pembagian biaya tidak cocok dengan kondisi pasangan.
-- Konflik rumah tidak langsung memutus hubungan; muncul percakapan untuk merapikan ritme atau pembagian biaya.
-- Hubungan serius bisa berkembang ke pertunangan, lalu pernikahan sederhana setelah cukup waktu, trust, umur, dan kondisi hidup yang stabil.
-- Menunda pertunangan/pernikahan tidak memberi penalti. Tidak ada tanggal wajib.
-- KAMU menampilkan lapisan `Kehidupan Bersama` hanya ketika relevan; tidak ada tab pasangan atau household manager baru.
+## Baru di Build AM
+- Arah keluarga setelah menikah: ingin menjadi orang tua / belum yakin / memilih hidup berdua.
+- Semua pilihan valid; jalur hidup berdua tidak terus di-nag soal anak.
+- Readiness keluarga membaca rumah, hubungan, tekanan hidup, dan cadangan keuangan.
+- Persiapan rumah keluarga: Rp1.200.000 + 8 jam.
+- Proses menuju orang tua dibuat inklusif dan tidak memaksakan satu jalur biologis.
+- Anak pertama **Nara** bisa hadir setelah fase persiapan berjalan.
+- Biaya anak masuk ke tagihan bulanan dan dibagi sesuai kesepakatan biaya pasangan.
+- Parenting menambah pressure hidup secara ringan dan bisa dibantu jaringan keluarga.
+- Tidak ada paywall/IAP/premium currency — tetap Rp0 app.
 
-## Save
-Build AK v33 otomatis dimigrasikan ke Build AL v34. Save lama tidak otomatis tinggal bersama, bertunangan, atau menikah.
-
-## Prinsip
-Pasangan bukan NPC ekonomi kedua yang harus dimicromanage. Yang disimulasikan hanya hal yang mengubah pilihan Raka: rumah, biaya, commute, waktu, tekanan, dan komitmen.
-
-Aplikasi tetap Rp0: tidak ada IAP, paywall, atau premium currency.
+Save Build AL (v34) otomatis dimigrasikan ke Build AM (v35). Tidak ada anak/keputusan keluarga yang ditambahkan secara retroaktif.

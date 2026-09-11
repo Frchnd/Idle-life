@@ -9,12 +9,14 @@ function syncLivingCost(state){
   const shared=typeof adjustSharedLivingCosts==='function'?adjustSharedLivingCosts(state,fullHousing,fullLifestyle):{housing:fullHousing,lifestyle:fullLifestyle,partnerContribution:0};
   const housing=shared.housing,lifestyle=shared.lifestyle;
   const transport=typeof transportMonthlyCost==='function'?transportMonthlyCost(state):0;
-  const total=housing+lifestyle+transport;
+  const family=typeof familyCostBreakdown==='function'?familyCostBreakdown(state):{player:0,partner:0,full:0};
+  const total=housing+lifestyle+transport+(family.player||0);
   state.economy.baseLivingCost=baseHousing;
   state.economy.housingCost=housing;
   state.economy.lifestyleCost=lifestyle;
   state.economy.transportCost=transport;
-  state.economy.partnerContribution=shared.partnerContribution||0;
+  state.economy.familyCost=family.player||0;
+  state.economy.partnerContribution=(shared.partnerContribution||0)+(family.partner||0);
   state.economy.livingCost=total;
   if(state.housing){ state.housing.monthlyCost=housing; }
   return total;
@@ -34,8 +36,8 @@ function processLivingCosts(state){
   }
   if(charged>0){
     const monthly=cycles===1?'Biaya bulanan':'Biaya hidup';
-    const detail=state.economy.lifestyleCost||state.economy.transportCost
-      ? `Rumah ${state.economy.housingCost.toLocaleString('id-ID')} · gaya hidup ${state.economy.lifestyleCost.toLocaleString('id-ID')} · transport ${state.economy.transportCost.toLocaleString('id-ID')}.`
+    const detail=state.economy.lifestyleCost||state.economy.transportCost||state.economy.familyCost
+      ? `Rumah ${state.economy.housingCost.toLocaleString('id-ID')} · gaya hidup ${state.economy.lifestyleCost.toLocaleString('id-ID')} · transport ${state.economy.transportCost.toLocaleString('id-ID')}${state.economy.familyCost?` · keluarga ${state.economy.familyCost.toLocaleString('id-ID')}`:''}.`
       : '';
     addRecent(state,`${monthly} dibayar · -Rp${charged.toLocaleString('id-ID')}.${emergencyUsed?` Dana darurat menutup Rp${emergencyUsed.toLocaleString('id-ID')}.`:''}${detail?` ${detail}`:''}`);
   }

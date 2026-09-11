@@ -77,6 +77,7 @@ function healthPressureSnapshot(state){
   if(state.finance?.lifestyle==='comfortable') score-=2;
   if(typeof lifePressureModifier==='function') score+=lifePressureModifier(state);
   if(typeof partnershipPressureModifier==='function') score+=partnershipPressureModifier(state);
+  if(typeof familyPressureModifier==='function'){const fp=familyPressureModifier(state);score+=fp;if(fp>0)contributors.push('ritme keluarga');}
   score=clampHealth(score,0,100);
   return {score,contributors:[...new Set(contributors)].slice(0,4),label:score>=70?'Berat':score>=48?'Tinggi':score>=28?'Sedang':'Ringan'};
 }

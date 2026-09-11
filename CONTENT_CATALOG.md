@@ -167,3 +167,16 @@ Tahap saat ini: `single -> exploring -> dating -> committed`. Kandidat awal adal
 
 ## Build AL — Shared Life Decisions
 Build AL menambah lapisan sistemik `sharedLife` di luar Content Registry karena ia merupakan state kehidupan lintas-event, bukan content pack mandiri. Event yang dihasilkan meliputi pembicaraan tinggal bersama, konflik rutinitas rumah, pertunangan, dan pernikahan. Save version: 34.
+
+
+## Build AM — Family Foundations
+Family Foundations berada di `src/data/family.js` + `src/core/family.js`. Sistem ini sengaja tidak menjadi content pack besar karena ia adalah life-stage engine yang membaca partnership/shared-life state.
+
+State utama: `family.intent`, `family.prepared`, `family.stage`, `family.children`, `family.parentingStyle`.
+
+Prinsip desain:
+- jalur tanpa anak adalah outcome valid;
+- tidak memaksakan jalur biologis tertentu;
+- anak tidak muncul dari satu tombol instan;
+- rumah, uang, relasi, dan tekanan ikut menentukan kesiapan;
+- parenting menambah biaya/pressure tetapi tidak menjadi punishment ekstrem.
