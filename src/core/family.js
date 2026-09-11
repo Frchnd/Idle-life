@@ -3,7 +3,7 @@ function ensureFamilyState(state){
     intent:'undecided',discussionAt:-9999,deferredUntil:-9999,prepared:false,preparedAt:null,
     stage:'none',planStartedAt:null,arrivalAt:null,arrivalPending:false,arrivalEventSeen:false,
     children:[],parentingStyle:'shared',lastMilestoneAt:-9999,lastProcessedAt:state.time?.totalHours||0,
-    totalSpent:0,lastPrepareAt:-9999
+    totalSpent:0,lastPrepareAt:-9999,parenting:{stage:null,stageEventPending:null,lastStageEvent:null,familyTimeCount:0,lastFamilyTimeAt:-9999,lastProcessedAt:state.time?.totalHours||0,sleepDebt:0,careRhythm:60,development:{curiosity:0,warmth:0,independence:0},dominantTrait:null,milestones:[]}
   };
   if(!state.family||typeof state.family!=='object') state.family={};
   const f=state.family;
@@ -30,7 +30,9 @@ function familyFullMonthlyCost(state){
   const f=ensureFamilyState(state);
   if(f.stage!=='parenting'||!f.children.length) return 0;
   const index=typeof ensureWorldState==='function'?(ensureWorldState(state).costIndex||100):(state.world?.costIndex||100);
-  return Math.round((FAMILY_CHILD_PROFILE.baseMonthlyCost*f.children.length*index/100)/10000)*10000;
+  const stage=typeof currentParentingStage==='function'?currentParentingStage(state):null;
+  const multiplier=stage?.costMult||1;
+  return Math.round((FAMILY_CHILD_PROFILE.baseMonthlyCost*f.children.length*multiplier*index/100)/10000)*10000;
 }
 
 function familyCostBreakdown(state){
@@ -133,6 +135,7 @@ function familyPressureModifier(state){
   if(f.stage!=='parenting') return 0;
   let value=f.parentingStyle==='network'?4:7;
   if((state.sharedLife?.conflict||0)>=2) value+=4;
+  if(typeof parentingPressureModifier==='function') value+=parentingPressureModifier(state);
   return value;
 }
 
@@ -145,7 +148,7 @@ function familySnapshot(state){
   else if(f.stage==='waiting') stageLabel='Menunggu fase berikutnya';
   else if(f.stage==='parenting') stageLabel='Menjadi orang tua';
   else if(f.intent==='parenthood') stageLabel=f.prepared?'Rumah sudah disiapkan':'Ingin menjadi orang tua';
-  return {...f,stageLabel,intentLabel:familyIntentLabel(state),readiness:ready,cost,child,partnerName:familyPartnerName(state)};
+  return {...f,stageLabel,intentLabel:familyIntentLabel(state),readiness:ready,cost,child,partnerName:familyPartnerName(state),parenting:typeof parentingSnapshot==='function'?parentingSnapshot(state):null};
 }
 
 function getNextFamilyEvent(state){
@@ -178,10 +181,11 @@ function getNextFamilyEvent(state){
   }
   if(f.arrivalPending&&!f.arrivalEventSeen&&f.stage==='parenting'&&f.children.length){
     f.arrivalEventSeen=true;
-    return {id:'family_first_child_arrival',type:'KELUARGA',title:`Rumah Sekarang Punya Ritme Baru`,art:'./assets/scenes/home.webp',artAlt:'Rumah keluarga',text:`${f.children[0].name} sekarang menjadi bagian dari rumah kalian. Uang, tidur, dan waktu kosong akan terasa berbeda. Pertanyaan pertama bukan soal menjadi orang tua “sempurna”, tapi bagaimana kalian akan berbagi beban di hari-hari biasa.`,choices:[
+    return {id:'family_first_child_arrival',type:'KELUARGA',title:`Rumah Sekarang Punya Ritme Baru`,art:(typeof housingMeta==='function'?(housingMeta(state).image||'./assets/housing/family_home.webp'):'./assets/housing/family_home.webp'),artAlt:'Rumah keluarga',text:`${f.children[0].name} sekarang menjadi bagian dari rumah kalian. Uang, tidur, dan waktu kosong akan terasa berbeda. Pertanyaan pertama bukan soal menjadi orang tua “sempurna”, tapi bagaimana kalian akan berbagi beban di hari-hari biasa.`,choices:[
       {label:'Bagi ritme berdua',hint:'Tekankan kerja sama di dalam rumah',effects:[{type:'family_parenting_style',value:'shared'}],result:'Kalian sepakat belajar membagi malam buruk, pekerjaan rumah, dan waktu kerja tanpa menghitung semuanya sebagai utang satu sama lain.'},
       {label:'Libatkan jaringan keluarga',hint:'Sedikit lebih ringan untuk tekanan · hubungan keluarga naik',effects:[{type:'family_parenting_style',value:'network'}],result:'Kalian memilih menerima bantuan orang terdekat ketika memang perlu. Kemandirian tidak harus berarti melakukan semuanya sendiri.'}
     ]};
   }
+  if(f.stage==='parenting'&&typeof getNextParentingEvent==='function'){const parentingEvent=getNextParentingEvent(state);if(parentingEvent)return parentingEvent;}
   return null;
 }

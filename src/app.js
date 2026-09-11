@@ -54,6 +54,7 @@ function postStep(){
   processLivingCosts(state);
   if(typeof processSharedLife==='function') processSharedLife(state);
   if(typeof processFamily==='function') processFamily(state);
+  if(typeof processParenting==='function') processParenting(state);
   if(typeof processHealth==='function') processHealth(state);
   if(typeof processLifePhases==='function') processLifePhases(state);
   if(state.career.workCount>=3) state.flags.routineUnlocked=true;
@@ -114,6 +115,7 @@ function prepareGame({allowOffline=true}={}){
   processLivingCosts(state);
   if(typeof processSharedLife==='function') processSharedLife(state);
   if(typeof processFamily==='function') processFamily(state);
+  if(typeof processParenting==='function') processParenting(state);
   if(typeof processHealth==='function') processHealth(state);
   if(typeof processLifePhases==='function') processLifePhases(state);
   refreshEvent(state);
@@ -450,13 +452,7 @@ function processOffline(realMs){
     const before=state.time.totalHours;
     const remaining=budget-consumed;
     let healthAction=null;
-    if(!state.player.job){
-      if(remaining<4) break;
-      const offlineAction=state.business?.active?'business_manage':(state.player.money>=20000?'study':'family');
-      const result=executeActivity(state,offlineAction);
-      if(result?.error) break;
-      healthAction=offlineAction;
-    }else if(typeof healthIllnessActive==='function'&&healthIllnessActive(state)){
+    if(typeof healthIllnessActive==='function'&&healthIllnessActive(state)){
       if(remaining<10) break;
       executeActivity(state,'health_recover');
       healthAction='health_recover';
@@ -464,6 +460,17 @@ function processOffline(realMs){
       if(remaining<8) break;
       executeActivity(state,'rest');
       healthAction='rest';
+    }else if(typeof parentingOfflineNeedsTime==='function'&&parentingOfflineNeedsTime(state)){
+      if(remaining<4) break;
+      const result=executeActivity(state,'parenting_time');
+      if(result?.error) break;
+      healthAction='parenting_time';
+    }else if(!state.player.job){
+      if(remaining<4) break;
+      const offlineAction=state.business?.active?'business_manage':(state.player.money>=20000?'study':'family');
+      const result=executeActivity(state,offlineAction);
+      if(result?.error) break;
+      healthAction=offlineAction;
     }else if(remaining>=8){
       executeActivity(state,'work');
       healthAction='work';
@@ -489,6 +496,7 @@ function processOffline(realMs){
     processLivingCosts(state);
     if(typeof processSharedLife==='function') processSharedLife(state);
     if(typeof processFamily==='function') processFamily(state);
+    if(typeof processParenting==='function') processParenting(state);
     if(typeof processHealth==='function') processHealth(state);
     if(typeof processLifePhases==='function') processLifePhases(state);
     if(state.career.workCount>=3) state.flags.routineUnlocked=true;

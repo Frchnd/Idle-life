@@ -161,7 +161,7 @@ function recordHealthAction(state,action){
     h.rhythm=clampHealth(h.rhythm-1);
   }else if(action==='study'){
     h.stress=clampHealth(h.stress+(h.stress>=68?2:1));
-  }else if(action==='family'||action==='rian'||action==='social'){
+  }else if(action==='family'||action==='rian'||action==='social'||action==='parenting_time'){
     h.stress=clampHealth(h.stress-5);
     h.rhythm=clampHealth(h.rhythm+2);
   }else if(action==='city:gym_sehat'){

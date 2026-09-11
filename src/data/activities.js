@@ -15,6 +15,7 @@ function availableActivities(state){
   const list=[];
   const health=typeof healthSnapshot==='function'?healthSnapshot(state):null;
   if(health?.canRecover) list.push({id:'health_recover',name:health.illness.id==='well'?'Jaga Ritme':'Pulihkan Diri',hint:health.illness.id==='well'?'4j · turunkan tekanan':'10j · fokus pulih',duration:health.illness.id==='well'?4:10});
+  if(typeof parentingSnapshot==='function'){const ps=parentingSnapshot(state);if(ps&&parentingTimeCooldownLeft(state)<=0) list.push({id:'parenting_time',name:`Waktu dengan ${ps.child.name}`,hint:'4j · hadir tanpa urusan kerja',duration:4});}
   if(!state.player.job){
     if(state.business?.active) list.push({id:'business_manage',name:state.business.ownerFullTime?'Jalankan Usaha':'Urus Usaha',hint:state.business.helperActive?'4j · klien, kualitas & koordinasi Ari':'4j · jaga kapasitas & pelanggan',duration:4});
     list.push({id:'job_search',name:state.business?.ownerFullTime?'Lihat Lowongan Kerja':'Cari Kerja',hint:'6j · cari peluang kerja',duration:6});
@@ -41,16 +42,20 @@ function executeActivity(state,id){
   if(id==='health_recover'){
     return recoverHealthActivity(state);
   }
+  if(id==='parenting_time'){
+    return spendFamilyTime(state);
+  }
   if(id==='study'){
     if(state.player.money<20000) return {error:'Uangmu belum cukup untuk biaya belajar.'};
     const home=housingStudyProfile(state);
     const assetStudy=typeof personalAssetStudyBonus==='function'?personalAssetStudyBonus(state):{learning:0,fatigue:0};
     state.player.money-=20000;
     state.time.totalHours+=4;
-    state.player.fatigue=Math.min(100,state.player.fatigue+Math.max(3,home.fatigue+(typeof lifestyleStudyFatigueModifier==='function'?lifestyleStudyFatigueModifier(state):0)+(assetStudy.fatigue||0)+(typeof healthActionFatigueModifier==='function'?healthActionFatigueModifier(state,'study'):0)));
+    state.player.fatigue=Math.min(100,state.player.fatigue+Math.max(3,home.fatigue+(typeof lifestyleStudyFatigueModifier==='function'?lifestyleStudyFatigueModifier(state):0)+(assetStudy.fatigue||0)+(typeof healthActionFatigueModifier==='function'?healthActionFatigueModifier(state,'study'):0)+(typeof parentingWorkFatigueModifier==='function'?parentingWorkFatigueModifier(state):0)));
     const phaseStudy=typeof lifeStudyMultiplier==='function'?lifeStudyMultiplier(state):1;
-    state.skills.learning+=Math.round((home.learning+(assetStudy.learning||0))*phaseStudy);
-    state.skills.technology+=Math.round(home.technology*xpMod(state)*phaseStudy);
+    const parentingStudy=typeof parentingStudyMultiplier==='function'?parentingStudyMultiplier(state):1;
+    state.skills.learning+=Math.round((home.learning+(assetStudy.learning||0))*phaseStudy*parentingStudy);
+    state.skills.technology+=Math.round(home.technology*xpMod(state)*phaseStudy*parentingStudy);
     if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'study_desk',1);
     if(typeof wearPersonalAsset==='function' && state.assets?.laptop) wearPersonalAsset(state,'laptop',0.5);
     if(home.social) state.skills.social=(state.skills.social||0)+home.social;
@@ -64,7 +69,7 @@ function executeActivity(state,id){
   }
   if(id==='rest'){
     state.time.totalHours+=8;
-    const recovery=Math.max(20,housingRestRecovery(state)+(typeof lifestyleRestBonus==='function'?lifestyleRestBonus(state):0)+(typeof personalAssetRestBonus==='function'?personalAssetRestBonus(state):0)+(typeof lifeRestBonus==='function'?lifeRestBonus(state):0));
+    const recovery=Math.max(20,housingRestRecovery(state)+(typeof lifestyleRestBonus==='function'?lifestyleRestBonus(state):0)+(typeof personalAssetRestBonus==='function'?personalAssetRestBonus(state):0)+(typeof lifeRestBonus==='function'?lifeRestBonus(state):0)+(typeof parentingRestRecoveryModifier==='function'?parentingRestRecoveryModifier(state):0));
     state.player.fatigue=Math.max(0,state.player.fatigue-recovery);
     if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'comfort_bed',0.5);
     return `${housingLabel(state)} memberi waktu istirahat yang ${recovery>=52?'lebih tenang':'cukup'}. Kondisimu pulih.`;
@@ -84,7 +89,7 @@ function executeActivity(state,id){
     const flexibleRelief=state.player.statuses.includes('jam_lebih_fleksibel')?-2:0;
     const dualRoleCost=state.player.statuses.includes('peran_ganda')?2:0;
     const transportWearPenalty=typeof personalAssetTravelFatiguePenalty==='function'&&typeof currentTransport==='function'?personalAssetTravelFatiguePenalty(state,currentTransport(state).id):0;
-    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0)+pressureFatigue+flexibleRelief+dualRoleCost+commute+(typeof lifestyleWorkFatigueModifier==='function'?lifestyleWorkFatigueModifier(state):0)+(typeof currentTransport==='function'&&personalFinanceUnlocked(state)?currentTransport(state).travelFatigue:0)+transportWearPenalty+(mechanicAsset.fatigue||0)+(typeof healthActionFatigueModifier==='function'?healthActionFatigueModifier(state,'work'):0)+(typeof lifeWorkFatigueModifier==='function'?lifeWorkFatigueModifier(state):0));
+    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0)+pressureFatigue+flexibleRelief+dualRoleCost+commute+(typeof lifestyleWorkFatigueModifier==='function'?lifestyleWorkFatigueModifier(state):0)+(typeof currentTransport==='function'&&personalFinanceUnlocked(state)?currentTransport(state).travelFatigue:0)+transportWearPenalty+(mechanicAsset.fatigue||0)+(typeof healthActionFatigueModifier==='function'?healthActionFatigueModifier(state,'work'):0)+(typeof lifeWorkFatigueModifier==='function'?lifeWorkFatigueModifier(state):0)+(typeof parentingWorkFatigueModifier==='function'?parentingWorkFatigueModifier(state):0));
     state.skills[job.skill]=(state.skills[job.skill]||0)+Math.round(job.skillXp*xpMod(state))+(mechanicAsset.xp||0);
     if(job.skill==='mechanics'&&typeof wearPersonalAsset==='function') wearPersonalAsset(state,'mechanic_toolkit',1);
     if(rawCommute>0&&typeof wearActiveTransport==='function') wearActiveTransport(state,2);

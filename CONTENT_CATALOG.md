@@ -180,3 +180,17 @@ Prinsip desain:
 - anak tidak muncul dari satu tombol instan;
 - rumah, uang, relasi, dan tekanan ikut menentukan kesiapan;
 - parenting menambah biaya/pressure tetapi tidak menjadi punishment ekstrem.
+
+
+## Build AN — Early Parenting & Child Development
+
+`src/data/parenting.js` mendefinisikan tahap perkembangan dan trait yang tampil ke pemain. `src/core/parenting.js` menangani umur anak, sleep debt, care rhythm, family-time cooldown, milestone fase, development signals, dan modifier lintas kerja/belajar/istirahat.
+
+State utama berada di `family.parenting`. Angka seperti `sleepDebt`, `careRhythm`, dan score trait tetap backend-only; UI hanya menampilkan label manusiawi seperti “Kurang tidur”, “Hangat & terjaga”, atau kecenderungan “Penasaran”.
+
+Prinsip desain:
+- parenting mengubah opportunity cost waktu, bukan menjadi mini-game;
+- milestone lama tidak diputar ulang saat migration;
+- offline routine boleh menjaga koneksi keluarga saat ritme sudah terlalu rendah;
+- perkembangan anak muncul dari pola berulang dan keputusan milestone, bukan dari point allocation;
+- jalur Life & Legacy tetap kompatibel dengan keluarga tanpa anak dari Build AM.

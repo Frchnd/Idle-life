@@ -1,4 +1,4 @@
-const SAVE_VERSION = 35;
+const SAVE_VERSION = 36;
 
 function createInitialState(){
   return {
@@ -24,7 +24,7 @@ function createInitialState(){
     relationshipStakes:{records:{},strain:{andi:0,bu_lestari:0,sari:0,dimas:0},fulfilled:{andi:0,bu_lestari:0,sari:0,dimas:0},missed:{andi:0,bu_lestari:0,sari:0,dimas:0},lastRepairAt:{andi:-999,bu_lestari:-999,sari:-999,dimas:-999},lastStakeAt:-999},
     partnership:{status:'single',candidate:null,partner:null,sinceAt:null,interestAt:null,dates:0,sharedHours:0,trust:0,strain:0,lastSharedAt:-9999,lastOpportunityAt:-9999,lastEventAt:-9999,nextMilestoneAt:null,friendOnly:{sari:false,andi:false},consideredAt:{sari:-9999,andi:-9999}},
     sharedLife:{planning:false,cohabiting:false,partner:null,homeId:null,sharedSinceAt:null,agreement:'balanced',lastAgreementAt:-9999,lastTalkAt:-9999,deferredUntil:-9999,stage:'none',engagedAt:null,marriedAt:null,lastMilestoneAt:-9999,conflict:0,lastConflictAt:-9999,lastConflictNoticeWeek:-999,lastProcessedWeek:0,householdWeeks:0},
-    family:{intent:'undecided',discussionAt:-9999,deferredUntil:-9999,prepared:false,preparedAt:null,stage:'none',planStartedAt:null,arrivalAt:null,arrivalPending:false,arrivalEventSeen:false,children:[],parentingStyle:'shared',lastMilestoneAt:-9999,lastProcessedAt:0,totalSpent:0,lastPrepareAt:-9999},
+    family:{intent:'undecided',discussionAt:-9999,deferredUntil:-9999,prepared:false,preparedAt:null,stage:'none',planStartedAt:null,arrivalAt:null,arrivalPending:false,arrivalEventSeen:false,children:[],parentingStyle:'shared',lastMilestoneAt:-9999,lastProcessedAt:0,totalSpent:0,lastPrepareAt:-9999,parenting:{stage:null,stageEventPending:null,lastStageEvent:null,familyTimeCount:0,lastFamilyTimeAt:-9999,lastProcessedAt:0,sleepDebt:0,careRhythm:60,development:{curiosity:0,warmth:0,independence:0},dominantTrait:null,milestones:[]}},
     life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null,phase:'finding_footing',phaseFocus:'open',lastBirthdayAge:18,phaseEnteredAt:0,phaseEventPending:null,ageWindows:{youngTalentTaken:false,youngTalentOffered:false,professionalForumTaken:false,professionalForumOffered:false}},
     pacing:{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8},
     playtest:{actions:0,opportunitiesTaken:0,careerChanges:0,offlineBatches:0},

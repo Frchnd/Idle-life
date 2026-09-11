@@ -1,4 +1,4 @@
-HIDUP Build AM — Content Validation
+HIDUP Build AN — Content Validation
 
 Errors: 0
 Warnings: 0
@@ -14,3 +14,4 @@ packs: 7
 
 Shared Life: runtime system
 Family Foundations: runtime life-stage system
+Early Parenting: runtime child-development system
