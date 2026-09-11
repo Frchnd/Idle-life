@@ -1,16 +1,17 @@
-# HIDUP — Build AP+AQ Combined
+# HIDUP — Build AR–AS Combined
 
-Build AP+AQ memperluas **Life & Legacy** dari Build AO dengan schooling, perkembangan Nara sebagai individu, dan fondasi generasi berikutnya.
+Build AR–AS melanjutkan **Life & Legacy** dari AP+AQ dengan masa anak lebih besar → remaja, autonomy, teman/circle, pendidikan lanjutan, dan hubungan orang tua–anak yang mulai berubah dari kontrol menjadi pengaruh.
 
-## Baru di Build AP+AQ
-- Nara masuk usia sekolah dan keluarga memilih lingkungan sekolah pertama.
-- Biaya sekolah masuk ke biaya hidup bulanan dan mengikuti indeks biaya dunia.
-- Commute sekolah dipengaruhi hunian dan transportasi keluarga.
-- Childcare berhenti menjadi biaya penjagaan utama ketika usia sekolah tercapai; sistem bergeser ke dukungan sekolah.
-- Tiga pola dukungan sekolah: Rutinitas Rumah, Dukungan Seimbang, atau Program Sepulang Sekolah.
-- Minat, kemampuan, pola belajar, kecenderungan sosial, dan kemandirian Nara berkembang di belakang layar lalu ditampilkan sebagai label manusiawi, bukan raw stats.
-- Pilihan orang tua membentuk efek tertunda: ruang eksplorasi, rutinitas terstruktur, atau tekanan pencapaian punya jejak berbeda beberapa bulan kemudian.
-- Riwayat pendidikan, formative tags, family milestones, trajectory tags, dan successor state mulai disimpan untuk sistem succession di masa depan.
-- Nara belum playable; build ini menyiapkan state generasi kedua tanpa menjadikannya clone Raka.
-- Save Build AO (v37) otomatis dimigrasikan ke Build AP+AQ (v38) tanpa menembakkan backlog event schooling sekaligus.
+## Baru di Build AR–AS
+- Nara masuk fase pre-teen, remaja, dan menjelang dewasa muda berdasarkan umur aktualnya.
+- Peer circle Nara terbentuk dari minat dan jejak hidup sebelumnya, bukan dipilih langsung oleh player.
+- Nara mulai datang dengan pilihan kegiatan sendiri; Raka memutuskan cara mendukung, membatasi, atau menolak—bukan memilih minat dari nol.
+- Mobilitas mandiri membuka trade-off baru: waktu keluarga lebih longgar, tapi biaya dan autonomy Nara ikut berubah.
+- Pilihan sekolah lanjutan memakai preferensi Nara yang lahir dari perkembangan sebelumnya. Player bisa mendukung, berkompromi, atau mengambil alih keputusan dengan konsekuensi hubungan dan legacy berbeda.
+- Konflik pertemanan memperkenalkan pola baru hubungan orang tua-anak: mendengar, coaching, atau intervensi langsung.
+- UI tidak menampilkan raw autonomy/trust/tension stats; semuanya diterjemahkan menjadi label manusiawi.
+- Biaya masa kecil bergeser: after-school support berhenti ditagihkan saat adolescence, digantikan biaya kegiatan, mobilitas, dan pendidikan lanjutan bila relevan.
+- Housing privacy ikut memengaruhi gesekan keluarga saat Nara makin besar.
+- Formative tags, trajectory tags, education history, milestone, dan successor state terus diperkuat untuk milestone Playable Legacy berikutnya.
+- Save AP+AQ (v38) otomatis dimigrasikan ke Build AR–AS (v39) tanpa memuntahkan backlog event adolescence sekaligus.
 - Tetap Rp0 app: tanpa paywall, IAP, premium currency, atau gameplay berbayar.

@@ -35,7 +35,8 @@ function familyFullMonthlyCost(state){
   const childCost=Math.round((FAMILY_CHILD_PROFILE.baseMonthlyCost*f.children.length*multiplier*index/100)/10000)*10000;
   const careCost=typeof familyCareMonthlyCost==='function'?familyCareMonthlyCost(state):0;
   const schoolCost=typeof schoolingMonthlyCost==='function'?schoolingMonthlyCost(state):0;
-  return childCost+careCost+schoolCost;
+  const adolescenceCost=typeof adolescenceMonthlyCost==='function'?adolescenceMonthlyCost(state):0;
+  return childCost+careCost+schoolCost+adolescenceCost;
 }
 
 function familyCostBreakdown(state){
@@ -140,6 +141,7 @@ function familyPressureModifier(state){
   if((state.sharedLife?.conflict||0)>=2) value+=4;
   if(typeof parentingPressureModifier==='function') value+=parentingPressureModifier(state);
   if(typeof familyCareerPressureModifier==='function') value+=familyCareerPressureModifier(state);
+  if(typeof adolescenceFamilyPressureModifier==='function') value+=adolescenceFamilyPressureModifier(state);
   return value;
 }
 
@@ -190,6 +192,7 @@ function getNextFamilyEvent(state){
       {label:'Libatkan jaringan keluarga',hint:'Sedikit lebih ringan untuk tekanan · hubungan keluarga naik',effects:[{type:'family_parenting_style',value:'network'}],result:'Kalian memilih menerima bantuan orang terdekat ketika memang perlu. Kemandirian tidak harus berarti melakukan semuanya sendiri.'}
     ]};
   }
+  if(f.stage==='parenting'&&typeof getNextAdolescenceEvent==='function'){const adolescenceEvent=getNextAdolescenceEvent(state);if(adolescenceEvent)return adolescenceEvent;}
   if(f.stage==='parenting'&&typeof getNextSchoolingEvent==='function'){const schoolingEvent=getNextSchoolingEvent(state);if(schoolingEvent)return schoolingEvent;}
   if(f.stage==='parenting'&&typeof getNextParentingEvent==='function'){const parentingEvent=getNextParentingEvent(state);if(parentingEvent)return parentingEvent;}
   if(f.stage==='parenting'&&typeof getNextFamilyCareerEvent==='function'){const careerEvent=getNextFamilyCareerEvent(state);if(careerEvent)return careerEvent;}

@@ -53,7 +53,7 @@ function familyCareerPressureModifier(state){
   if(familyCareerPlayerBusy(state))value+=3;if(familyCareerPartnerBusy(state))value+=2;if(familyCareerPlayerBusy(state)&&familyCareerPartnerBusy(state))value+=2;
   if(familyCareerPartnerReduced(state))value-=1;return value;
 }
-function familyCareerWorkFatigueModifier(state){if(!activeChild(state))return 0;if(typeof schoolingActive==='function'&&schoolingActive(state))return typeof schoolingWorkFatigueModifier==='function'?schoolingWorkFatigueModifier(state):0;return familyCareCurrent(state).workFatigue||0;}
+function familyCareerWorkFatigueModifier(state){if(!activeChild(state))return 0;if(typeof adolescenceActive==='function'&&adolescenceActive(state))return typeof adolescenceWorkFatigueModifier==='function'?adolescenceWorkFatigueModifier(state):0;if(typeof schoolingActive==='function'&&schoolingActive(state))return typeof schoolingWorkFatigueModifier==='function'?schoolingWorkFatigueModifier(state):0;return familyCareCurrent(state).workFatigue||0;}
 function familyCareerCareDailyModifier(state){if(!activeChild(state))return 0;if(typeof schoolingEligible==='function'&&schoolingEligible(state))return 0;return familyCareCurrent(state).careDaily||0;}
 
 function familyCareerApplyPlayerPush(state,{backup=false}={}){

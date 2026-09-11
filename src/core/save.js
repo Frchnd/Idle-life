@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AP+AQ.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik lintas build tanpa reset.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -73,6 +73,7 @@ function mergeState(base,saved){
   out.family.careerCare={...base.family.careerCare,...(saved.family?.careerCare||{})};
   out.family.careerCare.careSetupPaid={...base.family.careerCare.careSetupPaid,...(saved.family?.careerCare?.careSetupPaid||{})};
   out.family.schooling={...base.family.schooling,...(saved.family?.schooling||{})};
+  out.family.adolescence={...base.family.adolescence,...(saved.family?.adolescence||{})};
   out.family.legacy={...base.family.legacy,...(saved.family?.legacy||{})};
   out.family.legacy.children={...base.family.legacy.children,...(saved.family?.legacy?.children||{})};
   out.family.legacy.familyMilestones=Array.isArray(saved.family?.legacy?.familyMilestones)?saved.family.legacy.familyMilestones.map(x=>({...x})):[...base.family.legacy.familyMilestones];
@@ -116,6 +117,7 @@ function mergeState(base,saved){
   if(typeof ensureFamilyCareerState==='function') { ensureFamilyCareerState(out); if((saved.version||0)<37) processFamilyCareer(out,{migration:true}); }
   if(typeof ensureLegacyState==='function') { ensureLegacyState(out); if((saved.version||0)<38) processLegacy(out,{migration:true}); }
   if(typeof ensureSchoolingState==='function') { ensureSchoolingState(out); if((saved.version||0)<38) processSchooling(out,{migration:true}); }
+  if(typeof ensureAdolescenceState==='function') { ensureAdolescenceState(out); if((saved.version||0)<39) processAdolescence(out,{migration:true}); }
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];

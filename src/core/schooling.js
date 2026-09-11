@@ -21,10 +21,10 @@ function ensureSchoolingState(state){
 
 function schoolingEligible(state){const child=activeChild(state);return !!child&&childAge(state,child).months>=60;}
 function schoolingActive(state){const s=ensureSchoolingState(state);return schoolingEligible(state)&&s.stage==='enrolled'&&!!s.schoolId;}
-function schoolingOption(state){const s=ensureSchoolingState(state);return s.schoolId?SCHOOLING_OPTIONS[s.schoolId]||null:null;}
+function schoolingOption(state){const secondary=typeof adolescenceSecondaryOption==='function'?adolescenceSecondaryOption(state):null;if(secondary)return secondary;const s=ensureSchoolingState(state);return s.schoolId?SCHOOLING_OPTIONS[s.schoolId]||null:null;}
 function schoolingSupport(state){const s=ensureSchoolingState(state);return s.supportMode?SCHOOL_SUPPORT_MODES[s.supportMode]||null:null;}
 function schoolingIndexedCost(state,amount){const idx=Math.max(80,Number(state.world?.costIndex)||100);return Math.round((Number(amount||0)*idx/100)/10000)*10000;}
-function schoolingMonthlyCost(state){if(!schoolingActive(state))return 0;const school=schoolingOption(state),support=schoolingSupport(state);return schoolingIndexedCost(state,(school?.baseMonthlyCost||0)+(support?.baseMonthlyCost||0));}
+function schoolingMonthlyCost(state){if(!schoolingActive(state))return 0;const school=schoolingOption(state),support=schoolingSupport(state);const supportCost=(typeof adolescenceActive==='function'&&adolescenceActive(state))?0:(support?.baseMonthlyCost||0);return schoolingIndexedCost(state,(school?.baseMonthlyCost||0)+supportCost);}
 function schoolingSupportMonthlyCost(state,id){const support=SCHOOL_SUPPORT_MODES[id];return support?schoolingIndexedCost(state,support.baseMonthlyCost||0):0;}
 
 function schoolingCommuteHours(state){
@@ -104,11 +104,11 @@ function recordSchoolFamilyTime(state){
 }
 
 function schoolingFamilyPressureModifier(state){
-  if(!schoolingActive(state))return 0;const s=ensureSchoolingState(state),support=schoolingSupport(state);let value=support?.pressure||1;
+  if(!schoolingActive(state))return 0;const s=ensureSchoolingState(state),support=schoolingSupport(state);let value=(typeof adolescenceActive==='function'&&adolescenceActive(state))?0:(support?.pressure||1);
   const commute=schoolingCommuteHours(state);if(commute>=2)value+=3;else if(commute>=1)value+=1;
   if(s.attendanceRhythm<40)value+=3;else if(s.attendanceRhythm<55)value+=1;return value;
 }
-function schoolingWorkFatigueModifier(state){if(!schoolingActive(state))return 0;return schoolingSupport(state)?.workFatigue||0;}
+function schoolingWorkFatigueModifier(state){if(!schoolingActive(state))return 0;if(typeof adolescenceActive==='function'&&adolescenceActive(state))return 0;return schoolingSupport(state)?.workFatigue||0;}
 
 function processSchooling(state,{migration=false}={}){
   const s=ensureSchoolingState(state),child=activeChild(state),now=state.time?.totalHours||0;

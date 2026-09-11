@@ -56,6 +56,7 @@ function postStep(){
   if(typeof processFamily==='function') processFamily(state);
   if(typeof processParenting==='function') processParenting(state);
   if(typeof processSchooling==='function') processSchooling(state);
+  if(typeof processAdolescence==='function') processAdolescence(state);
   if(typeof processFamilyCareer==='function') processFamilyCareer(state);
   if(typeof processLegacy==='function') processLegacy(state);
   if(typeof processHealth==='function') processHealth(state);
@@ -120,6 +121,7 @@ function prepareGame({allowOffline=true}={}){
   if(typeof processFamily==='function') processFamily(state);
   if(typeof processParenting==='function') processParenting(state);
   if(typeof processSchooling==='function') processSchooling(state);
+  if(typeof processAdolescence==='function') processAdolescence(state);
   if(typeof processFamilyCareer==='function') processFamilyCareer(state);
   if(typeof processLegacy==='function') processLegacy(state);
   if(typeof processHealth==='function') processHealth(state);
@@ -516,6 +518,7 @@ function processOffline(realMs){
     if(typeof processFamily==='function') processFamily(state);
     if(typeof processParenting==='function') processParenting(state);
     if(typeof processSchooling==='function') processSchooling(state);
+    if(typeof processAdolescence==='function') processAdolescence(state);
     if(typeof processFamilyCareer==='function') processFamilyCareer(state);
     if(typeof processLegacy==='function') processLegacy(state);
     if(typeof processHealth==='function') processHealth(state);

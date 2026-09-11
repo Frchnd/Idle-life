@@ -1,12 +1,12 @@
-HIDUP — Build AP+AQ Combined / Save v38
+HIDUP — Build AR–AS Combined / Save v39
 
-Schooling + Growing Family + Legacy Foundations
+Adolescence + Independent Child Life
 
-- Nara memasuki usia sekolah.
-- Pilihan sekolah memengaruhi biaya, commute, lingkungan, dan perkembangan jangka panjang.
-- Childcare bergeser menjadi schooling support.
-- Perkembangan Nara disimpan sebagai state sistemik tetapi UI memakai label manusiawi.
-- Keputusan orang tua punya delayed consequences.
-- Education history, family milestones, formative tags, trajectory tags, dan successor state disiapkan untuk generasi berikutnya.
-- Migrasi save AO v37 -> v38 tanpa reset.
+- Nara tumbuh dari anak besar menuju remaja.
+- Peer circle muncul dari minat dan jejak hidup sebelumnya.
+- Nara mulai punya pilihan kegiatan, mobilitas, dan preferensi pendidikan sendiri.
+- Raka memengaruhi lewat dukungan, batas, negosiasi, atau kontrol; bukan memilih semua keputusan Nara.
+- Hubungan orang tua-anak punya keterbukaan, autonomy, dan gesekan yang tampil sebagai label manusiawi.
+- Sekolah lanjutan, housing privacy, commute, dan aktivitas punya konsekuensi sistemik.
+- Migrasi save v38 -> v39 tanpa reset dan tanpa spam event retroaktif.
 - Static PWA / GitHub Pages / Rp0 app.
