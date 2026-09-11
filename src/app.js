@@ -41,6 +41,7 @@ function persist(){
 
 function postStep(){
   simulateWorld(state);
+  syncPersonalFinance(state);
   syncCharacterStories(state);
   syncRelationshipStakes(state);
   syncEducationOpportunities(state);
@@ -92,6 +93,7 @@ function prepareGame({allowOffline=true}={}){
     }
   }
   simulateWorld(state);
+  syncPersonalFinance(state);
   syncCharacterStories(state);
   syncRelationshipStakes(state);
   syncEducationOpportunities(state);
@@ -126,6 +128,30 @@ function bind(){
     ui.result=result;
     ui.feedback=buildFeedback(before,state,result,'Tempat tinggal berubah');
     postStep();
+  }));
+  root.querySelectorAll('[data-finance-lifestyle]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);
+    const result=changeLifestyle(state,btn.dataset.financeLifestyle);
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum bisa diubah',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    syncLivingCost(state);ui.result=result;ui.feedback=buildFeedback(before,state,result,'Gaya hidup diperbarui');persist();draw();
+  }));
+  root.querySelectorAll('[data-finance-transport]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);
+    const result=selectTransport(state,btn.dataset.financeTransport);
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum bisa digunakan',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    syncLivingCost(state);ui.result=result;ui.feedback=buildFeedback(before,state,result,'Transportasi diperbarui');persist();draw();
+  }));
+  root.querySelectorAll('[data-finance-deposit]').forEach(btn=>btn.addEventListener('click',()=>{
+    const before=feedbackSnapshot(state);const result=moveEmergencyFund(state,Number(btn.dataset.financeDeposit));
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum bisa disimpan',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    ui.result=result;ui.feedback=buildFeedback(before,state,result,'Dana darurat bertambah');persist();draw();
+  }));
+  root.querySelectorAll('[data-finance-withdraw]').forEach(btn=>btn.addEventListener('click',()=>{
+    const before=feedbackSnapshot(state);const raw=btn.dataset.financeWithdraw;const result=raw==='all'?withdrawAllEmergencyFund(state):moveEmergencyFund(state,-Number(raw));
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum bisa ditarik',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    ui.result=result;ui.feedback=buildFeedback(before,state,result,'Dana darurat ditarik');persist();draw();
   }));
   root.querySelectorAll('[data-city-visit]').forEach(btn=>btn.addEventListener('click',()=>{
     if(state.pendingEvent) return;
@@ -360,6 +386,7 @@ function processOffline(realMs){
     state.playtest.actions=(state.playtest.actions||0)+1;
     consumed+=state.time.totalHours-before;
     simulateWorld(state);
+    syncPersonalFinance(state);
     syncCharacterStories(state);
     syncRelationshipStakes(state);
     syncEducationOpportunities(state);

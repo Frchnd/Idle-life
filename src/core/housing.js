@@ -27,7 +27,7 @@ function housingSnapshot(state){
   ensureHousingState(state);
   return Object.values(HOUSING_OPTIONS).map(meta=>({
     ...meta,current:state.housing.id===meta.id,deposit:housingDeposit(state,meta.id),indexedMonthly:Math.round((meta.monthlyCost*(state.world?.costIndex||100)/100)/10000)*10000,
-    currentWorkCommute:state.player?.job?housingCommuteForMeta(meta,JOBS[state.player.job]?.workplaceId):null
+    currentWorkCommute:state.player?.job?(typeof financeCommuteForHousingMeta==='function'?financeCommuteForHousingMeta(state,meta,JOBS[state.player.job]?.workplaceId):housingCommuteForMeta(meta,JOBS[state.player.job]?.workplaceId)):null
   }));
 }
 function housingCommuteForMeta(meta,workplaceId){return Math.max(0,Number(meta?.commute?.[workplaceId]||0));}

@@ -20,7 +20,7 @@ function cityLocationSnapshot(state){
   ensureCityState(state);
   return Object.values(CITY_LOCATIONS).map(loc=>{
     const presence=socialPresenceLabel(state,loc.id);
-    const travel=housingCityTravel(state,loc.id);
+    const travel=typeof effectiveCityTravel==='function'?effectiveCityTravel(state,loc.id):housingCityTravel(state,loc.id);
     return {...loc,visits:state.city.visits[loc.id]||0,presence,effectiveDuration:loc.duration+travel.extraHours,effectiveCost:loc.cost+travel.extraCost,travelExtraHours:travel.extraHours};
   });
 }
@@ -35,7 +35,7 @@ function visitCityLocation(state,id){
   ensureCityState(state);
   const loc=CITY_LOCATIONS[id];
   if(!loc) return {error:'Lokasi itu belum tersedia.'};
-  const travel=housingCityTravel(state,id);
+  const travel=typeof effectiveCityTravel==='function'?effectiveCityTravel(state,id):housingCityTravel(state,id);
   const effectiveCost=loc.cost+travel.extraCost;
   const effectiveDuration=loc.duration+travel.extraHours;
   if(state.player.money<effectiveCost) return {error:`Butuh Rp${effectiveCost.toLocaleString('id-ID')} untuk pergi dan beraktivitas di sini.`};
@@ -43,6 +43,7 @@ function visitCityLocation(state,id){
   const first=(state.city.visits[id]||0)===0;
   state.player.money-=effectiveCost;
   state.time.totalHours+=effectiveDuration;
+  if(travel.travelFatigue) state.player.fatigue=Math.max(0,Math.min(100,state.player.fatigue+travel.travelFatigue));
   state.city.lastVisited=id;
   state.city.lastVisitedAt=state.time.totalHours;
   state.city.visits[id]=(state.city.visits[id]||0)+1;
@@ -90,7 +91,9 @@ function visitCityLocation(state,id){
   }
 
   if(housingMeta(state).socialBonus) state.skills.social=(state.skills.social||0)+housingMeta(state).socialBonus;
+  if(typeof lifestyleCitySocialBonus==='function' && lifestyleCitySocialBonus(state)) state.skills.social=(state.skills.social||0)+lifestyleCitySocialBonus(state);
   if(travel.extraHours>0) message+=` Perjalanan dari ${housingMeta(state).neighborhood} menambah ${travel.extraHours} jam.`;
+  else if(typeof personalFinanceUnlocked==='function'&&personalFinanceUnlocked(state)&&housingCityTravel(state,id).extraHours>0) message+=` ${currentTransport(state).name} membuat perjalanan ke sini jauh lebih singkat.`;
 
   const person=maybeStartSocialEncounter(state,id,presentAtArrival);
   if(person) message+=` ${person.name} kebetulan juga ada di sini.`;

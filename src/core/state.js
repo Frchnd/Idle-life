@@ -1,4 +1,4 @@
-const SAVE_VERSION = 27;
+const SAVE_VERSION = 28;
 
 function createInitialState(){
   return {
@@ -13,9 +13,10 @@ function createInitialState(){
       statuses:['tinggal_bersama_keluarga']
     },
     time:{totalHours:0},
-    economy:{lastLivingCostAt:0,livingCost:600000,baseLivingCost:600000},
+    economy:{lastLivingCostAt:0,livingCost:600000,baseLivingCost:600000,housingCost:600000,lifestyleCost:0,transportCost:0},
     world:{lastSimulatedAt:0,week:0,economy:52,costIndex:100,jobMarket:50,sectors:{mechanics:54,retail:50,technology:56,hospitality:52,logistics:53},phase:'stabil',news:[],lastOpportunityWeek:{},workplaces:{sinar_jaya:{health:58,staffing:52,pressure:52,status:'stabil',revenueIndex:56,margin:6,cashReserve:58,headcount:8,lastStaffActionWeek:-99},serba_ada:{health:56,staffing:54,pressure:48,status:'stabil',revenueIndex:52,margin:4,cashReserve:55,headcount:16,lastStaffActionWeek:-99},nusa_komputer:{health:60,staffing:50,pressure:56,status:'stabil',revenueIndex:60,margin:8,cashReserve:62,headcount:7,lastStaffActionWeek:-99},kafe_senja:{health:57,staffing:55,pressure:50,status:'stabil',revenueIndex:55,margin:5,cashReserve:55,headcount:10,lastStaffActionWeek:-99},lintas_kota:{health:59,staffing:51,pressure:58,status:'stabil',revenueIndex:58,margin:7,cashReserve:60,headcount:18,lastStaffActionWeek:-99}},competitors:{mechanics:{name:'Servis Prima',strength:52,reputation:50,action:'stabil',lastActionWeek:0},retail:{name:'PromoKita Lokal',strength:50,reputation:48,action:'stabil',lastActionWeek:0},technology:{name:'Klik Cepat Digital',strength:55,reputation:54,action:'stabil',lastActionWeek:0},hospitality:{name:'Kopi Ruang Kota',strength:50,reputation:51,action:'stabil',lastActionWeek:0},logistics:{name:'Kargo Nusantara',strength:53,reputation:50,action:'stabil',lastActionWeek:0}}},
     housing:{id:'family_home',label:'Bersama keluarga',neighborhood:'Kampung Melati',monthlyCost:600000,baseMonthlyCost:600000,movedAt:null,moves:0},
+    finance:{unlocked:false,emergencyFund:0,lifestyle:'frugal',transport:'public',ownedTransport:['public'],lastLifestyleChangeAt:-9999,lastTransportChangeAt:-9999,lastEmergencyMoveAt:-9999,autoCoveredTotal:0},
     city:{name:'Kota Harapan',lastVisited:null,lastVisitedAt:-999,visits:{kampus_harapan:0,pasar_tradisional:0,gym_sehat:0,kafe_senja:0}},
     social:{encounters:{andi:0,bu_lestari:0,sari:0,dimas:0},lastEncounterAt:{andi:-999,bu_lestari:-999,sari:-999,dimas:-999},lastLocationByNpc:{},hangouts:0},
     characterStories:{andi:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999},bu_lestari:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999},sari:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999},dimas:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999}},
@@ -112,7 +113,7 @@ function createInitialState(){
       businessDelegationSeen:false,
       businessOwnerChoiceSeen:false,
       businessHelperIssueSeen:false,
-      businessMarketSeen:false,cafeOfferSeen:false,logisticsOfferSeen:false,firstCafeDay:false,firstLogisticsDay:false,cafePromotionTalkSeen:false,logisticsPromotionTalkSeen:false
+      businessMarketSeen:false,financeUnlockedSeen:false,cafeOfferSeen:false,logisticsOfferSeen:false,firstCafeDay:false,firstLogisticsDay:false,cafePromotionTalkSeen:false,logisticsPromotionTalkSeen:false
     },
     opportunities:[],
     scheduled:[],
@@ -155,9 +156,10 @@ function relationshipLabel(value){
 
 function financialState(state){
   const money=state.player.money;
+  const reserve=Math.max(0,state.finance?.emergencyFund||0);
   if(money<0) return {id:'debt',label:'Berutang'};
-  if(money<250000) return {id:'tight',label:'Seret'};
-  if(money>=3000000) return {id:'comfortable',label:'Nyaman'};
+  if(money<250000 && reserve<300000) return {id:'tight',label:'Seret'};
+  if(money+reserve>=3000000) return {id:'comfortable',label:'Nyaman'};
   return {id:'stable',label:'Stabil'};
 }
 

@@ -1,4 +1,4 @@
-# Hidup — Content Catalog (Build AC)
+# Hidup — Content Catalog (Build AF)
 
 Fase 4 memisahkan **engine** dari **content**. Konten data-driven dimiliki oleh satu content pack, memakai template/preset bila cocok, dan harus lolos validator sebelum game boot.
 
@@ -129,3 +129,10 @@ Stake awal: `andi_workshop`, `sari_closing`, `lestari_stock`, `dimas_audit`.
 ## Build AE — Housing system
 
 Housing bukan content pack event; definisi hunian ada di `src/data/housing.js` dan runtime logic di `src/core/housing.js`. Sistem ini sengaja terpisah karena modifiers-nya dipakai lintas activity, city travel, economy, dan UI.
+
+## Build AF — Personal Finance & Lifestyle
+
+`src/data/finance.js` mendefinisikan pilihan lifestyle dan transportasi. `src/core/finance.js` menangani dana darurat, biaya rutin, commute modifier, city travel modifier, ownership transport, dan anti-exploit cooldown. Layer ini sengaja berada di luar Content Registry karena nilainya menjadi modifier lintas housing, economy, activities, city, save, dan UI.
+
+Tidak ada tab finansial baru. Presentation ditempatkan kontekstual di KAMU.
+

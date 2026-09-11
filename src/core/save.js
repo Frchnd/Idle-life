@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AE.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AF.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -43,6 +43,8 @@ function mergeState(base,saved){
   for(const key of Object.keys(base.world.workplaces)) out.world.workplaces[key]={...base.world.workplaces[key],...(saved.world?.workplaces?.[key]||{})};
   if(!Array.isArray(out.world.news)) out.world.news=[];
   out.housing={...base.housing,...(saved.housing||{})};
+  out.finance={...base.finance,...(saved.finance||{})};
+  out.finance.ownedTransport=Array.isArray(saved.finance?.ownedTransport)?[...saved.finance.ownedTransport]:[...base.finance.ownedTransport];
   out.city={...base.city,...(saved.city||{})};
   out.city.visits={...base.city.visits,...(saved.city?.visits||{})};
   out.social={...base.social,...(saved.social||{})};
@@ -109,8 +111,11 @@ function mergeState(base,saved){
       : {id:'family_home',label:'Bersama keluarga',monthlyCost:600000,movedAt:null};
   }
   if(typeof ensureHousingState==='function') ensureHousingState(out);
+  if(typeof ensureFinanceState==='function') ensureFinanceState(out);
+  if(typeof syncPersonalFinance==='function') syncPersonalFinance(out);
   out.economy.baseLivingCost=typeof housingMonthlyBase==='function'?housingMonthlyBase(out):(out.housing.id==='rented_room'?1100000:600000);
-  out.economy.livingCost=out.economy.baseLivingCost;
+  if(typeof syncLivingCost==='function') syncLivingCost(out);
+  else out.economy.livingCost=out.economy.baseLivingCost;
 
   // Build I dan versi sebelumnya belum punya pencatat pacing/playtest.
   if(!saved.pacing){

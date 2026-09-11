@@ -1,4 +1,4 @@
-Hidup Build AE — Content & Housing Validation
+Hidup Build AF — Content & Personal Finance Validation
 
 Content validation
 - Errors: 0
@@ -11,22 +11,21 @@ Content validation
 - Event Pools: 6
 - Content Packs: 6
 
-Housing expansion
-- Housing options: 4
-- Rumah Keluarga
-- Kost Pusat Kota
-- Rumah Bersama Cendana
-- Kontrakan Tepi Kota
+Personal finance expansion
+- Lifestyle modes: 3
+- Transport choices: 3
+- Emergency fund: active
+- Monthly budget components: housing + lifestyle + transport
 
 Regression checks
-- Save v26 -> v27 migration: PASS
-- Housing unlock event: PASS
-- Move/deposit flow: PASS
-- Indexed living cost: PASS
-- Work commute time: PASS
-- City travel time/cost: PASS
-- Study/rest modifiers: PASS
-- Rent-pressure return cleanup: PASS
-- KAMU housing render: PASS
-- DUNIA city render: PASS
+- Save v27 -> v28 migration: PASS
+- Finance unlock migration: PASS
+- Emergency fund auto-cover: PASS
+- Insufficient reserve can still create debt: PASS
+- Lifestyle monthly/recovery modifiers: PASS
+- Transport purchase + ownership: PASS
+- Work commute modifier: PASS
+- City travel modifier: PASS
+- Housing comparison respects active transport: PASS
+- KAMU finance render: PASS
 - Static asset graph: PASS
