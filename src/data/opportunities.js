@@ -3,6 +3,8 @@ function sideMultiplier(state,fromRian=false,sector=null){
   if(state.life?.trajectory==='independent') mult+=0.15;
   if(fromRian && state.flags.rianTrusted) mult+=0.10;
   if(sector) mult*=sectorMultiplier(state,sector);
+  if(sector==='mechanics' && typeof personalAssetMechanicBonus==='function') mult*=personalAssetMechanicBonus(state).payoutMultiplier||1;
+  if(sector==='technology' && typeof personalAssetTechBonus==='function') mult*=personalAssetTechBonus(state).payoutMultiplier||1;
   return mult;
 }
 
@@ -31,6 +33,20 @@ function runOpportunity(state,id){
   const opp=state.opportunities.find(item=>item.id===id);
   if(!opp) return 'Peluang itu sudah tidak tersedia.';
   if(opp.contested) addRecent(state,`Kamu bergerak lebih cepat dan mengambil “${opp.name}” sebelum ${opp.competitor||'orang lain'}.`);
+
+  if(id==='asset_mobile_repair'){
+    if(typeof personalAssetUsable==='function' && !personalAssetUsable(state,'mechanic_toolkit')) return 'Toolkit-mu sedang rusak. Rawat dulu sebelum mengambil servis panggilan.';
+    removeOpportunity(state,id);
+    state.time.totalHours+=4;
+    const payout=Math.round(280000*sideMultiplier(state,false,'mechanics'));
+    state.player.money+=payout;
+    state.player.fatigue=Math.min(100,state.player.fatigue+10);
+    state.skills.mechanics=(state.skills.mechanics||0)+14;
+    if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'mechanic_toolkit',5);
+    state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
+    addRecent(state,'Toolkit pribadimu benar-benar menghasilkan kerja servis di luar tempat kerja utama.');
+    return `Servis panggilan selesai · +Rp${payout.toLocaleString('id-ID')}.`;
+  }
 
   if(id==='workshop_job'){
     removeOpportunity(state,id);
@@ -120,6 +136,7 @@ function runOpportunity(state,id){
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+10);
     state.skills.technology+=18;
+    if(typeof wearPersonalAsset==='function' && state.assets?.laptop) wearPersonalAsset(state,'laptop',2);
     state.relationships.rian+=4;
     state.scheduled.push({at:state.time.totalHours+36,kind:'tech_referral'});
     state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
@@ -144,6 +161,7 @@ function runOpportunity(state,id){
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+14);
     state.skills.mechanics+=18;
+    if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'mechanic_toolkit',4);
     state.relationships.rian+=5;
     state.scheduled.push({at:state.time.totalHours+36,kind:'private_referral'});
     state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
@@ -159,6 +177,7 @@ function runOpportunity(state,id){
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+12);
     state.skills.mechanics+=16;
+    if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'mechanic_toolkit',3);
     addRecent(state,'Pelanggan baru datang lewat rekomendasi.');
     state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
     state.scheduled.push({at:state.time.totalHours+sideCooldown(state,96),kind:'private_repeat_offer'});
@@ -260,6 +279,7 @@ function runOpportunity(state,id){
     removeOpportunity(state,id);
     state.player.money-=750000;
     state.assets.laptop=true;
+    if(typeof syncPersonalAssets==='function') syncPersonalAssets(state);
     if(!state.player.statuses.includes('punya_laptop')) state.player.statuses.push('punya_laptop');
     state.scheduled.push({at:state.time.totalHours+24,kind:'tech_freelance_offer'});
     addHistory(state,'Umur 18 · Membeli laptop bekas untuk belajar dan kerja sampingan.');
@@ -268,12 +288,14 @@ function runOpportunity(state,id){
   }
 
   if(id==='tech_freelance'){
+    if(typeof personalAssetUsable==='function' && !personalAssetUsable(state,'laptop')) return 'Laptop-mu sedang rusak. Rawat dulu sebelum menyelesaikan kerja lepas teknologi.';
     removeOpportunity(state,id);
     state.time.totalHours+=4;
     const payout=Math.round(220000*sideMultiplier(state,false,'technology'));
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+9);
     state.skills.technology+=16;
+    if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'laptop',3);
     state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
     state.scheduled.push({at:state.time.totalHours+sideCooldown(state,72),kind:'tech_freelance_offer'});
     addRecent(state,'Kamu menyelesaikan pekerjaan teknologi dari laptopmu sendiri.');
@@ -320,6 +342,7 @@ function runOpportunity(state,id){
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+12);
     state.skills.mechanics+=16;
+    if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'mechanic_toolkit',3);
     state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
     addRecent(state,'Lonjakan permintaan servis lokal memberimu pekerjaan tambahan.');
     return `Servis dari kondisi pasar selesai · +Rp${payout.toLocaleString('id-ID')}.`;
@@ -344,6 +367,7 @@ function runOpportunity(state,id){
     state.player.money+=payout;
     state.player.fatigue=Math.min(100,state.player.fatigue+9);
     state.skills.technology+=17;
+    if(typeof wearPersonalAsset==='function' && state.assets?.laptop) wearPersonalAsset(state,'laptop',2);
     state.career.sideIncomeTotal=(state.career.sideIncomeTotal||0)+payout;
     addRecent(state,'Permintaan digital lokal menghasilkan pekerjaan teknologi tambahan.');
     return `Setup digital selesai · +Rp${payout.toLocaleString('id-ID')}.`;

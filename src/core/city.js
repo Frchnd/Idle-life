@@ -44,6 +44,8 @@ function visitCityLocation(state,id){
   state.player.money-=effectiveCost;
   state.time.totalHours+=effectiveDuration;
   if(travel.travelFatigue) state.player.fatigue=Math.max(0,Math.min(100,state.player.fatigue+travel.travelFatigue));
+  const rawTravel=typeof housingCityTravel==='function'?housingCityTravel(state,id):{extraHours:0};
+  if((rawTravel.extraHours||0)>0 && typeof wearActiveTransport==='function') wearActiveTransport(state,2);
   state.city.lastVisited=id;
   state.city.lastVisitedAt=state.time.totalHours;
   state.city.visits[id]=(state.city.visits[id]||0)+1;

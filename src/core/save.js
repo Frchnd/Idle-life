@@ -77,6 +77,8 @@ function mergeState(base,saved){
   out.skills={...base.skills,...(saved.skills||{})};
   out.relationships={...base.relationships,...(saved.relationships||{})};
   out.assets={...base.assets,...(saved.assets||{})};
+  out.assets.inventory={...base.assets.inventory,...(saved.assets?.inventory||{})};
+  out.assets.nextOpportunityAt={...base.assets.nextOpportunityAt,...(saved.assets?.nextOpportunityAt||{})};
   out.business={...base.business,...(saved.business||{})};
   out.npc={...base.npc,...(saved.npc||{})};
   for(const key of Object.keys(base.npc)) out.npc[key]={...base.npc[key],...(saved.npc?.[key]||{})};
@@ -112,6 +114,8 @@ function mergeState(base,saved){
   }
   if(typeof ensureHousingState==='function') ensureHousingState(out);
   if(typeof ensureFinanceState==='function') ensureFinanceState(out);
+  if(typeof ensureAssetState==='function') ensureAssetState(out);
+  if(typeof syncPersonalAssets==='function') syncPersonalAssets(out);
   if(typeof syncPersonalFinance==='function') syncPersonalFinance(out);
   out.economy.baseLivingCost=typeof housingMonthlyBase==='function'?housingMonthlyBase(out):(out.housing.id==='rented_room'?1100000:600000);
   if(typeof syncLivingCost==='function') syncLivingCost(out);

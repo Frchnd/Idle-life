@@ -1,4 +1,4 @@
-Hidup Build AF — Content & Personal Finance Validation
+Hidup Build AG — Content & Assets Validation
 
 Content validation
 - Errors: 0
@@ -11,21 +11,23 @@ Content validation
 - Event Pools: 6
 - Content Packs: 6
 
-Personal finance expansion
-- Lifestyle modes: 3
-- Transport choices: 3
-- Emergency fund: active
-- Monthly budget components: housing + lifestyle + transport
+Assets & ownership
+- Personal asset definitions: 6
+- Productive assets: Laptop Bekas, Toolkit Mekanik Pribadi
+- Home assets: Meja Belajar Nyaman, Kasur yang Lebih Nyaman
+- Transport assets: Sepeda Bekas, Motor Bekas
+- Condition states: Baik / Mulai aus / Bermasalah / Rusak
+- Maintenance: money + game time + world cost index
+- Productive asset opportunity: Servis Panggilan
 
 Regression checks
-- Save v27 -> v28 migration: PASS
-- Finance unlock migration: PASS
-- Emergency fund auto-cover: PASS
-- Insufficient reserve can still create debt: PASS
-- Lifestyle monthly/recovery modifiers: PASS
-- Transport purchase + ownership: PASS
-- Work commute modifier: PASS
-- City travel modifier: PASS
-- Housing comparison respects active transport: PASS
-- KAMU finance render: PASS
-- Static asset graph: PASS
+- Save v28 -> v29 migration: PASS
+- Legacy laptop -> asset inventory: PASS
+- Owned transport -> asset inventory: PASS
+- Asset purchase: PASS
+- Asset wear: PASS
+- Maintenance restore: PASS
+- Broken transport loses commute benefit: PASS
+- Toolkit opens mobile repair opportunity: PASS
+- KAMU asset render: PASS
+- Content validation: PASS

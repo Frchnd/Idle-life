@@ -39,11 +39,14 @@ function executeActivity(state,id){
   if(id==='study'){
     if(state.player.money<20000) return {error:'Uangmu belum cukup untuk biaya belajar.'};
     const home=housingStudyProfile(state);
+    const assetStudy=typeof personalAssetStudyBonus==='function'?personalAssetStudyBonus(state):{learning:0,fatigue:0};
     state.player.money-=20000;
     state.time.totalHours+=4;
-    state.player.fatigue=Math.min(100,state.player.fatigue+Math.max(3,home.fatigue+(typeof lifestyleStudyFatigueModifier==='function'?lifestyleStudyFatigueModifier(state):0)));
-    state.skills.learning+=home.learning;
+    state.player.fatigue=Math.min(100,state.player.fatigue+Math.max(3,home.fatigue+(typeof lifestyleStudyFatigueModifier==='function'?lifestyleStudyFatigueModifier(state):0)+(assetStudy.fatigue||0)));
+    state.skills.learning+=home.learning+(assetStudy.learning||0);
     state.skills.technology+=Math.round(home.technology*xpMod(state));
+    if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'study_desk',1);
+    if(typeof wearPersonalAsset==='function' && state.assets?.laptop) wearPersonalAsset(state,'laptop',0.5);
     if(home.social) state.skills.social=(state.skills.social||0)+home.social;
     if(!state.discoveredSkills.includes('technology')) state.discoveredSkills.push('technology');
     return home.learning>=12
@@ -55,8 +58,9 @@ function executeActivity(state,id){
   }
   if(id==='rest'){
     state.time.totalHours+=8;
-    const recovery=Math.max(20,housingRestRecovery(state)+(typeof lifestyleRestBonus==='function'?lifestyleRestBonus(state):0));
+    const recovery=Math.max(20,housingRestRecovery(state)+(typeof lifestyleRestBonus==='function'?lifestyleRestBonus(state):0)+(typeof personalAssetRestBonus==='function'?personalAssetRestBonus(state):0));
     state.player.fatigue=Math.max(0,state.player.fatigue-recovery);
+    if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'comfort_bed',0.5);
     return `${housingLabel(state)} memberi waktu istirahat yang ${recovery>=52?'lebih tenang':'cukup'}. Kondisimu pulih.`;
   }
   if(id==='work'){
@@ -67,12 +71,17 @@ function executeActivity(state,id){
     const growthBonus=company&&company.health>=68?1:0;
     const salary=state.player.salary||job.salary;
     const commute=typeof effectiveWorkCommuteHours==='function'?effectiveWorkCommuteHours(state,job.workplaceId):housingCommuteHours(state,job.workplaceId);
+    const mechanicAsset=job.skill==='mechanics'&&typeof personalAssetMechanicBonus==='function'?personalAssetMechanicBonus(state):{fatigue:0,xp:0};
+    const rawCommute=typeof housingCommuteHours==='function'?housingCommuteHours(state,job.workplaceId):commute;
     state.time.totalHours+=job.duration+commute;
     state.player.money+=salary;
     const flexibleRelief=state.player.statuses.includes('jam_lebih_fleksibel')?-2:0;
     const dualRoleCost=state.player.statuses.includes('peran_ganda')?2:0;
-    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0)+pressureFatigue+flexibleRelief+dualRoleCost+commute+(typeof lifestyleWorkFatigueModifier==='function'?lifestyleWorkFatigueModifier(state):0)+(typeof currentTransport==='function'&&personalFinanceUnlocked(state)?currentTransport(state).travelFatigue:0));
-    state.skills[job.skill]=(state.skills[job.skill]||0)+Math.round(job.skillXp*xpMod(state));
+    const transportWearPenalty=typeof personalAssetTravelFatiguePenalty==='function'&&typeof currentTransport==='function'?personalAssetTravelFatiguePenalty(state,currentTransport(state).id):0;
+    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0)+pressureFatigue+flexibleRelief+dualRoleCost+commute+(typeof lifestyleWorkFatigueModifier==='function'?lifestyleWorkFatigueModifier(state):0)+(typeof currentTransport==='function'&&personalFinanceUnlocked(state)?currentTransport(state).travelFatigue:0)+transportWearPenalty+(mechanicAsset.fatigue||0));
+    state.skills[job.skill]=(state.skills[job.skill]||0)+Math.round(job.skillXp*xpMod(state))+(mechanicAsset.xp||0);
+    if(job.skill==='mechanics'&&typeof wearPersonalAsset==='function') wearPersonalAsset(state,'mechanic_toolkit',1);
+    if(rawCommute>0&&typeof wearActiveTransport==='function') wearActiveTransport(state,2);
     if(!state.discoveredSkills.includes(job.skill)) state.discoveredSkills.push(job.skill);
     state.career.workCount++;
     state.career.jobWorkCounts[state.player.job]=(state.career.jobWorkCounts[state.player.job]||0)+1;

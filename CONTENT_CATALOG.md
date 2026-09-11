@@ -136,3 +136,11 @@ Housing bukan content pack event; definisi hunian ada di `src/data/housing.js` d
 
 Tidak ada tab finansial baru. Presentation ditempatkan kontekstual di KAMU.
 
+
+## Build AG — Assets & Ownership
+
+`src/data/assets.js` mendefinisikan aset pribadi, sedangkan `src/core/assets.js` menangani ownership, kondisi, wear, maintenance, migration, dan peluang produktif berbasis aset.
+
+Aset awal: `laptop`, `mechanic_toolkit`, `study_desk`, `comfort_bed`, `bicycle`, `motorbike`.
+
+Sistem ini sengaja tidak menjadi content pack atau tab Inventory. Aset bekerja sebagai modifier lintas Finance, Activities, Opportunities, City travel, Save, dan KAMU. Kondisi numerik tetap backend-only; UI menampilkan label kondisi dan progress visual.

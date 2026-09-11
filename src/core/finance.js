@@ -63,25 +63,37 @@ function emergencyFundLabel(state){
 }
 function emergencyFundTone(state){const m=emergencyCoverageMonths(state);return m>=1?'positive':m>=.5?'info':state.finance.emergencyFund>0?'warning':'danger';}
 
+function transportAssetEfficiency(state,transportId){
+  if(typeof personalAssetTransportEfficiency==='function') return personalAssetTransportEfficiency(state,transportId);
+  return 1;
+}
+function transportAssetFatiguePenalty(state,transportId){
+  if(typeof personalAssetTravelFatiguePenalty==='function') return personalAssetTravelFatiguePenalty(state,transportId);
+  return 0;
+}
 function effectiveWorkCommuteHours(state,workplaceId){
   const base=typeof housingCommuteHours==='function'?housingCommuteHours(state,workplaceId):0;
-  const reduction=personalFinanceUnlocked(state)?currentTransport(state).commuteReduction:0;
+  const t=personalFinanceUnlocked(state)?currentTransport(state):TRANSPORT_OPTIONS.public;
+  const reduction=(t.commuteReduction||0)*transportAssetEfficiency(state,t.id);
   return Math.max(0,base-reduction);
 }
 function financeCommuteForHousingMeta(state,meta,workplaceId){
   const base=Math.max(0,Number(meta?.commute?.[workplaceId]||0));
-  const reduction=personalFinanceUnlocked(state)?currentTransport(state).commuteReduction:0;
+  const t=personalFinanceUnlocked(state)?currentTransport(state):TRANSPORT_OPTIONS.public;
+  const reduction=(t.commuteReduction||0)*transportAssetEfficiency(state,t.id);
   return Math.max(0,base-reduction);
 }
 function effectiveCityTravel(state,locationId){
   const raw=typeof housingCityTravel==='function'?housingCityTravel(state,locationId):{extraHours:0,extraCost:0};
   if(!personalFinanceUnlocked(state)) return {...raw,travelFatigue:0};
   const t=currentTransport(state);
-  const extraHours=Math.max(0,(raw.extraHours||0)-t.cityReduction);
+  const eff=transportAssetEfficiency(state,t.id);
+  const extraHours=Math.max(0,(raw.extraHours||0)-(t.cityReduction||0)*eff);
   let extraCost=0;
   if(t.id==='public') extraCost=typeof idTravelCost==='function'?idTravelCost(extraHours):raw.extraCost||0;
   else if(t.id==='motorbike' && (raw.extraHours||0)>0) extraCost=5000;
-  return {extraHours,extraCost,travelFatigue:(raw.extraHours||0)>0?t.travelFatigue:0};
+  const wearPenalty=transportAssetFatiguePenalty(state,t.id);
+  return {extraHours,extraCost,travelFatigue:(raw.extraHours||0)>0?(t.travelFatigue||0)+wearPenalty:0};
 }
 function lifestyleRestBonus(state){return personalFinanceUnlocked(state)?currentLifestyle(state).restBonus:0;}
 function lifestyleStudyFatigueModifier(state){return personalFinanceUnlocked(state)?currentLifestyle(state).studyFatigue:0;}

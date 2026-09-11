@@ -1,4 +1,4 @@
-const SAVE_VERSION = 28;
+const SAVE_VERSION = 29;
 
 function createInitialState(){
   return {
@@ -37,7 +37,7 @@ function createInitialState(){
       nadia:{known:false,life:'teknisi_senior',progress:0},
       ari:{known:false,life:'belum_terlibat',progress:0},sari:{known:false,life:'barista_senior',progress:0},dimas:{known:false,life:'koordinator_shift',progress:0},andi:{known:false,life:'mahasiswa',progress:0},bu_lestari:{known:false,life:'pedagang_pasar',progress:0}
     },
-    assets:{laptop:false},
+    assets:{laptop:false,inventory:{},totalMaintenance:0,lastMaintenanceAt:-9999,nextOpportunityAt:{mechanic_toolkit:-9999}},
     business:{active:false,sector:null,name:null,level:0,reputation:0,marketReputation:0,clients:0,lastManagedAt:0,lastWeeklyProfit:0,totalProfit:0,lossStreak:0,startedAt:null,equipmentLevel:0,retainedClients:0,capacity:2,inquiries:0,servedClients:0,missedDemand:0,growthStreak:0,reinvestments:0,lastReinvestOfferAt:-999,lastConflictAt:-999,lastRetainerAt:-999,scale:'solo',helperActive:false,helperName:'Ari',helperTrust:40,helperSkill:35,helperWage:220000,helperWeeks:0,delegated:false,ownerFullTime:false,lastScaleDecisionAt:-999,lastDelegationDecisionAt:-999,lastOwnerChoiceAt:-999,lastHelperIssueAt:-999,helperIssuePending:false,competitorPressure:50,marketStrategy:'balanced',strategyUntilWeek:0,lastMarketEventWeek:-99,marketEventPending:null,clientsWon:0,clientsLost:0,marketWinStreak:0,marketLossStreak:0},
     career:{
       workCount:0,

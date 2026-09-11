@@ -42,6 +42,8 @@ function persist(){
 function postStep(){
   simulateWorld(state);
   syncPersonalFinance(state);
+  if(typeof syncPersonalAssets==='function') syncPersonalAssets(state);
+  if(typeof syncAssetOpportunities==='function') syncAssetOpportunities(state);
   syncCharacterStories(state);
   syncRelationshipStakes(state);
   syncEducationOpportunities(state);
@@ -94,6 +96,8 @@ function prepareGame({allowOffline=true}={}){
   }
   simulateWorld(state);
   syncPersonalFinance(state);
+  if(typeof syncPersonalAssets==='function') syncPersonalAssets(state);
+  if(typeof syncAssetOpportunities==='function') syncAssetOpportunities(state);
   syncCharacterStories(state);
   syncRelationshipStakes(state);
   syncEducationOpportunities(state);
@@ -152,6 +156,21 @@ function bind(){
     const before=feedbackSnapshot(state);const raw=btn.dataset.financeWithdraw;const result=raw==='all'?withdrawAllEmergencyFund(state):moveEmergencyFund(state,-Number(raw));
     if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum bisa ditarik',message:String(result.error),details:[],tone:'warning'};draw();return;}
     ui.result=result;ui.feedback=buildFeedback(before,state,result,'Dana darurat ditarik');persist();draw();
+  }));
+  root.querySelectorAll('[data-asset-buy]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);
+    const result=buyPersonalAsset(state,btn.dataset.assetBuy);
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum bisa dibeli',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    if(typeof syncAssetOpportunities==='function') syncAssetOpportunities(state);ui.result=result;ui.feedback=buildFeedback(before,state,result,'Aset baru dimiliki');persist();draw();
+  }));
+  root.querySelectorAll('[data-asset-maintain]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);
+    const result=maintainPersonalAsset(state,btn.dataset.assetMaintain);
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum perlu dirawat',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    state.playtest.actions=(state.playtest.actions||0)+1;
+    ui.result=result;ui.feedback=buildFeedback(before,state,result,'Barang selesai dirawat');postStep();
   }));
   root.querySelectorAll('[data-city-visit]').forEach(btn=>btn.addEventListener('click',()=>{
     if(state.pendingEvent) return;
@@ -387,6 +406,8 @@ function processOffline(realMs){
     consumed+=state.time.totalHours-before;
     simulateWorld(state);
     syncPersonalFinance(state);
+    if(typeof syncPersonalAssets==='function') syncPersonalAssets(state);
+    if(typeof syncAssetOpportunities==='function') syncAssetOpportunities(state);
     syncCharacterStories(state);
     syncRelationshipStakes(state);
     syncEducationOpportunities(state);
