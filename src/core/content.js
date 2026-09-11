@@ -170,6 +170,12 @@ function meetsRequirement(state,rawReq){
   if(req.path) return compareValue(getStatePath(state,req.path),req.op,req.value);
   if(req.flag) return compareValue(state.flags?.[req.flag],req.op||'eq',req.value===undefined?true:req.value);
   if(req.status) return compareValue(state.player?.statuses||[],req.present===false?'not_includes':'includes',req.status);
+  if(req.age){
+    const age=typeof getCalendar==='function'?getCalendar(state.time?.totalHours||0).age:18;
+    if(req.age.min!==undefined && age<Number(req.age.min)) return false;
+    if(req.age.max!==undefined && age>Number(req.age.max)) return false;
+    return true;
+  }
   if(req.relationship){
     const value=state.relationships?.[req.relationship]||0;
     if(req.min!==undefined && value<req.min) return false;

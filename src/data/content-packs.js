@@ -56,3 +56,9 @@ registerContentPack('city_expansion_one',{
     events:['city_job_leads','city_career_discovery','first_cafe','first_logistics']
   }
 });
+
+registerContentPack('life_phases',{
+  name:'Life Phases',version:1,dependsOn:['core_life'],
+  description:'Milestone umur, fase hidup, dan peluang sampingan dengan jendela usia tanpa mengunci progres utama.',
+  content:{opportunities:['young_talent_program','young_professional_forum']}
+});

@@ -144,3 +144,17 @@ Tidak ada tab finansial baru. Presentation ditempatkan kontekstual di KAMU.
 Aset awal: `laptop`, `mechanic_toolkit`, `study_desk`, `comfort_bed`, `bicycle`, `motorbike`.
 
 Sistem ini sengaja tidak menjadi content pack atau tab Inventory. Aset bekerja sebagai modifier lintas Finance, Activities, Opportunities, City travel, Save, dan KAMU. Kondisi numerik tetap backend-only; UI menampilkan label kondisi dan progress visual.
+
+## Build AJ — Time, Age & Life Phases
+
+`src/core/life-phases.js` memproses umur, fase hidup, ulang tahun, focus modifier, dan jendela peluang usia. `src/data/life-phases.js` berisi opportunity data-driven yang memang memiliki batas umur.
+
+Fase awal:
+- 18–20: `finding_footing` / Mencari pijakan
+- 21–24: `building_direction` / Membangun arah
+- 25–29: `adult_rhythm` / Menata hidup dewasa
+- 30+: `established_life` / fondasi fase jangka panjang sebelum Life & Legacy
+
+Requirement preset baru: `age_min`, `age_max`, `age_between`.
+
+Pack `life_phases` memiliki `young_talent_program` dan `young_professional_forum`. Konten usia sengaja bersifat sampingan; tidak boleh mengunci career core karena pemain tidak boleh dihukum permanen hanya karena memilih bermain lebih lama.

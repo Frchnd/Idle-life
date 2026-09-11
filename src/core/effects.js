@@ -4,7 +4,12 @@ function addRecent(state,text){
 }
 
 function addHistory(state,text){
-  if(!state.history.includes(text)) state.history.unshift(text);
+  let normalized=String(text||'');
+  if(/^Umur 18 ·/.test(normalized) && typeof getCalendar==='function'){
+    const age=getCalendar(state.time?.totalHours||0).age;
+    normalized=normalized.replace(/^Umur 18 ·/,`Umur ${age} ·`);
+  }
+  if(normalized && !state.history.includes(normalized)) state.history.unshift(normalized);
   state.history=state.history.slice(0,8);
 }
 
@@ -62,6 +67,18 @@ function resolveEffects(state,effects=[]){
       case 'status_add': if(!state.player.statuses.includes(effect.status)) state.player.statuses.push(effect.status); break;
       case 'status_remove': state.player.statuses=state.player.statuses.filter(x=>x!==effect.status); break;
       case 'trajectory': state.life.trajectory=effect.value; state.life.majorDecisionAt=state.time.totalHours; break;
+      case 'path_set': {
+        const parts=String(effect.path||'').split('.').filter(Boolean); let cursor=state;
+        for(let i=0;i<parts.length-1;i++) cursor=cursor[parts[i]]||(cursor[parts[i]]={});
+        if(parts.length) cursor[parts[parts.length-1]]=effect.value;
+        break;
+      }
+      case 'path_increment': {
+        const parts=String(effect.path||'').split('.').filter(Boolean); let cursor=state;
+        for(let i=0;i<parts.length-1;i++) cursor=cursor[parts[i]]||(cursor[parts[i]]={});
+        if(parts.length){const k=parts[parts.length-1];cursor[k]=(Number(cursor[k])||0)+Number(effect.value||0);}
+        break;
+      }
       case 'housing':
         state.housing={...state.housing,...effect.value};
         state.economy.livingCost=state.housing.monthlyCost||state.economy.livingCost;

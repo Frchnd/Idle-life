@@ -75,6 +75,7 @@ function healthPressureSnapshot(state){
   if(h.illness){score+=10;contributors.push('tubuh belum pulih');}
   if((h.workSinceRecovery||0)>=4){score+=8;contributors.push('terlalu lama tanpa jeda');}
   if(state.finance?.lifestyle==='comfortable') score-=2;
+  if(typeof lifePressureModifier==='function') score+=lifePressureModifier(state);
   score=clampHealth(score,0,100);
   return {score,contributors:[...new Set(contributors)].slice(0,4),label:score>=70?'Berat':score>=48?'Tinggi':score>=28?'Sedang':'Ringan'};
 }

@@ -62,6 +62,7 @@ function mergeState(base,saved){
   out.relationshipStakes.lastRepairAt={...base.relationshipStakes.lastRepairAt,...(saved.relationshipStakes?.lastRepairAt||{})};
   out.relationshipStakes.lastStakeAt=Number.isFinite(saved.relationshipStakes?.lastStakeAt)?saved.relationshipStakes.lastStakeAt:base.relationshipStakes.lastStakeAt;
   out.life={...base.life,...(saved.life||{})};
+  out.life.ageWindows={...base.life.ageWindows,...(saved.life?.ageWindows||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
   out.playtest={...base.playtest,...(saved.playtest||{})};
   out.education={...base.education,...(saved.education||{})};
@@ -118,6 +119,10 @@ function mergeState(base,saved){
   if(typeof ensureHousingState==='function') ensureHousingState(out);
   if(typeof ensureFinanceState==='function') ensureFinanceState(out);
   if(typeof ensureHealthState==='function') { ensureHealthState(out); if(!saved.health) { out.health.lastProcessedAt=out.time.totalHours; out.health.lastRecoveryAt=out.time.totalHours; out.health.lastActionAt=out.time.totalHours; } }
+  if(typeof ensureLifePhaseState==='function'){
+    ensureLifePhaseState(out);
+    if((saved.version||0)<32 && saved.life?.lastBirthdayAge===undefined) processLifePhases(out,{migration:true});
+  }
   if(typeof ensureAssetState==='function') ensureAssetState(out);
   if(typeof ensureOwnershipState==='function') ensureOwnershipState(out);
   if(typeof syncPersonalAssets==='function') syncPersonalAssets(out);

@@ -1,4 +1,4 @@
-const SAVE_VERSION = 31;
+const SAVE_VERSION = 32;
 
 function createInitialState(){
   return {
@@ -22,7 +22,7 @@ function createInitialState(){
     social:{encounters:{andi:0,bu_lestari:0,sari:0,dimas:0},lastEncounterAt:{andi:-999,bu_lestari:-999,sari:-999,dimas:-999},lastLocationByNpc:{},hangouts:0},
     characterStories:{andi:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999},bu_lestari:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999},sari:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999},dimas:{stage:0,status:'locked',deadlineAt:null,followupAt:null,outcome:null,lastChangedAt:-999}},
     relationshipStakes:{records:{},strain:{andi:0,bu_lestari:0,sari:0,dimas:0},fulfilled:{andi:0,bu_lestari:0,sari:0,dimas:0},missed:{andi:0,bu_lestari:0,sari:0,dimas:0},lastRepairAt:{andi:-999,bu_lestari:-999,sari:-999,dimas:-999},lastStakeAt:-999},
-    life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null},
+    life:{trajectory:'open',majorDecisionAt:null,outcomeAt:null,phase:'finding_footing',phaseFocus:'open',lastBirthdayAge:18,phaseEnteredAt:0,phaseEventPending:null,ageWindows:{youngTalentTaken:false,youngTalentOffered:false,professionalForumTaken:false,professionalForumOffered:false}},
     pacing:{lastResolvedEventAt:-999,lastSurfacedEventAt:-999,eventCount:0,minGapHours:8},
     playtest:{actions:0,opportunitiesTaken:0,careerChanges:0,offlineBatches:0},
     education:{certifications:[],completedAt:{}},

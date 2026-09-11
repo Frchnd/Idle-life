@@ -1,21 +1,23 @@
-Hidup Build AI — Content & Health Validation
+Hidup Build AJ — Content & Life Phase Validation
 
 Content Framework
 - Errors: 0
 - Warnings: 0
 - Activities: 4 data-driven (+ contextual health activity)
-- Opportunities: 11
-- Events: 14 data-driven (+ dynamic health events)
+- Opportunities: 13
+- Events: 14 data-driven (+ dynamic health/life-phase events)
 - Jobs: 12
+- Certifications: 3
+- Requirement presets: 18
+- Content packs: 7
 
-Build AI regression
-- Save v30 -> v31 migration: PASS
-- No retroactive illness on old saves: PASS
-- Sustained pressure -> mild condition: PASS
-- Recovery clears condition: PASS
-- Gym/rest pressure recovery: PASS
-- Contextual Jaga Ritme/Pulihkan Diri: PASS
-- Health event priority: PASS
-- Offline routine recovers first: PASS
-- HIDUP/KAMU health render: PASS
+Build AJ regression
+- Save v31 -> v32 migration: PASS
+- No retroactive birthday/phase event on old saves: PASS
+- Age 19 -> Talenta Muda window: PASS
+- Age 21 -> Building Direction phase: PASS
+- Life phase focus choice: PASS
+- Stability/Explore/Balance modifiers: PASS
+- Dynamic history age stamping: PASS
+- Life phase UI render: PASS
 - JavaScript syntax: PASS

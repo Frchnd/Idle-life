@@ -48,8 +48,9 @@ function executeActivity(state,id){
     state.player.money-=20000;
     state.time.totalHours+=4;
     state.player.fatigue=Math.min(100,state.player.fatigue+Math.max(3,home.fatigue+(typeof lifestyleStudyFatigueModifier==='function'?lifestyleStudyFatigueModifier(state):0)+(assetStudy.fatigue||0)+(typeof healthActionFatigueModifier==='function'?healthActionFatigueModifier(state,'study'):0)));
-    state.skills.learning+=home.learning+(assetStudy.learning||0);
-    state.skills.technology+=Math.round(home.technology*xpMod(state));
+    const phaseStudy=typeof lifeStudyMultiplier==='function'?lifeStudyMultiplier(state):1;
+    state.skills.learning+=Math.round((home.learning+(assetStudy.learning||0))*phaseStudy);
+    state.skills.technology+=Math.round(home.technology*xpMod(state)*phaseStudy);
     if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'study_desk',1);
     if(typeof wearPersonalAsset==='function' && state.assets?.laptop) wearPersonalAsset(state,'laptop',0.5);
     if(home.social) state.skills.social=(state.skills.social||0)+home.social;
@@ -63,7 +64,7 @@ function executeActivity(state,id){
   }
   if(id==='rest'){
     state.time.totalHours+=8;
-    const recovery=Math.max(20,housingRestRecovery(state)+(typeof lifestyleRestBonus==='function'?lifestyleRestBonus(state):0)+(typeof personalAssetRestBonus==='function'?personalAssetRestBonus(state):0));
+    const recovery=Math.max(20,housingRestRecovery(state)+(typeof lifestyleRestBonus==='function'?lifestyleRestBonus(state):0)+(typeof personalAssetRestBonus==='function'?personalAssetRestBonus(state):0)+(typeof lifeRestBonus==='function'?lifeRestBonus(state):0));
     state.player.fatigue=Math.max(0,state.player.fatigue-recovery);
     if(typeof wearPersonalAsset==='function') wearPersonalAsset(state,'comfort_bed',0.5);
     return `${housingLabel(state)} memberi waktu istirahat yang ${recovery>=52?'lebih tenang':'cukup'}. Kondisimu pulih.`;
@@ -83,14 +84,14 @@ function executeActivity(state,id){
     const flexibleRelief=state.player.statuses.includes('jam_lebih_fleksibel')?-2:0;
     const dualRoleCost=state.player.statuses.includes('peran_ganda')?2:0;
     const transportWearPenalty=typeof personalAssetTravelFatiguePenalty==='function'&&typeof currentTransport==='function'?personalAssetTravelFatiguePenalty(state,currentTransport(state).id):0;
-    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0)+pressureFatigue+flexibleRelief+dualRoleCost+commute+(typeof lifestyleWorkFatigueModifier==='function'?lifestyleWorkFatigueModifier(state):0)+(typeof currentTransport==='function'&&personalFinanceUnlocked(state)?currentTransport(state).travelFatigue:0)+transportWearPenalty+(mechanicAsset.fatigue||0)+(typeof healthActionFatigueModifier==='function'?healthActionFatigueModifier(state,'work'):0));
+    state.player.fatigue=Math.min(100,state.player.fatigue+job.fatigue+(independentFocus(state)?2:0)+pressureFatigue+flexibleRelief+dualRoleCost+commute+(typeof lifestyleWorkFatigueModifier==='function'?lifestyleWorkFatigueModifier(state):0)+(typeof currentTransport==='function'&&personalFinanceUnlocked(state)?currentTransport(state).travelFatigue:0)+transportWearPenalty+(mechanicAsset.fatigue||0)+(typeof healthActionFatigueModifier==='function'?healthActionFatigueModifier(state,'work'):0)+(typeof lifeWorkFatigueModifier==='function'?lifeWorkFatigueModifier(state):0));
     state.skills[job.skill]=(state.skills[job.skill]||0)+Math.round(job.skillXp*xpMod(state))+(mechanicAsset.xp||0);
     if(job.skill==='mechanics'&&typeof wearPersonalAsset==='function') wearPersonalAsset(state,'mechanic_toolkit',1);
     if(rawCommute>0&&typeof wearActiveTransport==='function') wearActiveTransport(state,2);
     if(!state.discoveredSkills.includes(job.skill)) state.discoveredSkills.push(job.skill);
     state.career.workCount++;
     state.career.jobWorkCounts[state.player.job]=(state.career.jobWorkCounts[state.player.job]||0)+1;
-    const focusBonus=careerFocus(state)?1:0;
+    const focusBonus=(careerFocus(state)?1:0)+(typeof lifeCareerProgressBonus==='function'?lifeCareerProgressBonus(state):0);
     if(state.player.job==='mechanic_junior') state.career.promotionProgress+=1+focusBonus+growthBonus;
     if(state.player.job==='store_clerk') state.career.storeProgress+=1+focusBonus+growthBonus;
     if(state.player.job==='it_assistant') state.career.techProgress+=1+focusBonus+growthBonus;

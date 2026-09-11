@@ -52,6 +52,7 @@ function postStep(){
   expireOpportunities(state);
   processLivingCosts(state);
   if(typeof processHealth==='function') processHealth(state);
+  if(typeof processLifePhases==='function') processLifePhases(state);
   if(state.career.workCount>=3) state.flags.routineUnlocked=true;
   refreshEvent(state);
   checkMilestone();
@@ -108,6 +109,7 @@ function prepareGame({allowOffline=true}={}){
   expireOpportunities(state);
   processLivingCosts(state);
   if(typeof processHealth==='function') processHealth(state);
+  if(typeof processLifePhases==='function') processLifePhases(state);
   refreshEvent(state);
   checkVerticalSliceOutcome();
   if(ui.hasSave) persist();
@@ -458,6 +460,7 @@ function processOffline(realMs){
     expireOpportunities(state);
     processLivingCosts(state);
     if(typeof processHealth==='function') processHealth(state);
+    if(typeof processLifePhases==='function') processLifePhases(state);
     if(state.career.workCount>=3) state.flags.routineUnlocked=true;
     refreshEvent(state);
   }

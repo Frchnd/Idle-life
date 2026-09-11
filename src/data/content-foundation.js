@@ -14,6 +14,9 @@ registerRequirementPreset('asset_false',{path:'assets.{{asset}}',op:'eq',value:f
 registerRequirementPreset('housing_is',{path:'housing.id',op:'eq',value:'{{housing}}'},['housing']);
 registerRequirementPreset('certification_has',{path:'education.certifications',op:'includes',value:'{{certification}}'},['certification']);
 registerRequirementPreset('certification_missing',{path:'education.certifications',op:'not_includes',value:'{{certification}}'},['certification']);
+registerRequirementPreset('age_min',{age:{min:'{{age}}'}},['age']);
+registerRequirementPreset('age_max',{age:{max:'{{age}}'}},['age']);
+registerRequirementPreset('age_between',{age:{min:'{{min}}',max:'{{max}}'}},['min','max']);
 
 registerContentTemplate('jobs','standard_job',{
   duration:8,

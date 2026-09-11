@@ -485,7 +485,7 @@ function refreshEvent(state){
   if(!urgentStateNeedsAttention(state) && elapsed<gap) return;
   let next;
   if(urgentStateNeedsAttention(state)) next=(typeof getNextHealthEvent==='function'?getNextHealthEvent(state):null)||getNextEvent(state);
-  else next=getNextRelationshipStakeEvent(state)||(typeof getNextHealthEvent==='function'?getNextHealthEvent(state):null)||getNextCharacterStoryEvent(state)||getNextEvent(state);
+  else next=(typeof getNextLifePhaseEvent==='function'?getNextLifePhaseEvent(state):null)||getNextRelationshipStakeEvent(state)||(typeof getNextHealthEvent==='function'?getNextHealthEvent(state):null)||getNextCharacterStoryEvent(state)||getNextEvent(state);
   if(next){
     state.pendingEvent=next;
     state.pacing.lastSurfacedEventAt=state.time.totalHours;

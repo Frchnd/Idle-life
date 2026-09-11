@@ -1,22 +1,22 @@
-# HIDUP — Build AI
+# HIDUP — Build AJ
 
-Build AI memperdalam Fase 5 lewat **Health, Routine & Life Pressure** tanpa mengubah game menjadi medical simulator.
+Build AJ menutup bagian akhir Fase 5 menuju Life & Legacy lewat **Time, Age & Life Phases**.
 
 ## Yang baru
-- Tekanan hidup internal yang membaca benturan kerja, usaha, keuangan, commute, janji, relasi, kelelahan, dan kurang jeda.
-- Ritme hidup/kebiasaan recovery dengan label sederhana: Terjaga, Cukup, Goyah, Berantakan.
-- Kondisi ringan "Kurang enak badan" dapat muncul bila Raka terus kelelahan + tertekan beberapa hari.
-- Kerja/belajar saat terlalu tertekan atau kurang fit menjadi sedikit lebih berat dan kurang efisien.
-- Aktivitas contextual `Jaga Ritme` / `Pulihkan Diri` hanya muncul saat memang dibutuhkan.
-- Gym, istirahat, waktu sosial, dan jeda benar-benar membantu tekanan/ritme.
-- Event keputusan saat tekanan memuncak: ambil jeda atau tetap memaksa diri.
-- Rutinitas offline otomatis memilih pulih dulu bila Raka sedang drop.
-- UI HIDUP dan KAMU mendapat ringkasan ritme yang visual dan ringkas.
+- Umur sekarang diproses sebagai sistem, bukan sekadar angka di header.
+- Fase hidup: `Mencari pijakan` (18–20), `Membangun arah` (21–24), `Menata hidup dewasa` (25–29), dan fondasi fase 30+.
+- Ulang tahun otomatis tercatat di riwayat tanpa memaksa event setiap tahun.
+- Transisi umur 21/25/30 memunculkan milestone fase hidup.
+- Fokus fase: Stabilitas, Eksplorasi, atau Keseimbangan; tiap fokus memberi modifier kecil ke kerja/belajar/recovery.
+- Peluang dengan jendela usia pertama: `Program Talenta Muda Kota` dan `Forum Profesional Muda`.
+- Jendela usia hanya memengaruhi konten sampingan; pekerjaan utama dan jalur inti tidak terkunci oleh umur.
+- Timeline lama yang hardcode `Umur 18` sekarang otomatis memakai umur aktual saat kejadian baru terjadi.
+- Panel fase hidup baru di KAMU menampilkan umur, fase, fokus, dan perkiraan ulang tahun berikutnya.
 
 ## Save
-Save Build AH v30 otomatis dimigrasikan ke **v31**. Save lama tidak diproses retroaktif untuk tekanan kesehatan, jadi tidak ada pemain lama yang tiba-tiba drop hanya karena update.
+Build AI v31 otomatis dimigrasikan ke **v32**. Save lama tidak memutar ulang ulang tahun atau milestone fase yang sudah lewat; fase saat ini hanya disinkronkan ke umur aktual.
 
 ## Prinsip
-Sistem ini bukan diagnosis medis. Ia hanya memodelkan tekanan, recovery, dan kondisi ringan sebagai opportunity cost kehidupan sehari-hari.
+Umur harus menciptakan konteks dan opportunity cost, bukan menghukum pemain karena bermain lama. Sistem keluarga/legacy penuh tetap disimpan untuk Fase 6.
 
 Aplikasi tetap **Rp0**: tidak ada paywall, IAP, premium currency, atau gameplay berbayar.
