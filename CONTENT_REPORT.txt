@@ -1,33 +1,22 @@
-Hidup Build AG — Content & Assets Validation
+Hidup Build AH — Content & Ownership Validation
 
-Content validation
+Content Framework
 - Errors: 0
 - Warnings: 0
 - Activities: 4
 - Opportunities: 11
 - Events: 14
 - Jobs: 12
-- Certifications: 3
-- Event Pools: 6
-- Content Packs: 6
 
-Assets & ownership
-- Personal asset definitions: 6
-- Productive assets: Laptop Bekas, Toolkit Mekanik Pribadi
-- Home assets: Meja Belajar Nyaman, Kasur yang Lebih Nyaman
-- Transport assets: Sepeda Bekas, Motor Bekas
-- Condition states: Baik / Mulai aus / Bermasalah / Rusak
-- Maintenance: money + game time + world cost index
-- Productive asset opportunity: Servis Panggilan
-
-Regression checks
-- Save v28 -> v29 migration: PASS
-- Legacy laptop -> asset inventory: PASS
-- Owned transport -> asset inventory: PASS
-- Asset purchase: PASS
-- Asset wear: PASS
-- Maintenance restore: PASS
-- Broken transport loses commute benefit: PASS
-- Toolkit opens mobile repair opportunity: PASS
-- KAMU asset render: PASS
-- Content validation: PASS
+Build AH regression
+- Save v29 -> v30 migration: PASS
+- Motor Bekas -> Motor Harian Andal trade-in: PASS
+- Transport ownership/condition sync: PASS
+- Commute reduction: PASS
+- Peralatan Usaha Profesional purchase/capacity: PASS
+- Unit Kerja Milik Sendiri purchase/capacity: PASS
+- Business gross/cost integration: PASS
+- Major asset wear + maintenance: PASS
+- KAMU render: PASS
+- JavaScript syntax: PASS
+- Static asset graph: PASS

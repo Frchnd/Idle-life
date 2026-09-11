@@ -1,35 +1,31 @@
-# HIDUP — Build AG
+# HIDUP — Build AH
 
-Build AG menambahkan **Assets & Ownership**. Barang pribadi sekarang bukan flag pasif: sebagian bisa membuka peluang, mempercepat hidup, aus karena dipakai, rusak, dan membutuhkan uang + waktu untuk dirawat.
+Build AH memperdalam **Ownership Consequences & Bigger Assets**. Setelah aset pribadi Build AG, sekarang keputusan modal yang lebih besar mulai mengubah mobilitas dan usaha tanpa menambah tab baru.
 
-## Aset pribadi
+## Upgrade transportasi
 
-- **Laptop Bekas** tetap didapat lewat jalur Teknologi lama, sekarang punya kondisi dan bisa perlu perawatan.
-- **Toolkit Mekanik Pribadi** terbuka setelah Mekanik cukup berkembang. Toolkit meningkatkan nilai servis sampingan dan bisa memunculkan `Servis Panggilan`.
-- **Meja Belajar Nyaman** meningkatkan efektivitas belajar dan sedikit mengurangi beban sesi belajar.
-- **Kasur yang Lebih Nyaman** meningkatkan recovery saat Istirahat tanpa memaksa pemain menaikkan gaya hidup bulanan.
-- **Sepeda Bekas** dan **Motor Bekas** yang sudah dimiliki lewat sistem Finance sekarang ikut masuk ke sistem kondisi aset.
+- **Motor Harian Andal** terbuka sebagai tukar-tambah setelah pemain memiliki Motor Bekas.
+- Biaya upgrade bersih Rp3.400.000, lalu biaya rutin bulanan lebih tinggi.
+- Memangkas commute dan perjalanan kota lebih jauh daripada kendaraan lama.
+- Kendaraan baru tetap punya kondisi, aus saat dipakai, dan perlu perawatan.
 
-## Kondisi & perawatan
+## Aset besar usaha
 
-Kondisi internal memakai angka untuk simulation, tetapi UI menampilkannya sebagai `Baik`, `Mulai aus`, `Bermasalah`, atau `Rusak`. Kondisi turun saat barang benar-benar dipakai. Barang yang rusak kehilangan manfaat sampai dirawat.
+- **Peralatan Usaha Profesional** terbuka ketika usaha sudah punya reputasi dan equipment level yang cukup. Modal dasar Rp2.400.000 (mengikuti indeks harga dunia).
+- Aset ini menaikkan kapasitas dan nilai pekerjaan usaha, tetapi aus saat usaha beroperasi.
+- **Unit Kerja Milik Sendiri** adalah langkah properti pertama. Terbuka setelah usaha benar-benar matang: reputasi cukup, pelanggan tetap, dan profit kumulatif yang sehat. Harga dasar Rp7.500.000 (mengikuti indeks harga dunia).
+- Unit kerja menambah kapasitas, memperkuat reputasi pasar, dan mengurangi sebagian biaya tetap mingguan. Ia tetap membutuhkan perawatan.
 
-Perawatan membutuhkan uang dan waktu game. Biaya perawatan ikut indeks harga dunia.
+## Filosofi
 
-## Integrasi sistem
-
-- Toolkit memengaruhi kerja/servis Mekanik dan membuka peluang produktif.
-- Laptop memengaruhi kerja lepas Teknologi.
-- Sepeda/Motor yang bermasalah tidak lagi memberi penghematan commute penuh.
-- Meja belajar dan kasur terhubung langsung ke activity `Belajar` dan `Istirahat`.
-- Aset ditampilkan kontekstual di `KAMU`; tidak ada tab Inventory baru.
+Build ini tidak mengubah HIDUP menjadi inventory/tycoon game. Hanya aset yang benar-benar mengubah waktu, arus kas, kapasitas, atau peluang yang ditampilkan. Semua tetap muncul di `KAMU`.
 
 ## Save
 
-Save version **29**. SAVE_KEY lama tetap dipakai sehingga Build AF v28 bermigrasi otomatis tanpa reset progress. Laptop dan kendaraan yang sudah dimiliki otomatis dikonversi ke state aset baru.
+Save version **30**. SAVE_KEY lama tetap dipakai sehingga Build AG v29 bermigrasi otomatis tanpa reset progress.
 
 ## Deploy
 
-Upload seluruh isi folder ke root GitHub Pages, termasuk `src/`, `styles/`, dan `assets/`. Setelah deploy, hard refresh atau tutup-buka PWA agar cache Build AG aktif.
+Upload seluruh isi folder ke root GitHub Pages, termasuk `src/`, `styles/`, dan `assets/`. Setelah deploy, hard refresh atau tutup-buka PWA agar cache Build AH aktif.
 
 Aplikasi tetap **Rp0 app**: tidak ada paywall, IAP, premium currency, loot box, atau fitur gameplay berbayar.

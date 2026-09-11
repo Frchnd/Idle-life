@@ -34,5 +34,10 @@ const TRANSPORT_OPTIONS={
     id:'motorbike',name:'Motor Bekas',purchaseCost:2800000,monthlyCost:260000,
     commuteReduction:1,cityReduction:1,travelFatigue:-1,
     summary:'Mobilitas cepat dan nyaman, tapi butuh modal serta biaya rutin terbesar.'
+  },
+  motorbike_reliable:{
+    id:'motorbike_reliable',name:'Motor Harian Andal',purchaseCost:3400000,monthlyCost:320000,
+    commuteReduction:2,cityReduction:2,travelFatigue:-2,upgradeFrom:'motorbike',
+    summary:'Upgrade tukar tambah dari motor bekas: lebih cepat, lebih stabil, dan cocok untuk hidup yang makin padat.'
   }
 };

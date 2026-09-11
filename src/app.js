@@ -43,6 +43,7 @@ function postStep(){
   simulateWorld(state);
   syncPersonalFinance(state);
   if(typeof syncPersonalAssets==='function') syncPersonalAssets(state);
+  if(typeof ensureOwnershipState==='function') ensureOwnershipState(state);
   if(typeof syncAssetOpportunities==='function') syncAssetOpportunities(state);
   syncCharacterStories(state);
   syncRelationshipStakes(state);
@@ -97,6 +98,7 @@ function prepareGame({allowOffline=true}={}){
   simulateWorld(state);
   syncPersonalFinance(state);
   if(typeof syncPersonalAssets==='function') syncPersonalAssets(state);
+  if(typeof ensureOwnershipState==='function') ensureOwnershipState(state);
   if(typeof syncAssetOpportunities==='function') syncAssetOpportunities(state);
   syncCharacterStories(state);
   syncRelationshipStakes(state);
@@ -171,6 +173,22 @@ function bind(){
     if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum perlu dirawat',message:String(result.error),details:[],tone:'warning'};draw();return;}
     state.playtest.actions=(state.playtest.actions||0)+1;
     ui.result=result;ui.feedback=buildFeedback(before,state,result,'Barang selesai dirawat');postStep();
+  }));
+  root.querySelectorAll('[data-major-buy]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);
+    const result=buyMajorAsset(state,btn.dataset.majorBuy);
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum bisa diambil',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    state.playtest.actions=(state.playtest.actions||0)+1;
+    ui.result=result;ui.feedback=buildFeedback(before,state,result,'Aset besar dimiliki');postStep();
+  }));
+  root.querySelectorAll('[data-major-maintain]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);
+    const result=maintainMajorAsset(state,btn.dataset.majorMaintain);
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum perlu diperbaiki',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    state.playtest.actions=(state.playtest.actions||0)+1;
+    ui.result=result;ui.feedback=buildFeedback(before,state,result,'Aset besar dirawat');postStep();
   }));
   root.querySelectorAll('[data-city-visit]').forEach(btn=>btn.addEventListener('click',()=>{
     if(state.pendingEvent) return;

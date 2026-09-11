@@ -33,6 +33,12 @@ const PERSONAL_ASSETS={
     id:'motorbike',name:'Motor Bekas',category:'Transportasi',image:'./assets/scenes/workshop.webp',
     purchaseCost:2800000,maintenanceCost:220000,maintenanceHours:3,buyable:false,
     summary:'Mobilitas lebih cepat, tapi biaya dan perawatannya lebih berat.',
-    benefit:'Mobilitas paling nyaman',wearLabel:'Kondisi turun setiap dipakai bepergian.'
-  }
+    benefit:'Mobilitas lebih nyaman',wearLabel:'Kondisi turun setiap dipakai bepergian.'
+  },
+  motorbike_reliable:{
+    id:'motorbike_reliable',name:'Motor Harian Andal',category:'Transportasi',image:'./assets/scenes/workshop.webp',
+    purchaseCost:3400000,maintenanceCost:320000,maintenanceHours:3,buyable:false,
+    summary:'Motor yang lebih layak untuk ritme kerja, usaha, dan perjalanan kota yang padat.',
+    benefit:'Memangkas perjalanan lebih jauh',wearLabel:'Aus saat dipakai bepergian.'
+  },
 };

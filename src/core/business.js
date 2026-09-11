@@ -47,7 +47,8 @@ function refreshBusinessCapacity(state){
   const helperBonus=b.helperActive?2:0;
   const delegationBonus=b.helperActive&&b.delegated&&b.helperTrust>=50?1:0;
   const ownerBonus=b.ownerFullTime?2:0;
-  b.capacity=Math.min(12,2+(b.equipmentLevel||0)+(managedRecently?1:0)+Math.floor((b.level||1)/3)+helperBonus+delegationBonus+ownerBonus);
+  const ownershipBonus=typeof majorAssetBusinessCapacityBonus==='function'?majorAssetBusinessCapacityBonus(state):0;
+  b.capacity=Math.min(15,2+(b.equipmentLevel||0)+(managedRecently?1:0)+Math.floor((b.level||1)/3)+helperBonus+delegationBonus+ownerBonus+ownershipBonus);
   return b.capacity;
 }
 
@@ -343,9 +344,11 @@ function simulateBusinessWeek(state){
   const inquiries=Math.max(b.retainedClients||0,organic+(b.retainedClients||0));
   const served=Math.max(0,Math.min(inquiries,effectiveCapacity));
   const missed=Math.max(0,inquiries-served);
-  const gross=Math.round(meta.baseTicket*served*demandFactor*(1+skillFactor+repFactor)*(b.helperActive?helperReliability:1)*ticketMultiplier);
+  const ownershipGross=typeof majorAssetBusinessGrossMultiplier==='function'?majorAssetBusinessGrossMultiplier(state):1;
+  const gross=Math.round(meta.baseTicket*served*demandFactor*(1+skillFactor+repFactor)*(b.helperActive?helperReliability:1)*ticketMultiplier*ownershipGross);
   const helperCost=b.helperActive?(b.helperWage||220000):0;
-  const costs=Math.round(meta.fixedCost+served*26000+(b.equipmentLevel||0)*18000+(b.retainedClients||0)*8000+helperCost);
+  const ownershipCost=typeof majorAssetBusinessCostAdjustment==='function'?majorAssetBusinessCostAdjustment(state):0;
+  const costs=Math.max(0,Math.round(meta.fixedCost+served*26000+(b.equipmentLevel||0)*18000+(b.retainedClients||0)*8000+helperCost+ownershipCost));
   const profit=gross-costs;
 
   b.inquiries=inquiries;
@@ -355,6 +358,7 @@ function simulateBusinessWeek(state){
   b.lastWeeklyProfit=profit;
   b.totalProfit+=profit;
   state.player.money+=profit;
+  if(typeof wearMajorBusinessAssetsWeekly==='function') wearMajorBusinessAssetsWeekly(state);
 
   if(b.helperActive){
     b.helperWeeks=(b.helperWeeks||0)+1;

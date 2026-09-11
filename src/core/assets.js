@@ -13,6 +13,7 @@ function ensureAssetState(state){
   const ownedTransport=state.finance?.ownedTransport||[];
   if(ownedTransport.includes('bicycle')) state.assets.inventory.bicycle.owned=true;
   if(ownedTransport.includes('motorbike')) state.assets.inventory.motorbike.owned=true;
+  if(ownedTransport.includes('motorbike_reliable')) state.assets.inventory.motorbike_reliable.owned=true;
   if(state.assets.inventory.laptop.owned) state.assets.laptop=true;
   return state.assets;
 }
@@ -20,7 +21,7 @@ function ensureAssetState(state){
 function syncPersonalAssets(state){
   ensureAssetState(state);
   const ownedTransport=state.finance?.ownedTransport||[];
-  for(const id of ['bicycle','motorbike']){
+  for(const id of ['bicycle','motorbike','motorbike_reliable']){
     if(ownedTransport.includes(id) && !state.assets.inventory[id].owned){
       state.assets.inventory[id].owned=true;
       state.assets.inventory[id].condition=100;
@@ -137,18 +138,18 @@ function buyPersonalAsset(state,id){
 
 function personalAssetTransportEfficiency(state,id){
   if(id==='public') return 1;
-  if(!['bicycle','motorbike'].includes(id)) return 1;
+  if(!['bicycle','motorbike','motorbike_reliable'].includes(id)) return 1;
   return personalAssetEfficiency(state,id)>=.75?1:0;
 }
 function personalAssetTravelFatiguePenalty(state,id){
-  if(!['bicycle','motorbike'].includes(id)) return 0;
+  if(!['bicycle','motorbike','motorbike_reliable'].includes(id)) return 0;
   const eff=personalAssetEfficiency(state,id);
   return eff===0?2:eff<.75?1:0;
 }
 function wearActiveTransport(state,amount=2){
   if(typeof personalFinanceUnlocked!=='function'||!personalFinanceUnlocked(state)) return;
   const id=state.finance?.transport;
-  if(['bicycle','motorbike'].includes(id)) wearPersonalAsset(state,id,amount);
+  if(['bicycle','motorbike','motorbike_reliable'].includes(id)) wearPersonalAsset(state,id,amount);
 }
 function personalAssetStudyBonus(state){
   if(!personalAssetUsable(state,'study_desk')) return {learning:0,fatigue:0};

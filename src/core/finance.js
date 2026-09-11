@@ -128,10 +128,16 @@ function selectTransport(state,id){
   if(state.finance.transport===id) return {error:'Transportasi itu sudah kamu gunakan.'};
   const owned=state.finance.ownedTransport.includes(id);
   if(!owned){
-    if(state.player.money<option.purchaseCost) return {error:`Butuh Rp${option.purchaseCost.toLocaleString('id-ID')} untuk membeli ${option.name}.`};
+    if(option.upgradeFrom && !state.finance.ownedTransport.includes(option.upgradeFrom)) return {error:`Kamu perlu memiliki ${TRANSPORT_OPTIONS[option.upgradeFrom]?.name||'kendaraan sebelumnya'} sebelum mengambil upgrade ini.`};
+    if(state.player.money<option.purchaseCost) return {error:`Butuh Rp${option.purchaseCost.toLocaleString('id-ID')} untuk ${option.upgradeFrom?'tukar tambah ke':'membeli'} ${option.name}.`};
     state.player.money-=option.purchaseCost;
+    if(option.upgradeFrom){
+      state.finance.ownedTransport=state.finance.ownedTransport.filter(x=>x!==option.upgradeFrom);
+      if(state.assets?.inventory?.[option.upgradeFrom]) state.assets.inventory[option.upgradeFrom].owned=false;
+    }
     state.finance.ownedTransport.push(id);
-    if(typeof addHistory==='function') addHistory(state,`Umur 18 · Membeli ${option.name} untuk mobilitas sehari-hari.`);
+    if(typeof syncPersonalAssets==='function') syncPersonalAssets(state);
+    if(typeof addHistory==='function') addHistory(state,`Umur 18 · ${option.upgradeFrom?'Tukar tambah kendaraan menjadi':'Membeli'} ${option.name} untuk mobilitas sehari-hari.`);
   }else{
     const left=financeChangeCooldownLeft(state,'transport');
     if(left>0) return {error:`Pilihan transportasi baru bisa diganti lagi sekitar ${Math.ceil(left/24)} hari lagi.`};

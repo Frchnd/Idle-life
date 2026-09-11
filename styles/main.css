@@ -323,3 +323,6 @@ svg{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.8;st
 .asset-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:1px}.asset-foot>span,.asset-foot>em{font-size:.56rem;color:var(--muted);font-style:normal}.asset-foot .btn{min-height:32px;padding:6px 10px}
 @media(max-width:760px){.asset-grid{grid-template-columns:1fr}}
 @media(max-width:520px){.asset-card{grid-template-columns:92px minmax(0,1fr)}.asset-art{min-height:135px}.asset-copy{padding:10px;gap:6px}.asset-title b{font-size:.72rem}.asset-copy p{font-size:.6rem}.asset-foot{align-items:flex-end}.asset-foot>span{max-width:18ch}}
+
+/* Build AH — larger ownership decisions */
+.major-assets-section{margin-top:2px}.major-asset-card{border-width:2px;background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 88%,#fff3c7 12%))}.major-asset-card.owned{box-shadow:0 12px 30px rgba(42,98,138,.12)}.major-asset-card .asset-art>span{background:rgba(255,201,77,.92);color:#5f4300}.major-asset-card .asset-title strong{font-weight:800}.major-asset-grid .asset-copy>small{font-weight:700;color:var(--text-2)}

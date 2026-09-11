@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AF.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AH.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -79,6 +79,8 @@ function mergeState(base,saved){
   out.assets={...base.assets,...(saved.assets||{})};
   out.assets.inventory={...base.assets.inventory,...(saved.assets?.inventory||{})};
   out.assets.nextOpportunityAt={...base.assets.nextOpportunityAt,...(saved.assets?.nextOpportunityAt||{})};
+  out.ownership={...base.ownership,...(saved.ownership||{})};
+  out.ownership.assets={...base.ownership.assets,...(saved.ownership?.assets||{})};
   out.business={...base.business,...(saved.business||{})};
   out.npc={...base.npc,...(saved.npc||{})};
   for(const key of Object.keys(base.npc)) out.npc[key]={...base.npc[key],...(saved.npc?.[key]||{})};
@@ -115,6 +117,7 @@ function mergeState(base,saved){
   if(typeof ensureHousingState==='function') ensureHousingState(out);
   if(typeof ensureFinanceState==='function') ensureFinanceState(out);
   if(typeof ensureAssetState==='function') ensureAssetState(out);
+  if(typeof ensureOwnershipState==='function') ensureOwnershipState(out);
   if(typeof syncPersonalAssets==='function') syncPersonalAssets(out);
   if(typeof syncPersonalFinance==='function') syncPersonalFinance(out);
   out.economy.baseLivingCost=typeof housingMonthlyBase==='function'?housingMonthlyBase(out):(out.housing.id==='rented_room'?1100000:600000);
