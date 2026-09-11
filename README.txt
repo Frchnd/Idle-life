@@ -1,23 +1,12 @@
-HIDUP — BUILD L / PHASE 3 SIMULATION ENGINE
+HIDUP — Build AP+AQ Combined / Save v38
 
-Upload 5 file berikut ke root GitHub Pages:
-- index.html
-- manifest.webmanifest
-- sw.js
-- icon-192.png
-- icon-512.png
+Schooling + Growing Family + Legacy Foundations
 
-README.txt tidak wajib di-upload.
-
-Build L:
-- save Build K otomatis dimigrasikan ke save version 8
-- Bengkel Sinar Jaya, Toko Serba Ada, dan Nusa Komputer punya kondisi usaha sendiri
-- kondisi tempat kerja: Tertekan / Rentan / Stabil / Tumbuh / Ekspansi
-- tekanan kerja mengikuti demand, staffing, dan kesehatan tempat kerja
-- tempat kerja yang tumbuh mempercepat progression karier
-- tempat kerja yang rentan bisa menahan promosi sampai kondisi pulih
-- ekspansi perusahaan bisa membuka lowongan baru secara sistemik
-- beberapa peluang dunia sekarang diperebutkan dan dapat diambil NPC/orang lain jika player terlalu lama menunggu
-- UI tetap tiga bagian: HIDUP / DUNIA / KAMU
-
-Setelah push ke GitHub Pages, refresh atau tutup-buka PWA agar service worker Build L mengganti cache lama.
+- Nara memasuki usia sekolah.
+- Pilihan sekolah memengaruhi biaya, commute, lingkungan, dan perkembangan jangka panjang.
+- Childcare bergeser menjadi schooling support.
+- Perkembangan Nara disimpan sebagai state sistemik tetapi UI memakai label manusiawi.
+- Keputusan orang tua punya delayed consequences.
+- Education history, family milestones, formative tags, trajectory tags, dan successor state disiapkan untuk generasi berikutnya.
+- Migrasi save AO v37 -> v38 tanpa reset.
+- Static PWA / GitHub Pages / Rp0 app.

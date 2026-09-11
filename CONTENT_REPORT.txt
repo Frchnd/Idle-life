@@ -1,18 +1,20 @@
-HIDUP Build AO — Content Validation
+HIDUP Build AP+AQ Combined — Content Validation
 
 Errors: 0
 Warnings: 0
 
 activities: 4
 opportunities: 13
-events: 14
+events: 18
 jobs: 12
 certifications: 3
 eventPools: 6
 presets: 18
-packs: 7
+packs: 8
 
 Shared Life: runtime system
 Family Foundations: runtime life-stage system
 Early Parenting: runtime child-development system
 Family & Career Tension: runtime care/career conflict system
+Schooling: data-driven event pack + runtime family system
+Legacy Foundations: runtime successor-state + delayed consequences

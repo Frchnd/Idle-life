@@ -1,14 +1,16 @@
-# HIDUP — Build AO
+# HIDUP — Build AP+AQ Combined
 
-Build AO memperdalam **Family & Career Tension** di Fase 6 Life & Legacy.
+Build AP+AQ memperluas **Life & Legacy** dari Build AO dengan schooling, perkembangan Nara sebagai individu, dan fondasi generasi berikutnya.
 
-## Baru di Build AO
-- Pola penjagaan anak: Bergantian Berdua, Jaringan Keluarga, atau Penitipan Harian Lokal.
-- Pola penjagaan mengubah biaya bulanan, tekanan keluarga, dan beratnya hari kerja.
-- Career-turn event bergiliran antara Raka dan pasangan: kadang kesempatan besar datang untuk Raka, kadang untuk Sari/Andi.
-- Player bisa memilih siapa yang mengalah, atau membayar dukungan tambahan supaya dua karier tetap berjalan.
-- Mengalah berulang kali punya konsekuensi hubungan; dukungan yang seimbang meningkatkan trust tanpa menjadikan pasangan dashboard kedua.
-- Momentum karier Raka dari keputusan keluarga bisa memperkuat beberapa shift berikutnya.
-- Ritme kerja pasangan disimulasikan di belakang layar dan ditampilkan singkat di kartu Keluarga.
-- Save Build AN (v36) otomatis dimigrasikan ke Build AO (v37) tanpa event karier keluarga retroaktif.
-- Tetap Rp0 app: tanpa paywall, IAP, atau premium currency.
+## Baru di Build AP+AQ
+- Nara masuk usia sekolah dan keluarga memilih lingkungan sekolah pertama.
+- Biaya sekolah masuk ke biaya hidup bulanan dan mengikuti indeks biaya dunia.
+- Commute sekolah dipengaruhi hunian dan transportasi keluarga.
+- Childcare berhenti menjadi biaya penjagaan utama ketika usia sekolah tercapai; sistem bergeser ke dukungan sekolah.
+- Tiga pola dukungan sekolah: Rutinitas Rumah, Dukungan Seimbang, atau Program Sepulang Sekolah.
+- Minat, kemampuan, pola belajar, kecenderungan sosial, dan kemandirian Nara berkembang di belakang layar lalu ditampilkan sebagai label manusiawi, bukan raw stats.
+- Pilihan orang tua membentuk efek tertunda: ruang eksplorasi, rutinitas terstruktur, atau tekanan pencapaian punya jejak berbeda beberapa bulan kemudian.
+- Riwayat pendidikan, formative tags, family milestones, trajectory tags, dan successor state mulai disimpan untuk sistem succession di masa depan.
+- Nara belum playable; build ini menyiapkan state generasi kedua tanpa menjadikannya clone Raka.
+- Save Build AO (v37) otomatis dimigrasikan ke Build AP+AQ (v38) tanpa menembakkan backlog event schooling sekaligus.
+- Tetap Rp0 app: tanpa paywall, IAP, premium currency, atau gameplay berbayar.

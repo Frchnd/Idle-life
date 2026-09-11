@@ -26,7 +26,7 @@ function familyCareAvailable(state,id){
   return true;
 }
 function familyCareIndexed(state,amount){const index=state.world?.costIndex||100;return Math.round((amount*index/100)/10000)*10000;}
-function familyCareMonthlyCost(state){const child=typeof activeChild==='function'?activeChild(state):null;if(!child)return 0;return familyCareIndexed(state,familyCareCurrent(state).baseMonthlyCost||0);}
+function familyCareMonthlyCost(state){const child=typeof activeChild==='function'?activeChild(state):null;if(!child)return 0;if(typeof schoolingEligible==='function'&&schoolingEligible(state))return 0;return familyCareIndexed(state,familyCareCurrent(state).baseMonthlyCost||0);}
 function familyCareSetupCost(state,id){const c=ensureFamilyCareerState(state),opt=familyCareOption(state,id);return c.careSetupPaid[id]?0:familyCareIndexed(state,opt.setupCost||0);}
 function familyCareCooldownLeft(state){const c=ensureFamilyCareerState(state);return Math.max(0,45*24-((state.time?.totalHours||0)-(c.lastCareChangeAt||-9999)));}
 
@@ -49,12 +49,12 @@ function familyCareerPlayerBusy(state){return (state.time?.totalHours||0)<(ensur
 function familyCareerPartnerBusy(state){return (state.time?.totalHours||0)<(ensureFamilyCareerState(state).partnerBusyUntil||-9999);}
 function familyCareerPartnerReduced(state){return (state.time?.totalHours||0)<(ensureFamilyCareerState(state).partnerReducedUntil||-9999);}
 function familyCareerPressureModifier(state){
-  if(!activeChild(state))return 0;const c=ensureFamilyCareerState(state),care=familyCareCurrent(state);let value=care.pressure||0;
+  if(!activeChild(state))return 0;const c=ensureFamilyCareerState(state),care=familyCareCurrent(state);let value=(typeof schoolingActive==='function'&&schoolingActive(state))?(typeof schoolingFamilyPressureModifier==='function'?schoolingFamilyPressureModifier(state):0):(care.pressure||0);
   if(familyCareerPlayerBusy(state))value+=3;if(familyCareerPartnerBusy(state))value+=2;if(familyCareerPlayerBusy(state)&&familyCareerPartnerBusy(state))value+=2;
   if(familyCareerPartnerReduced(state))value-=1;return value;
 }
-function familyCareerWorkFatigueModifier(state){if(!activeChild(state))return 0;return familyCareCurrent(state).workFatigue||0;}
-function familyCareerCareDailyModifier(state){if(!activeChild(state))return 0;return familyCareCurrent(state).careDaily||0;}
+function familyCareerWorkFatigueModifier(state){if(!activeChild(state))return 0;if(typeof schoolingActive==='function'&&schoolingActive(state))return typeof schoolingWorkFatigueModifier==='function'?schoolingWorkFatigueModifier(state):0;return familyCareCurrent(state).workFatigue||0;}
+function familyCareerCareDailyModifier(state){if(!activeChild(state))return 0;if(typeof schoolingEligible==='function'&&schoolingEligible(state))return 0;return familyCareCurrent(state).careDaily||0;}
 
 function familyCareerApplyPlayerPush(state,{backup=false}={}){
   const c=ensureFamilyCareerState(state),job=state.player.job,def=JOBS[job];if(!job||!def)return false;
@@ -90,7 +90,7 @@ function processFamilyCareer(state,{migration=false}={}){
 }
 
 function familyCareerSnapshot(state){
-  if(!activeChild(state))return null;const c=ensureFamilyCareerState(state),care=familyCareCurrent(state),profile=familyCareerPartnerProfile(state),monthly=familyCareMonthlyCost(state),p=ensurePartnershipState(state);
+  if(!activeChild(state))return null;if(typeof schoolingEligible==='function'&&schoolingEligible(state))return null;const c=ensureFamilyCareerState(state),care=familyCareCurrent(state),profile=familyCareerPartnerProfile(state),monthly=familyCareMonthlyCost(state),p=ensurePartnershipState(state);
   const partnerWork=familyCareerPartnerBusy(state)?'Sedang padat':familyCareerPartnerReduced(state)?'Mengurangi ritme':'Stabil';
   const playerWork=familyCareerPlayerBusy(state)?'Sedang padat':'Stabil';
   const options=Object.values(FAMILY_CARE_OPTIONS).map(o=>({...o,available:familyCareAvailable(state,o.id),setupCost:familyCareSetupCost(state,o.id),monthlyCost:familyCareIndexed(state,o.baseMonthlyCost)}));
@@ -101,7 +101,7 @@ function getNextFamilyCareerEvent(state){
   const child=activeChild(state),c=ensureFamilyCareerState(state),p=ensurePartnershipState(state),sl=ensureSharedLifeState(state),profile=familyCareerPartnerProfile(state),now=state.time.totalHours;
   if(!child||!p.partner||sl.stage!=='married'||state.pendingEvent)return null;
   const age=childAge(state,child).months;
-  if(age>=6&&!c.careDiscussionSeen){
+  if(age>=6&&age<60&&!c.careDiscussionSeen){
     c.careDiscussionSeen=true;c.lastTensionAt=now;
     const choices=[{label:'Tetap bergantian berdua',hint:'Tanpa biaya tambahan · jadwal lebih rapuh',effects:[{type:'family_care_mode',value:'shared',force:true}],result:'Kalian tetap membagi jam penjagaan sendiri. Murah, tapi setiap peluang kerja baru harus dinegosiasikan lagi.'}];
     if(familyCareAvailable(state,'network')&&state.player.money>=familyCareSetupCost(state,'network'))choices.push({label:'Libatkan jaringan keluarga',hint:`Sekitar Rp${Math.round(familyCareIndexed(state,160000)/1000)}rb/bulan`,effects:[{type:'family_care_mode',value:'network',force:true}],result:'Kalian menerima bantuan rutin dari keluarga dan ikut menanggung biaya kecil agar dukungan itu tetap sehat.'});

@@ -1,4 +1,4 @@
-# Hidup — Content Catalog (Build AI)
+# HIDUP — Content Catalog (Build AP+AQ)
 
 Fase 4 memisahkan **engine** dari **content**. Konten data-driven dimiliki oleh satu content pack, memakai template/preset bila cocok, dan harus lolos validator sebelum game boot.
 
@@ -34,6 +34,12 @@ Pendidikan formal ringan yang mengubah skill matang menjadi akses ke posisi spes
 - Certifications: `engine_diagnostics`, `retail_operations`, `network_foundations`
 - Jobs: `mechanic_diagnostic`, `operations_coordinator`, `network_technician`
 - Opportunities: 3 jalur sertifikasi + 3 lowongan spesialis
+
+### `life_legacy_foundation` — Life & Legacy Foundation v1
+Schooling dan keputusan orang tua yang mulai membentuk kondisi awal generasi berikutnya.
+
+- Events: `schooling_first_choice`, `schooling_support_choice`, `schooling_parenting_approach`, `schooling_first_year`
+- Runtime: schooling cost/commute, child development labels, education history, delayed legacy consequences
 
 ## Event pools
 
@@ -207,3 +213,17 @@ Prinsip desain:
 - kesempatan karier bisa datang ke salah satu pihak;
 - mengalah sekali adalah keputusan, mengalah terus-menerus bisa menjadi pola yang menimbulkan strain;
 - save lama tidak dipaksa memutar event childcare/career yang seolah sudah terjadi di masa lalu.
+
+## Build AP+AQ — Schooling, Growing Family & Legacy Foundations
+
+`src/data/schooling.js` menambahkan pilihan sekolah, pola dukungan sekolah, label perkembangan anak, empat event schooling data-driven, dan pack `life_legacy_foundation`. `src/core/schooling.js` menangani usia sekolah, enrollment, commute, biaya, ritme sekolah, support cooldown, dan hubungan dengan housing/transport. `src/core/legacy.js` menyimpan education history, formative tags, trajectory tags, family patterns, milestone, serta delayed consequences untuk fondasi generasi berikutnya.
+
+State utama berada di `family.schooling` dan `family.legacy`. Nara tetap belum playable di build ini. Angka internal minat/kemampuan/pola keluarga tidak ditampilkan sebagai raw stats; UI menerjemahkannya menjadi label manusiawi seperti cara belajar, kecenderungan sosial, minat, dan kemandirian.
+
+Prinsip desain:
+- childcare berhenti menjadi biaya utama ketika Nara masuk sekolah dan bergeser menjadi schooling support;
+- sekolah memengaruhi biaya bulanan, commute, tekanan keluarga, serta perkembangan jangka panjang;
+- hunian dan transportasi ikut menentukan commute sekolah;
+- pilihan orang tua dapat memiliki konsekuensi beberapa bulan kemudian, bukan hanya hasil instan;
+- save v37 tidak memutar backlog event sekolah saat migrasi; ada grace period sebelum keputusan sekolah pertama;
+- legacy menyimpan kondisi awal generasi berikutnya, bukan bonus New Game+ dan bukan clone Raka.

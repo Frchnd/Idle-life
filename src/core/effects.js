@@ -87,6 +87,10 @@ function resolveEffects(state,effects=[]){
       case 'family_partner_career_push': familyCareerPartnerPush(state); break;
       case 'family_partner_concede': familyCareerPartnerConcedes(state); break;
       case 'family_career_backup': familyCareerPaidBackup(state,effect.who); break;
+      case 'school_enroll': selectSchool(state,effect.value); break;
+      case 'school_support': changeSchoolSupport(state,effect.value,{force:true}); break;
+      case 'legacy_parenting_choice': chooseLegacyParentingApproach(state,effect.value); break;
+      case 'school_year_response': schoolYearResponse(state,effect.value); break;
       case 'shared_life_agreement': { const s=ensureSharedLifeState(state); if(effect.force){s.agreement=effect.agreement||'balanced';s.lastAgreementAt=state.time.totalHours;if(typeof syncLivingCost==='function')syncLivingCost(state);}else changeSharedAgreement(state,effect.agreement); break; }
       case 'health_stress': ensureHealthState(state).stress=clampHealth(ensureHealthState(state).stress+(effect.value||0)); break;
       case 'health_rhythm': ensureHealthState(state).rhythm=clampHealth(ensureHealthState(state).rhythm+(effect.value||0)); break;

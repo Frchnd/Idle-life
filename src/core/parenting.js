@@ -82,6 +82,7 @@ function spendFamilyTime(state){
   if(stage.id==='infant'||stage.id==='toddler') p.development.curiosity=(p.development.curiosity||0)+1;
   if((state.sharedLife?.conflict||0)<=1) p.development.warmth=(p.development.warmth||0)+1;
   if(stage.id==='toddler'||stage.id==='preschool') p.development.independence=(p.development.independence||0)+.5;
+  if(typeof recordSchoolFamilyTime==='function') recordSchoolFamilyTime(state);
   updateDominantChildTrait(state);
   if(typeof addRecent==='function') addRecent(state,`${child.name} mendapat beberapa jam yang benar-benar bebas dari urusan kerja.`);
   return `Waktu bersama ${child.name} · 4 jam. Ritme rumah terasa lebih dekat dan tekanan sedikit turun.`;

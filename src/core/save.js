@@ -1,4 +1,4 @@
-// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AO.
+// Pertahankan key lama supaya seluruh save lama tetap ikut naik ke Build AP+AQ.
 const SAVE_KEY='hidup-vertical-slice-f-v2';
 
 function hasSavedState(){
@@ -72,6 +72,10 @@ function mergeState(base,saved){
   out.family.parenting.milestones=Array.isArray(saved.family?.parenting?.milestones)?[...saved.family.parenting.milestones]:[];
   out.family.careerCare={...base.family.careerCare,...(saved.family?.careerCare||{})};
   out.family.careerCare.careSetupPaid={...base.family.careerCare.careSetupPaid,...(saved.family?.careerCare?.careSetupPaid||{})};
+  out.family.schooling={...base.family.schooling,...(saved.family?.schooling||{})};
+  out.family.legacy={...base.family.legacy,...(saved.family?.legacy||{})};
+  out.family.legacy.children={...base.family.legacy.children,...(saved.family?.legacy?.children||{})};
+  out.family.legacy.familyMilestones=Array.isArray(saved.family?.legacy?.familyMilestones)?saved.family.legacy.familyMilestones.map(x=>({...x})):[...base.family.legacy.familyMilestones];
   out.life={...base.life,...(saved.life||{})};
   out.life.ageWindows={...base.life.ageWindows,...(saved.life?.ageWindows||{})};
   out.pacing={...base.pacing,...(saved.pacing||{})};
@@ -110,6 +114,8 @@ function mergeState(base,saved){
   if(typeof ensureFamilyState==='function') { ensureFamilyState(out); if((saved.version||0)<35 && !saved.family) processFamily(out,{migration:true}); }
   if(typeof ensureParentingState==='function') { ensureParentingState(out); if((saved.version||0)<36) processParenting(out,{migration:true}); }
   if(typeof ensureFamilyCareerState==='function') { ensureFamilyCareerState(out); if((saved.version||0)<37) processFamilyCareer(out,{migration:true}); }
+  if(typeof ensureLegacyState==='function') { ensureLegacyState(out); if((saved.version||0)<38) processLegacy(out,{migration:true}); }
+  if(typeof ensureSchoolingState==='function') { ensureSchoolingState(out); if((saved.version||0)<38) processSchooling(out,{migration:true}); }
   out.flags={...base.flags,...(saved.flags||{})};
   out.routine={...base.routine,...(saved.routine||{})};
   if(!Array.isArray(out.discoveredSkills)) out.discoveredSkills=[...base.discoveredSkills];

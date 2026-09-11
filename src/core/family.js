@@ -34,7 +34,8 @@ function familyFullMonthlyCost(state){
   const multiplier=stage?.costMult||1;
   const childCost=Math.round((FAMILY_CHILD_PROFILE.baseMonthlyCost*f.children.length*multiplier*index/100)/10000)*10000;
   const careCost=typeof familyCareMonthlyCost==='function'?familyCareMonthlyCost(state):0;
-  return childCost+careCost;
+  const schoolCost=typeof schoolingMonthlyCost==='function'?schoolingMonthlyCost(state):0;
+  return childCost+careCost+schoolCost;
 }
 
 function familyCostBreakdown(state){
@@ -189,6 +190,7 @@ function getNextFamilyEvent(state){
       {label:'Libatkan jaringan keluarga',hint:'Sedikit lebih ringan untuk tekanan · hubungan keluarga naik',effects:[{type:'family_parenting_style',value:'network'}],result:'Kalian memilih menerima bantuan orang terdekat ketika memang perlu. Kemandirian tidak harus berarti melakukan semuanya sendiri.'}
     ]};
   }
+  if(f.stage==='parenting'&&typeof getNextSchoolingEvent==='function'){const schoolingEvent=getNextSchoolingEvent(state);if(schoolingEvent)return schoolingEvent;}
   if(f.stage==='parenting'&&typeof getNextParentingEvent==='function'){const parentingEvent=getNextParentingEvent(state);if(parentingEvent)return parentingEvent;}
   if(f.stage==='parenting'&&typeof getNextFamilyCareerEvent==='function'){const careerEvent=getNextFamilyCareerEvent(state);if(careerEvent)return careerEvent;}
   return null;

@@ -408,7 +408,7 @@ function validateEffect(effect,path,errors,warnings,knownEffectTypes){
 function validateContentFramework(){
   const errors=[],warnings=[];
   const knownEffectTypes=new Set([
-    'money','fatigue','hours','skill','relationship','flag','promotion','store_progress','tech_progress','career_search_handled','side_income','asset','npc_state','job','npc_known','recent','history','opportunity','schedule','status_add','status_remove','trajectory','housing','salary_delta','salary_scale','job_clear','career_restructure','salary_negotiated','business_close','business_recover','business_reinvest','business_retainer','business_reputation','business_client_loss','business_stamp','business_hire_helper','business_delegate','business_owner_fulltime','business_helper_issue','business_market_strategy','business_market_reputation','path_increment','path_set','relationship_clamped','certification'
+    'money','fatigue','hours','skill','relationship','flag','promotion','store_progress','tech_progress','career_search_handled','side_income','asset','npc_state','job','npc_known','recent','history','opportunity','schedule','status_add','status_remove','trajectory','housing','salary_delta','salary_scale','job_clear','career_restructure','salary_negotiated','business_close','business_recover','business_reinvest','business_retainer','business_reputation','business_client_loss','business_stamp','business_hire_helper','business_delegate','business_owner_fulltime','business_helper_issue','business_market_strategy','business_market_reputation','path_increment','path_set','relationship_clamped','certification','school_enroll','school_support','legacy_parenting_choice','school_year_response'
   ]);
   const idPattern=/^[a-z0-9_]+$/;
 
