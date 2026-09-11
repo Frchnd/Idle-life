@@ -194,3 +194,16 @@ Prinsip desain:
 - offline routine boleh menjaga koneksi keluarga saat ritme sudah terlalu rendah;
 - perkembangan anak muncul dari pola berulang dan keputusan milestone, bukan dari point allocation;
 - jalur Life & Legacy tetap kompatibel dengan keluarga tanpa anak dari Build AM.
+
+## Build AO — Family & Career Tension
+
+`src/data/family-career.js` mendefinisikan pola penjagaan dan profil ritme kerja pasangan. `src/core/family-career.js` menangani biaya penjagaan, cooldown perubahan pola, tekanan kerja-keluarga, momentum karier Raka, kesempatan karier pasangan, serta event “siapa yang mengalah” secara bergiliran.
+
+State utama berada di `family.careerCare`. Layer ini sengaja bukan content pack karena ia menjadi modifier lintas Economy, Parenting, Health, Activities, Shared Life, Save, dan UI.
+
+Prinsip desain:
+- pasangan tidak menjadi karakter kedua yang harus dimicromanage;
+- childcare membeli stabilitas waktu, bukan “bonus parenting” abstrak;
+- kesempatan karier bisa datang ke salah satu pihak;
+- mengalah sekali adalah keputusan, mengalah terus-menerus bisa menjadi pola yang menimbulkan strain;
+- save lama tidak dipaksa memutar event childcare/career yang seolah sudah terjadi di masa lalu.

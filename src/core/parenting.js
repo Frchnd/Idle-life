@@ -137,7 +137,8 @@ function processParenting(state,{migration=false}={}){
     if(style==='network') sleepGain-=.22*days;
     if((state.housing?.id||'')==='outskirts_room') sleepGain-=.08*days;
     p.sleepDebt=clampParenting(p.sleepDebt+Math.max(-.2*days,sleepGain));
-    p.careRhythm=clampParenting(p.careRhythm+(connected?.8:-1.15)*days+(style==='network'?.15*days:0)-((state.sharedLife?.conflict||0)>=2?.45*days:0));
+    const careDaily=typeof familyCareerCareDailyModifier==='function'?familyCareerCareDailyModifier(state):0;
+    p.careRhythm=clampParenting(p.careRhythm+(connected?.8:-1.15)*days+(style==='network'?.15*days:0)+(careDaily*days)-((state.sharedLife?.conflict||0)>=2?.45*days:0));
     if(!connected&&days>=3) p.development.independence=(p.development.independence||0)+.15*days;
     p.lastProcessedAt+=days*24;
     updateDominantChildTrait(state);changed=true;

@@ -81,6 +81,12 @@ function resolveEffects(state,effects=[]){
       case 'parenting_sleep': { const p=ensureParentingState(state); p.sleepDebt=clampParenting(p.sleepDebt+Number(effect.value||0)); break; }
       case 'parenting_direct_time': { const p=ensureParentingState(state); p.familyTimeCount=(p.familyTimeCount||0)+1; p.lastFamilyTimeAt=state.time.totalHours; p.careRhythm=clampParenting(p.careRhythm+10); p.sleepDebt=clampParenting(p.sleepDebt-3); updateDominantChildTrait(state); break; }
       case 'parenting_support': { const p=ensureParentingState(state); p.careRhythm=clampParenting(p.careRhythm+6); p.sleepDebt=clampParenting(p.sleepDebt-6); p.lastFamilyTimeAt=state.time.totalHours; if(state.relationships?.family!==undefined) state.relationships.family+=1; break; }
+      case 'family_care_mode': changeFamilyCareMode(state,effect.value,{force:!!effect.force}); break;
+      case 'family_player_career_push': familyCareerApplyPlayerPush(state); break;
+      case 'family_player_concede': familyCareerPlayerConcedes(state); break;
+      case 'family_partner_career_push': familyCareerPartnerPush(state); break;
+      case 'family_partner_concede': familyCareerPartnerConcedes(state); break;
+      case 'family_career_backup': familyCareerPaidBackup(state,effect.who); break;
       case 'shared_life_agreement': { const s=ensureSharedLifeState(state); if(effect.force){s.agreement=effect.agreement||'balanced';s.lastAgreementAt=state.time.totalHours;if(typeof syncLivingCost==='function')syncLivingCost(state);}else changeSharedAgreement(state,effect.agreement); break; }
       case 'health_stress': ensureHealthState(state).stress=clampHealth(ensureHealthState(state).stress+(effect.value||0)); break;
       case 'health_rhythm': ensureHealthState(state).rhythm=clampHealth(ensureHealthState(state).rhythm+(effect.value||0)); break;

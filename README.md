@@ -1,14 +1,14 @@
-# HIDUP — Build AN
+# HIDUP — Build AO
 
-Build AN memperdalam **Early Parenting & Child Development** di Fase 6 Life & Legacy.
+Build AO memperdalam **Family & Career Tension** di Fase 6 Life & Legacy.
 
-## Baru di Build AN
-- Nara berkembang mengikuti waktu: bayi baru lahir → mulai mengenali dunia → balita aktif → prasekolah → masa kanak-kanak.
-- Tahap perkembangan mengubah biaya keluarga, gangguan tidur, dan ritme rumah.
-- Aktivitas contextual `Waktu dengan Nara` memakai 4 jam dan membantu kedekatan/tekanan hidup.
-- Kurang tidur dapat membuat kerja dan belajar lebih berat; support network serta rumah yang lebih tenang membantu.
-- Milestone perkembangan memunculkan pilihan parenting ringan, bukan mini-game merawat bayi.
-- Kecenderungan Nara (mis. Penasaran/Hangat/Mandiri) muncul dari pola keluarga dan pilihan milestone, tanpa stat mentah di UI.
-- Offline routine bisa memprioritaskan waktu keluarga ketika ritme rumah mulai keteteran.
-- Save Build AM (v35) otomatis dimigrasikan ke Build AN (v36) tanpa replay milestone anak yang sudah lewat.
+## Baru di Build AO
+- Pola penjagaan anak: Bergantian Berdua, Jaringan Keluarga, atau Penitipan Harian Lokal.
+- Pola penjagaan mengubah biaya bulanan, tekanan keluarga, dan beratnya hari kerja.
+- Career-turn event bergiliran antara Raka dan pasangan: kadang kesempatan besar datang untuk Raka, kadang untuk Sari/Andi.
+- Player bisa memilih siapa yang mengalah, atau membayar dukungan tambahan supaya dua karier tetap berjalan.
+- Mengalah berulang kali punya konsekuensi hubungan; dukungan yang seimbang meningkatkan trust tanpa menjadikan pasangan dashboard kedua.
+- Momentum karier Raka dari keputusan keluarga bisa memperkuat beberapa shift berikutnya.
+- Ritme kerja pasangan disimulasikan di belakang layar dan ditampilkan singkat di kartu Keluarga.
+- Save Build AN (v36) otomatis dimigrasikan ke Build AO (v37) tanpa event karier keluarga retroaktif.
 - Tetap Rp0 app: tanpa paywall, IAP, atau premium currency.

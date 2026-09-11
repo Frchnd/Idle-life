@@ -55,6 +55,7 @@ function postStep(){
   if(typeof processSharedLife==='function') processSharedLife(state);
   if(typeof processFamily==='function') processFamily(state);
   if(typeof processParenting==='function') processParenting(state);
+  if(typeof processFamilyCareer==='function') processFamilyCareer(state);
   if(typeof processHealth==='function') processHealth(state);
   if(typeof processLifePhases==='function') processLifePhases(state);
   if(state.career.workCount>=3) state.flags.routineUnlocked=true;
@@ -116,6 +117,7 @@ function prepareGame({allowOffline=true}={}){
   if(typeof processSharedLife==='function') processSharedLife(state);
   if(typeof processFamily==='function') processFamily(state);
   if(typeof processParenting==='function') processParenting(state);
+  if(typeof processFamilyCareer==='function') processFamilyCareer(state);
   if(typeof processHealth==='function') processHealth(state);
   if(typeof processLifePhases==='function') processLifePhases(state);
   refreshEvent(state);
@@ -167,6 +169,12 @@ function bind(){
     const result=prepareForFamily(state);
     if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum siap',message:String(result.error),details:[],tone:'warning'};draw();return;}
     state.playtest.actions=(state.playtest.actions||0)+1;ui.result=result;ui.feedback=buildFeedback(before,state,result,'Persiapan keluarga selesai');postStep();
+  }));
+  root.querySelectorAll('[data-family-care]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(state.pendingEvent) return;
+    const before=feedbackSnapshot(state);const result=changeFamilyCareMode(state,btn.dataset.familyCare);
+    if(result&&typeof result==='object'&&result.error){ui.feedback={title:'Belum bisa diubah',message:String(result.error),details:[],tone:'warning'};draw();return;}
+    state.playtest.actions=(state.playtest.actions||0)+1;ui.result=result;ui.feedback=buildFeedback(before,state,result,'Ritme penjagaan diperbarui');postStep();
   }));
   root.querySelectorAll('[data-finance-lifestyle]').forEach(btn=>btn.addEventListener('click',()=>{
     if(state.pendingEvent) return;
@@ -497,6 +505,7 @@ function processOffline(realMs){
     if(typeof processSharedLife==='function') processSharedLife(state);
     if(typeof processFamily==='function') processFamily(state);
     if(typeof processParenting==='function') processParenting(state);
+    if(typeof processFamilyCareer==='function') processFamilyCareer(state);
     if(typeof processHealth==='function') processHealth(state);
     if(typeof processLifePhases==='function') processLifePhases(state);
     if(state.career.workCount>=3) state.flags.routineUnlocked=true;

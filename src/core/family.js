@@ -32,7 +32,9 @@ function familyFullMonthlyCost(state){
   const index=typeof ensureWorldState==='function'?(ensureWorldState(state).costIndex||100):(state.world?.costIndex||100);
   const stage=typeof currentParentingStage==='function'?currentParentingStage(state):null;
   const multiplier=stage?.costMult||1;
-  return Math.round((FAMILY_CHILD_PROFILE.baseMonthlyCost*f.children.length*multiplier*index/100)/10000)*10000;
+  const childCost=Math.round((FAMILY_CHILD_PROFILE.baseMonthlyCost*f.children.length*multiplier*index/100)/10000)*10000;
+  const careCost=typeof familyCareMonthlyCost==='function'?familyCareMonthlyCost(state):0;
+  return childCost+careCost;
 }
 
 function familyCostBreakdown(state){
@@ -136,6 +138,7 @@ function familyPressureModifier(state){
   let value=f.parentingStyle==='network'?4:7;
   if((state.sharedLife?.conflict||0)>=2) value+=4;
   if(typeof parentingPressureModifier==='function') value+=parentingPressureModifier(state);
+  if(typeof familyCareerPressureModifier==='function') value+=familyCareerPressureModifier(state);
   return value;
 }
 
@@ -187,5 +190,6 @@ function getNextFamilyEvent(state){
     ]};
   }
   if(f.stage==='parenting'&&typeof getNextParentingEvent==='function'){const parentingEvent=getNextParentingEvent(state);if(parentingEvent)return parentingEvent;}
+  if(f.stage==='parenting'&&typeof getNextFamilyCareerEvent==='function'){const careerEvent=getNextFamilyCareerEvent(state);if(careerEvent)return careerEvent;}
   return null;
 }
